@@ -1,0 +1,299 @@
+/* Design Tokens - Centralized Design System */
+/* This file defines all design values as CSS custom properties (variables) */
+
+:root {
+  /* ============================================================================ */
+  /* COLOR TOKENS */
+  /* ============================================================================ */
+
+  /* Primary Brand Color - Maroon */
+  --color-primary: #7a1f2b;
+  --color-primary-dark: #5e1720;
+  --color-primary-light: #9b2535;
+  --color-primary-lighter: #d4a5b0;
+
+  /* Accent Brand Color - Gold */
+  --color-accent: #d4af37;
+  --color-accent-dark: #b8942d;
+  --color-accent-light: #e5c158;
+
+  /* Neutral Colors - Gray Scale */
+  --color-neutral-50: #faf7f2;   /* Cream - Primary background */
+  --color-neutral-100: #f5f1ec;  /* Light cream */
+  --color-neutral-200: #e8ddd4;  /* Light gray - borders */
+  --color-neutral-300: #d9d0c5;  /* Medium-light gray */
+  --color-neutral-400: #a39a8f;  /* Medium gray */
+  --color-neutral-500: #8b7d73;  /* Neutral gray */
+  --color-neutral-600: #7c6b5e;  /* Dark gray - secondary text */
+  --color-neutral-700: #64584e;  /* Darker gray */
+  --color-neutral-800: #3d352d;  /* Very dark gray */
+  --color-neutral-900: #1c1410;  /* Near black - primary text */
+
+  /* Semantic Colors */
+  --color-success: #059669;       /* Green - Success/Approved */
+  --color-warning: #d97706;       /* Orange - Warning/Pending */
+  --color-error: #dc2626;         /* Red - Error/Rejected */
+  --color-info: #0891b2;          /* Cyan - Information */
+
+  /* Contextual Colors */
+  --color-bg-primary: #faf7f2;    /* Primary background */
+  --color-bg-secondary: #ffffff;  /* Card/component background */
+  --color-text-primary: #1c1410;  /* Primary text */
+  --color-text-secondary: #7c6b5e; /* Secondary text */
+  --color-text-tertiary: #a39a8f; /* Tertiary/helper text */
+  --color-border: #e8ddd4;        /* Border color */
+
+  /* ============================================================================ */
+  /* TYPOGRAPHY TOKENS */
+  /* ============================================================================ */
+
+  /* Font Families */
+  --font-family-display: "Playfair Display", Georgia, serif;
+  --font-family-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Font Sizes - Px to Rem conversion (base: 16px) */
+  --font-size-xs: 0.75rem;      /* 12px */
+  --font-size-sm: 0.875rem;     /* 14px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;     /* 18px */
+  --font-size-xl: 1.25rem;      /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
+  --font-size-4xl: 2.25rem;     /* 36px */
+  --font-size-5xl: 3rem;        /* 48px */
+
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line Heights */
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  /* Letter Spacing */
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-uppercase: 0.1em;
+
+  /* ============================================================================ */
+  /* SPACING TOKENS */
+  /* ============================================================================ */
+
+  /* Spacing Scale (4px base unit) */
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-14: 3.5rem;   /* 56px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+  --space-24: 6rem;     /* 96px */
+
+  /* ============================================================================ */
+  /* SHADOW TOKENS (Elevation System) */
+  /* ============================================================================ */
+
+  /* Shadows define depth/elevation levels */
+  --shadow-none: none;
+
+  /* Subtle - used for small components or disabled states */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  /* Base - used for cards, inputs, default state */
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+
+  /* Medium - used for raised cards, dropdowns */
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  /* Large - used for hovered cards, popovers */
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Extra Large - used for modals, highlighted cards */
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* 2XL - used for important dialogs, overlays */
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* ============================================================================ */
+  /* BORDER RADIUS TOKENS */
+  /* ============================================================================ */
+
+  /* Border Radius Scale */
+  --radius-none: 0;
+  --radius-sm: 0.375rem;   /* 6px - Small elements */
+  --radius-md: 0.5rem;     /* 8px - Default radius */
+  --radius-lg: 0.75rem;    /* 12px - Cards, containers */
+  --radius-xl: 1rem;       /* 16px - Large cards, modals */
+  --radius-2xl: 1.5rem;    /* 24px - Extra large sections */
+  --radius-3xl: 2rem;      /* 32px - Hero sections */
+  --radius-full: 9999px;   /* Pill shape - badges, pills */
+
+  /* ============================================================================ */
+  /* TRANSITION & ANIMATION TOKENS */
+  /* ============================================================================ */
+
+  /* Transition Duration */
+  --transition-fast: 150ms ease-in-out;     /* Quick feedback (hovers, small animations) */
+  --transition-base: 250ms ease-in-out;     /* Standard transitions (most components) */
+  --transition-slow: 350ms ease-in-out;     /* Slow transitions (page changes, modals) */
+
+  /* Animation Durations */
+  --animation-spin: 1s linear infinite;
+  --animation-pulse: 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animation-bounce: 1s infinite;
+
+  /* ============================================================================ */
+  /* Z-INDEX SCALE */
+  /* ============================================================================ */
+
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-fixed: 30;
+  --z-modal-backdrop: 40;
+  --z-modal: 50;
+  --z-popover: 60;
+  --z-tooltip: 70;
+
+  /* ============================================================================ */
+  /* COMPONENT SPECIFIC TOKENS */
+  /* ============================================================================ */
+
+  /* Button Tokens */
+  --button-height-sm: 32px;
+  --button-height-md: 40px;
+  --button-height-lg: 48px;
+  --button-padding-x: 16px;
+  --button-padding-y: 10px;
+
+  /* Input Tokens */
+  --input-height: 40px;
+  --input-padding-x: 12px;
+  --input-padding-y: 10px;
+  --input-border-width: 1px;
+
+  /* Card Tokens */
+  --card-padding-sm: var(--space-4);
+  --card-padding-md: var(--space-6);
+  --card-padding-lg: var(--space-8);
+  --card-border-radius: var(--radius-xl);
+  --card-shadow: var(--shadow-base);
+}
+
+/* ============================================================================ */
+/* LIGHT MODE (DEFAULT) */
+/* ============================================================================ */
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-bg-primary: #faf7f2;
+    --color-bg-secondary: #ffffff;
+    --color-text-primary: #1c1410;
+    --color-text-secondary: #7c6b5e;
+    --color-text-tertiary: #a39a8f;
+    --color-border: #e8ddd4;
+  }
+}
+
+/* ============================================================================ */
+/* DARK MODE (PREPARED FOR FUTURE) */
+/* ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg-primary: #1c1410;
+    --color-bg-secondary: #2a2218;
+    --color-text-primary: #faf7f2;
+    --color-text-secondary: #d9d0c5;
+    --color-text-tertiary: #a39a8f;
+    --color-border: #3d352d;
+  }
+}
+
+/* ============================================================================ */
+/* ANIMATION KEYFRAMES */
+/* ============================================================================ */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-25%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================ */
+/* UTILITY CLASSES */
+/* ============================================================================ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
