@@ -45,7 +45,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">1. Introduction</h2>
               <p className="text-slate-700 leading-relaxed">
-                Welcome to Regin Matrimony (hereinafter "the Platform"). These Terms & Conditions govern your use of our matrimony service. By registering and using our platform, you agree to comply with these terms.
+                Welcome to Regin Matrimony (hereinafter &ldquo;the Platform&rdquo;). These Terms &amp; Conditions govern your use of our matrimony service. By registering and using our platform, you agree to comply with these terms.
               </p>
             </section>
 
@@ -99,7 +99,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">7. Limitation of Liability</h2>
               <p className="text-slate-700 leading-relaxed">
-                The Platform is provided "as is" without any warranties. We are not responsible for any direct, indirect, or consequential damages arising from your use of the platform, including decisions made based on profile information.
+                The Platform is provided &ldquo;as is&rdquo; without any warranties. We are not responsible for any direct, indirect, or consequential damages arising from your use of the platform, including decisions made based on profile information.
               </p>
             </section>
 

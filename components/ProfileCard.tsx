@@ -46,7 +46,7 @@ export function ProfileCard(props: ProfileCardProps) {
 
         {/* Favorite button */}
         <div className="absolute top-4 left-4 z-10">
-          <FavoriteButton userId={props.id} size="md" />
+          <FavoriteButton targetUserId={props.id} size="md" />
         </div>
 
         {/* Match score badge - modern design with tokens */}

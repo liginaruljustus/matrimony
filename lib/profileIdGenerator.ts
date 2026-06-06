@@ -24,11 +24,11 @@ export async function generateProfileId(
   // Get next sequence number
   const lastProfile = await UserModel.findOne({ profileId: { $exists: true } })
     .sort({ createdAt: -1 })
-    .lean();
+    .lean() as any;
 
   let sequenceNumber = 1;
   if (lastProfile?.profileId) {
-    const match = lastProfile.profileId.match(/\d{5}/);
+    const match = (lastProfile.profileId as string).match(/\d{5}/);
     if (match) {
       sequenceNumber = parseInt(match[0]) + 1;
     }

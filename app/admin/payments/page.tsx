@@ -110,6 +110,7 @@ function PaymentsContent() {
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
   useEffect(() => { void load(); }, [load]);

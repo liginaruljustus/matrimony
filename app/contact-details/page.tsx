@@ -79,7 +79,7 @@ export default function ContactDetailsPage() {
           Contact Details
         </h1>
         <p className="mt-0.5 text-sm text-neutral-500">
-          Contact information for brides you've unlocked
+          Contact information for brides you&apos;ve unlocked
         </p>
       </div>
 

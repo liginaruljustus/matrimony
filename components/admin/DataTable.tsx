@@ -1,7 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ArrowUp, ArrowDown } from "lucide-react";
+
+// React doesn't support `indeterminate` as a prop — must be set via ref
+function IndeterminateCheckbox({
+  checked,
+  indeterminate,
+  onChange,
+  className,
+}: {
+  checked: boolean;
+  indeterminate: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  className?: string;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.indeterminate = indeterminate;
+    }
+  }, [indeterminate]);
+
+  return (
+    <input
+      ref={ref}
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      className={className}
+    />
+  );
+}
 
 export type Column<T> = {
   key: keyof T;
@@ -126,8 +157,7 @@ export function DataTable<T extends { id: string }>({
             <tr>
               {onSelectChange && (
                 <th className="px-4 py-3 text-left w-12">
-                  <input
-                    type="checkbox"
+                  <IndeterminateCheckbox
                     checked={allSelected}
                     indeterminate={someSelected}
                     onChange={(e) => handleSelectAll(e.target.checked)}

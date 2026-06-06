@@ -153,7 +153,7 @@ export default function InboxPage() {
             My Inbox
           </h1>
           <p className="mt-0.5 text-sm text-neutral-500">
-            Additional details of brides you've unlocked
+            Additional details of brides you&apos;ve unlocked
           </p>
         </div>
         <Link

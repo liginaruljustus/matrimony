@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export default withAuth(
   function middleware(request: NextRequest) {
-    const token = request.nextauth.token;
+    const token = (request as any).nextauth.token;
     const pathname = request.nextUrl.pathname;
 
     // Check admin-only routes - redirect non-admins to dashboard

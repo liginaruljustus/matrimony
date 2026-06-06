@@ -95,6 +95,7 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, limit, activeStatus, typeFilter, search]);
 
   useEffect(() => { loadUsers(); }, [loadUsers]);

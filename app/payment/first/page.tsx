@@ -110,14 +110,14 @@ function PaymentContent() {
         </div>
         <h1 className="text-2xl font-bold text-neutral-800">Payment Submitted!</h1>
         <p className="mt-3 text-sm text-neutral-500">
-          Your payment is under admin review. You'll gain access to the additional details of
+          Your payment is under admin review. You&apos;ll gain access to the additional details of
           selected brides once approved.
         </p>
         <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 p-4 text-left text-sm text-amber-800">
           <p className="font-semibold">What happens next?</p>
           <ul className="mt-2 list-disc list-inside space-y-1 text-xs">
             <li>Admin verifies your transaction ID</li>
-            <li>Brides' additional details are unlocked in your Inbox</li>
+            <li>Brides&apos; additional details are unlocked in your Inbox</li>
             <li>30-day inbox access begins from approval date</li>
           </ul>
         </div>

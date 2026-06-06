@@ -111,7 +111,7 @@ export function PaymentDialog({
                 className="w-full px-4 py-3 border border-neutral-200 rounded-[var(--radius-lg)] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-fast bg-white text-text-primary"
               />
               <p className="text-xs text-text-tertiary mt-2">
-                Enter your bank's transaction or reference number from your payment confirmation
+                Enter your bank&apos;s transaction or reference number from your payment confirmation
               </p>
             </div>
 
@@ -152,7 +152,7 @@ export function PaymentDialog({
             </div>
             <h3 className="text-2xl font-bold text-primary mb-2">Submitted!</h3>
             <p className="text-text-secondary text-center">
-              Thank you! Your payment has been submitted for admin review. We'll notify you
+              Thank you! Your payment has been submitted for admin review. We&apos;ll notify you
               within 24 hours.
             </p>
           </div>

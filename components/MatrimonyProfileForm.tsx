@@ -4,55 +4,13 @@ import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { matrimonyProfileSchema } from "@/lib/validators";
+import { z } from "zod";
 import { updateMatrimonyProfileAction } from "@/app/actions/profileActions";
 import Image from "next/image";
 import { GripVertical, X, ImagePlus, Save, Star } from "lucide-react";
 
-type FormData = {
-  // Personal Details
-  name: string;
-  address: string;
-  nativeDistrict: string;
-  maritalStatus: string;
-  gender: string;
-  dateOfBirth: string;
-  age: number;
-  religion: string;
-  caste: string;
-  subCaste?: string;
-  placeOfBirth?: string;
-  timeOfBirth?: string;
-  rashi?: string;
-  nakshatra?: string;
-  lagnam?: string;
-  motherTongue?: string;
-  height?: number;
-  weight?: number;
-  education: string;
-  currentJob?: string;
-  monthlyIncome?: number;
-  complexion?: string;
-  physicallyChallenge?: boolean;
-  otherDetails?: string;
-  // Family Details
-  fatherName?: string;
-  fatherOccupation?: string;
-  motherName?: string;
-  motherOccupation?: string;
-  totalBrothers?: number;
-  marriedBrothers?: number;
-  totalSisters?: number;
-  marriedSisters?: number;
-  houseDetails?: string;
-  familyStatus?: string;
-  // Contact Details
-  contactPersonName?: string;
-  contactNumber?: string;
-  whatsappNo?: string;
-  // Additional
-  expectations?: string;
-  photos?: string[];
-};
+// Derive the form type directly from the Zod schema so the resolver types always match
+type FormData = z.infer<typeof matrimonyProfileSchema>;
 
 const STEPS = [
   "Personal Details",
@@ -95,7 +53,8 @@ export function MatrimonyProfileForm({ defaultProfile }: { defaultProfile?: any 
     watch,
     setValue,
   } = useForm<FormData>({
-    resolver: zodResolver(matrimonyProfileSchema),
+    // cast required: @hookform/resolvers bundles its own react-hook-form types causing TS2719
+    resolver: zodResolver(matrimonyProfileSchema) as any, // eslint-disable-line
     defaultValues: defaultProfile || {
       gender: "MALE",
       religion: "HINDU",
@@ -404,22 +363,22 @@ export function MatrimonyProfileForm({ defaultProfile }: { defaultProfile?: any 
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Father's Name</label>
+                <label className="label">Father&apos;s Name</label>
                 <input {...register("fatherName")} className="input-field" />
               </div>
               <div>
-                <label className="label">Father's Occupation</label>
+                <label className="label">Father&apos;s Occupation</label>
                 <input {...register("fatherOccupation")} className="input-field" />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Mother's Name</label>
+                <label className="label">Mother&apos;s Name</label>
                 <input {...register("motherName")} className="input-field" />
               </div>
               <div>
-                <label className="label">Mother's Occupation</label>
+                <label className="label">Mother&apos;s Occupation</label>
                 <input {...register("motherOccupation")} className="input-field" />
               </div>
             </div>

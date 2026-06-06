@@ -15,7 +15,7 @@ export default async function ChatPage({ searchParams }: Props) {
     <section className="space-y-3">
       <div>
         <h1 className="text-xl font-bold text-[#7a1f2b]">Messages</h1>
-        <p className="text-xs text-slate-500">Chat privately with families you've connected with.</p>
+        <p className="text-xs text-slate-500">Chat privately with families you&apos;ve connected with.</p>
       </div>
       <ChatPanel initialConvId={searchParams.conv} />
     </section>

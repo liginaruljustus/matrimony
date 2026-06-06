@@ -93,7 +93,7 @@ export function ContactDetailsGate({
             </div>
             <h3 className="text-lg font-bold text-warning mb-2">Pending Approval</h3>
             <p className="text-sm text-text-secondary">
-              Your payment is under admin review. We'll notify you within 24 hours.
+              Your payment is under admin review. We&apos;ll notify you within 24 hours.
             </p>
             <button
               disabled

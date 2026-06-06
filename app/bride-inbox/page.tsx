@@ -168,7 +168,7 @@ export default function BrideInboxPage() {
           <Heart size={52} className="mb-4 text-neutral-200" strokeWidth={1.5} />
           <h2 className="text-lg font-semibold text-neutral-600">No Proposals Yet</h2>
           <p className="mt-1 text-sm text-neutral-400">
-            When grooms express interest and complete payment, they'll appear here.
+            When grooms express interest and complete payment, they&apos;ll appear here.
           </p>
         </div>
       ) : (
