@@ -123,6 +123,11 @@ export async function PUT(
     const { profileStatus, rejectionReason, flaggedReason, contentScore, moderationNotes } =
       await request.json();
 
+    const VALID_STATUSES = ["DRAFT", "PENDING_APPROVAL", "APPROVED", "REJECTED", "FLAGGED"];
+    if (profileStatus !== undefined && !VALID_STATUSES.includes(profileStatus)) {
+      return NextResponse.json({ error: `Invalid profileStatus: ${profileStatus}` }, { status: 400 });
+    }
+
     const before = {
       profileStatus: profile.profileStatus,
       rejectionReason: profile.rejectionReason,

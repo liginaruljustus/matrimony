@@ -50,7 +50,18 @@ export async function POST(req: Request) {
     }).lean() as any;
 
     if (!fav) return Response.json({ error: "Favorite not found" }, { status: 404 });
-    if (!fav.firstPaidAt) return Response.json({ error: "1st payment not completed" }, { status: 400 });
+    if (!fav.firstPaidAt || !fav.firstPaymentId) {
+      return Response.json({ error: "1st payment not completed" }, { status: 400 });
+    }
+    // Guard against submission while the 1st payment is still pending admin review.
+    // firstPaidAt is set at submission time, not at approval time — so we must verify
+    // the linked payment record is actually APPROVED.
+    const firstPayment = await PaymentModel.findById(fav.firstPaymentId)
+      .select("approvalStatus")
+      .lean() as any;
+    if (!firstPayment || firstPayment.approvalStatus !== "APPROVED") {
+      return Response.json({ error: "1st payment not yet approved by admin" }, { status: 400 });
+    }
     if (fav.secondPaidAt) return Response.json({ error: "2nd payment already submitted" }, { status: 400 });
 
     // Enforce 30-day inbox freeze — must wait before unlocking contact details

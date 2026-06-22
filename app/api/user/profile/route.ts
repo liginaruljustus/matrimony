@@ -2,15 +2,14 @@
  * GET /api/user/profile
  *
  * Returns the current user's non-sensitive profile data.
- * autoPassword is omitted — it is only surfaced on the dashboard page
- * via the admin-accessible /api/admin/users/[id] route.
- *
- * Add ?credentials=1 to include autoPassword (dashboard only, same-origin only).
+ * Add ?credentials=1 to include the auto-generated password for dashboard display.
+ * The password is derived on-demand from stored fields — never stored in plaintext.
  */
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel } from "@/lib/models";
+import { generatePassword } from "@/lib/profileIdGenerator";
 
 export async function GET(request: Request) {
   try {
@@ -30,10 +29,15 @@ export async function GET(request: Request) {
 
     const u = user as any;
 
-    // Only include autoPassword when explicitly requested by the dashboard page.
-    // This limits exposure — generic calls to this endpoint don't get credentials.
     const { searchParams } = new URL(request.url);
     const includeCredentials = searchParams.get("credentials") === "1";
+
+    // Derive password on-demand from stored fields — never read from a stored plaintext field.
+    let autoPassword: string | null = null;
+    if (includeCredentials && u.phone && u.createdAt) {
+      const firstName = (u.name as string).split(" ")[0];
+      autoPassword = generatePassword(u.phone, new Date(u.createdAt), firstName);
+    }
 
     return Response.json({
       user: {
@@ -46,8 +50,7 @@ export async function GET(request: Request) {
         isAutoFrozen: u.isAutoFrozen ?? false,
         frozenAt:     u.frozenAt     ?? null,
         autoFrozenAt: u.autoFrozenAt ?? null,
-        // autoPassword only returned when dashboard explicitly asks for it
-        ...(includeCredentials && { autoPassword: u.autoPassword ?? null }),
+        ...(includeCredentials && { autoPassword }),
       },
       profile: profile || null,
     });

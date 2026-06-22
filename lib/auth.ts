@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel } from "@/lib/models";
 
+const STATUS_REFRESH_INTERVAL_MS = 5 * 60 * 1000; // re-read DB every 5 minutes
+
 export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
@@ -60,13 +62,39 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id          = user.id;
-        token.role        = (user as any).role;
-        token.status      = (user as any).status      ?? "ACTIVE";
-        token.profileType = (user as any).profileType ?? null;
-        token.familyClass = (user as any).familyClass ?? null;
-        token.profileId   = (user as any).profileId   ?? null;
+        // Fresh sign-in: stamp all fields from the authorize() return value.
+        token.id              = user.id;
+        token.role            = (user as any).role;
+        token.status          = (user as any).status      ?? "ACTIVE";
+        token.profileType     = (user as any).profileType ?? null;
+        token.familyClass     = (user as any).familyClass ?? null;
+        token.profileId       = (user as any).profileId   ?? null;
+        token.statusCheckedAt = Date.now();
+        return token;
       }
+
+      // Subsequent requests: re-read status/role from DB at most once every 5 minutes
+      // so that admin suspensions/bans take effect quickly without a DB hit on every call.
+      const checkedAt = (token.statusCheckedAt as number) ?? 0;
+      if (Date.now() - checkedAt > STATUS_REFRESH_INTERVAL_MS) {
+        try {
+          await connectToDatabase();
+          const fresh = await UserModel.findById(token.id)
+            .select("status role profileType familyClass profileId")
+            .lean() as any;
+          if (fresh) {
+            token.status          = fresh.status      ?? "ACTIVE";
+            token.role            = fresh.role        ?? "USER";
+            token.profileType     = fresh.profileType ?? null;
+            token.familyClass     = fresh.familyClass ?? null;
+            token.profileId       = fresh.profileId   ?? null;
+          }
+        } catch {
+          // If DB is unreachable, keep the existing token values — don't break the session.
+        }
+        token.statusCheckedAt = Date.now();
+      }
+
       return token;
     },
     async session({ session, token }) {

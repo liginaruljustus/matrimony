@@ -89,14 +89,13 @@ export async function POST(request: Request) {
       pending.familyClass,
     );
 
-    // Create user
+    // Create user — autoPassword is NOT stored; it is returned once here and emailed.
     const user = await UserModel.create({
       name:        pending.name,
       email:       pending.email,
       phone:       pending.phone,
       passwordHash,
       profileId,
-      autoPassword,
       profileType: pending.profileType,
       familyClass: pending.familyClass,
     });
@@ -116,7 +115,7 @@ export async function POST(request: Request) {
         name:         user.name,
         email:        user.email,
         profileId:    user.profileId,
-        autoPassword: user.autoPassword,
+        autoPassword, // derived value, never stored in DB
       },
       message: "Registration successful! Save your credentials.",
     });

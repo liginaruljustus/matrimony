@@ -25,25 +25,30 @@ export async function POST(
 
     await connectToDatabase();
 
-    const payment = await PaymentModel.findById(params.paymentId).lean() as any;
-    if (!payment) {
-      return Response.json({ error: "Payment not found" }, { status: 404 });
-    }
-    if (payment.approvalStatus !== "PENDING_ADMIN_REVIEW") {
-      return Response.json({ error: "Payment already reviewed" }, { status: 400 });
-    }
-
     const now = new Date();
 
-    await PaymentModel.findByIdAndUpdate(params.paymentId, {
-      $set: {
-        approvalStatus: "APPROVED",
-        status:         "COMPLETED",
-        approvedBy:     session.user.id,
-        approvedAt:     now,
-        reviewedAt:     now,
+    // Atomic check-and-update: only succeeds if status is still PENDING_ADMIN_REVIEW.
+    // This prevents two admins from approving the same payment simultaneously.
+    const payment = await PaymentModel.findOneAndUpdate(
+      { _id: params.paymentId, approvalStatus: "PENDING_ADMIN_REVIEW" },
+      {
+        $set: {
+          approvalStatus: "APPROVED",
+          status:         "COMPLETED",
+          approvedBy:     session.user.id,
+          approvedAt:     now,
+          reviewedAt:     now,
+        },
       },
-    });
+      { new: false }, // return the pre-update doc so we can read tier/userId/receiverIds
+    ) as any;
+
+    if (!payment) {
+      // Either not found or already reviewed — distinguish for a better error.
+      const exists = await PaymentModel.exists({ _id: params.paymentId });
+      if (!exists) return Response.json({ error: "Payment not found" }, { status: 404 });
+      return Response.json({ error: "Payment already reviewed" }, { status: 400 });
+    }
 
     // ── Post-approval side effects ────────────────────────────────────────
     if (payment.tier === "FIRST_PAYMENT") {

@@ -24,9 +24,10 @@ export async function GET(request: Request) {
     let query: any = { status };
 
     if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       query.$or = [
-        { reason: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
+        { reason: { $regex: escaped, $options: "i" } },
+        { description: { $regex: escaped, $options: "i" } },
       ];
     }
 

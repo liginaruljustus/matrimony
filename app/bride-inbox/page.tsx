@@ -70,8 +70,14 @@ export default function BrideInboxPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return; }
-    if (status === "authenticated") load();
-  }, [status, load, router]);
+    if (status === "authenticated") {
+      if ((session?.user as any)?.profileType !== "BRIDE") {
+        router.push("/dashboard");
+        return;
+      }
+      load();
+    }
+  }, [status, session, load, router]);
 
   const respond = async (favoriteId: string, action: "accept" | "decline") => {
     if (action === "accept") {

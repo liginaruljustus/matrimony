@@ -53,6 +53,12 @@ export async function GET() {
       const p = profileMap[uid];
       const lockExpired = isPaymentLockExpired(fav);
 
+      const isBrideFrozen = !!(u?.isFrozen || u?.isAutoFrozen || p?.isFrozen || p?.isAutoFrozen);
+      const isBrideBanned = !u || u.status === "BANNED" || u.status === "INACTIVE";
+      // Don't return profile card data for frozen/banned targets — the record still
+      // exists in the list so the groom knows they have a favorite there.
+      const cardVisible = !isBrideFrozen && !isBrideBanned;
+
       return {
         id:                    String(fav._id),
         favoriteUserId:        uid,
@@ -70,8 +76,9 @@ export async function GET() {
                                  ? approvedPaymentSet.has(String(fav.secondPaymentId))
                                  : false,
         createdAt:             fav.createdAt,
-        mdCard:                u && p ? buildMDCard(u, p) : null,
-        isBrideFrozen:         !!(u?.isFrozen || u?.isAutoFrozen || p?.isFrozen || p?.isAutoFrozen),
+        mdCard:                cardVisible && u && p ? buildMDCard(u, p) : null,
+        isBrideFrozen,
+        isBrideBanned,
       };
     });
 

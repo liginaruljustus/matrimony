@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-    const limit = Math.max(1, parseInt(searchParams.get("limit") || "25"));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "25")));
     const status = searchParams.get("status");
     const type = searchParams.get("type");
     const search = searchParams.get("search");
@@ -24,10 +24,11 @@ export async function GET(request: Request) {
     if (status) filter.status = status;
     if (type) filter.profileType = type;
     if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       filter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { profileId: { $regex: search, $options: "i" } },
+        { name: { $regex: escaped, $options: "i" } },
+        { email: { $regex: escaped, $options: "i" } },
+        { profileId: { $regex: escaped, $options: "i" } },
       ];
     }
 

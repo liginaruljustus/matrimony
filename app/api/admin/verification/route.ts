@@ -24,10 +24,11 @@ export async function GET(request: Request) {
     let query: any = { verificationStatus: status };
 
     if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { profileId: { $regex: search, $options: "i" } },
+        { name: { $regex: escaped, $options: "i" } },
+        { email: { $regex: escaped, $options: "i" } },
+        { profileId: { $regex: escaped, $options: "i" } },
       ];
     }
 

@@ -95,6 +95,10 @@ export default function InboxPage() {
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return; }
     if (status === "authenticated") {
+      if ((session?.user as any)?.profileType !== "GROOM") {
+        router.push("/dashboard");
+        return;
+      }
       load();
       // Fetch payment settings for UPI ID
       fetch("/api/settings/payment")
@@ -102,7 +106,7 @@ export default function InboxPage() {
         .then((d) => { if (d?.upiId) setUpiId(d.upiId); })
         .catch(() => {});
     }
-  }, [status, load, router]);
+  }, [status, session, load, router]);
 
   const toggleExpand = (id: string) =>
     setExpanded((prev) => {

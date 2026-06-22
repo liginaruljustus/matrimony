@@ -1,4 +1,4 @@
-import { UserModel } from "./models";
+import { CounterModel } from "./models";
 
 const RELIGION_MAP: Record<string, string> = {
   "HINDU": "H",
@@ -18,23 +18,15 @@ export async function generateProfileId(
   const genderCode = gender === "MALE" ? "M" : "F";
   const now = new Date();
   const monthYear = String(now.getMonth() + 1).padStart(2, "0") + String(now.getFullYear()).slice(-2);
-
   const religionCode = RELIGION_MAP[religion] || "O";
 
-  // Get next sequence number
-  const lastProfile = await UserModel.findOne({ profileId: { $exists: true } })
-    .sort({ createdAt: -1 })
-    .lean() as any;
-
-  let sequenceNumber = 1;
-  if (lastProfile?.profileId) {
-    const match = (lastProfile.profileId as string).match(/\d{5}/);
-    if (match) {
-      sequenceNumber = parseInt(match[0]) + 1;
-    }
-  }
-
-  const sequence = String(sequenceNumber).padStart(5, "0");
+  // Atomic increment — prevents duplicate sequence numbers under concurrent registrations.
+  const counter = await CounterModel.findOneAndUpdate(
+    { _id: "profileId" },
+    { $inc: { seq: 1 } },
+    { upsert: true, new: true },
+  ).lean() as any;
+  const sequence = String(counter.seq).padStart(5, "0");
 
   return `${genderCode}${monthYear}${religionCode}${sequence}${familyClass}`;
 }

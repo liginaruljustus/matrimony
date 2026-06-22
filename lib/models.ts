@@ -9,7 +9,7 @@ const userSchema = new Schema(
     image: { type: String },
     role: { type: String, enum: ["USER", "ADMIN"], default: "USER" },
     profileId: { type: String, unique: true, sparse: true, index: true },
-    autoPassword: { type: String },
+    // autoPassword intentionally removed — derived on-demand from phone/createdAt/name.
     profileType: { type: String, enum: ["BRIDE", "GROOM"] },
     familyClass: { type: String, enum: ["MC", "UC", "EC"] },
     termsAcceptedAt: { type: Date },
@@ -217,6 +217,9 @@ const paymentSchema = new Schema(
 paymentSchema.index({ approvalStatus: 1, createdAt: -1 });
 // Note: userId already has index:true on the field — no separate schema.index() needed
 paymentSchema.index({ receiverIds: 1 });
+// Prevent the same UPI/bank transaction ID from being submitted and approved twice.
+// sparse: true so null/missing transactionId records don't conflict.
+paymentSchema.index({ transactionId: 1 }, { unique: true, sparse: true });
 
 const termsSchema = new Schema(
   {
@@ -353,6 +356,14 @@ notificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
 
 export const NotificationModel =
   (models && models["Notification"]) || model("Notification", notificationSchema);
+
+// ── Counter — atomic sequence generator (prevents profile ID race conditions) ─
+const counterSchema = new Schema({
+  _id: { type: String, required: true },  // counter name, e.g. "profileId"
+  seq: { type: Number, default: 0 },
+});
+export const CounterModel =
+  (models && models["Counter"]) || model("Counter", counterSchema);
 
 export type UserDoc = InferSchemaType<typeof userSchema>;
 export type ProfileDoc = InferSchemaType<typeof profileSchema>;

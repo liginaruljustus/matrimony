@@ -8,6 +8,7 @@
  * Rate limit: if a pending record was created < 60 s ago → 429 (resend cooldown).
  */
 import bcrypt from "bcryptjs";
+import { randomInt } from "crypto";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, PendingRegistrationModel } from "@/lib/models";
 import { sendOtpSchema } from "@/lib/validators";
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
     }
 
     // Generate 6-digit OTP
-    const otp      = String(Math.floor(100_000 + Math.random() * 900_000));
+    const otp      = String(randomInt(100_000, 1_000_000));
     const otpHash  = await bcrypt.hash(otp, 10);
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
