@@ -194,33 +194,29 @@
 }
 
 /* ============================================================================ */
-/* LIGHT MODE (DEFAULT) */
+/* DARK MODE — toggled via .dark class on <html> */
 /* ============================================================================ */
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-bg-primary: #faf7f2;
-    --color-bg-secondary: #ffffff;
-    --color-text-primary: #1c1410;
-    --color-text-secondary: #7c6b5e;
-    --color-text-tertiary: #a39a8f;
-    --color-border: #e8ddd4;
-  }
-}
+.dark {
+  /* Contextual colors flip */
+  --color-bg-primary: #1c1410;
+  --color-bg-secondary: #2a2218;
+  --color-text-primary: #faf7f2;
+  --color-text-secondary: #d9d0c5;
+  --color-text-tertiary: #a39a8f;
+  --color-border: #3d352d;
 
-/* ============================================================================ */
-/* DARK MODE (PREPARED FOR FUTURE) */
-/* ============================================================================ */
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg-primary: #1c1410;
-    --color-bg-secondary: #2a2218;
-    --color-text-primary: #faf7f2;
-    --color-text-secondary: #d9d0c5;
-    --color-text-tertiary: #a39a8f;
-    --color-border: #3d352d;
-  }
+  /* Neutral scale flips so Tailwind bg-neutral-* classes work in dark mode */
+  --color-neutral-50: #1c1410;
+  --color-neutral-100: #2a2218;
+  --color-neutral-200: #3d352d;
+  --color-neutral-300: #5a4d42;
+  --color-neutral-400: #7c6b5e;
+  --color-neutral-500: #9a8b80;
+  --color-neutral-600: #c0b4ab;
+  --color-neutral-700: #d9d0c5;
+  --color-neutral-800: #ece8e3;
+  --color-neutral-900: #faf7f2;
 }
 
 /* ============================================================================ */

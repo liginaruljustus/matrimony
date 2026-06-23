@@ -132,8 +132,8 @@ export default function SettingsPage() {
       </div>
 
       {/* Freeze / Unfreeze form */}
-      <div className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-1 text-base font-bold text-neutral-800">
+      <div className="mt-6 rounded-2xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-6 shadow-sm">
+        <h2 className="mb-1 text-base font-bold text-neutral-800 dark:text-neutral-900">
           {frozen ? "Unfreeze Profile" : "Freeze Profile"}
         </h2>
         <p className="mb-4 text-sm text-neutral-500">
@@ -145,7 +145,7 @@ export default function SettingsPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Password */}
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-neutral-700">
+            <label className="mb-1.5 block text-sm font-semibold text-neutral-700 dark:text-neutral-800">
               Your Password
             </label>
             <div className="relative">
@@ -202,8 +202,8 @@ export default function SettingsPage() {
 
       {/* Info box */}
       {!frozen && (
-        <div className="mt-4 rounded-xl border border-neutral-100 bg-neutral-50 px-4 py-3 text-xs text-neutral-500">
-          <p className="font-semibold text-neutral-600">Auto-freeze policy</p>
+        <div className="mt-4 rounded-xl border border-neutral-100 dark:border-neutral-200 bg-neutral-50 dark:bg-neutral-200 px-4 py-3 text-xs text-neutral-500 dark:text-neutral-700">
+          <p className="font-semibold text-neutral-600 dark:text-neutral-700">Auto-freeze policy</p>
           <p className="mt-0.5">
             {(session?.user as any)?.profileType === "GROOM"
               ? "Your profile will be auto-frozen if you are inactive for 90 days."

@@ -23,7 +23,7 @@ type RegisterForm = {
 
 type Step = "form" | "otp" | "success";
 
-const RESEND_COOLDOWN = 60; // seconds
+const RESEND_COOLDOWN = 600; // seconds (10 minutes)
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -263,7 +263,7 @@ export default function RegisterPage() {
             <p className="mt-1 text-sm text-neutral-500">Your credentials have been generated</p>
           </div>
 
-          <div className="rounded-2xl bg-white shadow-md ring-1 ring-neutral-200 p-6 space-y-4">
+          <div className="rounded-2xl bg-white dark:bg-neutral-100 shadow-md ring-1 ring-neutral-200 dark:ring-neutral-200 p-6 space-y-4">
             {/* Email sent notice */}
             <div className="flex items-center gap-2 rounded-xl bg-green-50 px-3 py-2.5 ring-1 ring-green-200">
               <Mail size={15} className="shrink-0 text-green-600" />
@@ -354,10 +354,10 @@ export default function RegisterPage() {
             <p className="text-sm font-semibold text-neutral-800">{pendingEmail}</p>
           </div>
 
-          <div className="rounded-2xl bg-white shadow-md ring-1 ring-neutral-200 p-6 space-y-5">
+          <div className="rounded-2xl bg-white dark:bg-neutral-100 shadow-md ring-1 ring-neutral-200 dark:ring-neutral-200 p-6 space-y-5">
             {/* 6-box OTP input */}
             <div>
-              <label className="mb-3 block text-center text-xs font-semibold text-neutral-600">
+              <label className="mb-3 block text-center text-xs font-semibold text-neutral-600 dark:text-neutral-800">
                 Enter the 6-digit code
               </label>
               <div className="flex justify-center gap-2" onPaste={handleOtpPaste}>
@@ -411,7 +411,7 @@ export default function RegisterPage() {
             {/* Resend */}
             <div className="text-center text-xs text-neutral-500">
               {resendSeconds > 0 ? (
-                <span>Resend code in <span className="font-semibold text-neutral-700">{resendSeconds}s</span></span>
+                <span>Resend code in <span className="font-semibold text-neutral-700">{resendSeconds >= 60 ? `${Math.floor(resendSeconds / 60)}m ${resendSeconds % 60}s` : `${resendSeconds}s`}</span></span>
               ) : (
                 <button
                   onClick={handleResend}
@@ -451,11 +451,11 @@ export default function RegisterPage() {
         </div>
 
         {/* Form */}
-        <div className="rounded-2xl bg-white shadow-md ring-1 ring-neutral-200 p-6">
+        <div className="rounded-2xl bg-white dark:bg-neutral-100 shadow-md ring-1 ring-neutral-200 dark:ring-neutral-200 p-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Name */}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-neutral-700">Full Name</label>
+              <label className="mb-1.5 block text-xs font-semibold text-neutral-700 dark:text-neutral-800">Full Name</label>
               <input
                 {...register("name")}
                 placeholder="e.g. Karthik Murugan"
@@ -465,7 +465,7 @@ export default function RegisterPage() {
 
             {/* Email */}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-neutral-700">Email Address</label>
+              <label className="mb-1.5 block text-xs font-semibold text-neutral-700 dark:text-neutral-800">Email Address</label>
               <input
                 {...register("email")}
                 type="email"
@@ -479,7 +479,7 @@ export default function RegisterPage() {
 
             {/* Phone */}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-neutral-700">Phone Number</label>
+              <label className="mb-1.5 block text-xs font-semibold text-neutral-700 dark:text-neutral-800">Phone Number</label>
               <div className="relative">
                 <Phone size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                 <input
@@ -497,7 +497,7 @@ export default function RegisterPage() {
 
             {/* Profile Type */}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-neutral-700">Gender</label>
+              <label className="mb-1.5 block text-xs font-semibold text-neutral-700 dark:text-neutral-800">Gender</label>
               <select
                 {...register("profileType")}
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-[#7a1f2b] focus:ring-2 focus:ring-[#7a1f2b]/20"
@@ -510,7 +510,7 @@ export default function RegisterPage() {
 
             {/* Family Class */}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-neutral-700">Family Class</label>
+              <label className="mb-1.5 block text-xs font-semibold text-neutral-700 dark:text-neutral-800">Family Class</label>
               <select
                 {...register("familyClass")}
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-[#7a1f2b] focus:ring-2 focus:ring-[#7a1f2b]/20"
@@ -524,7 +524,7 @@ export default function RegisterPage() {
 
             {/* Religion */}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-neutral-700">Religion</label>
+              <label className="mb-1.5 block text-xs font-semibold text-neutral-700 dark:text-neutral-800">Religion</label>
               <select
                 {...register("religion")}
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-[#7a1f2b] focus:ring-2 focus:ring-[#7a1f2b]/20"

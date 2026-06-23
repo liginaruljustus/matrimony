@@ -20,6 +20,11 @@ const DEFAULTS = {
   groomFreezeDays: 90,
   brideFreezeDays: 60,
   verificationRequired: false,
+  pdfDownloadEnabled: true,
+  pdfCompanyName: "Regin Matrimony",
+  pdfFooterText: "Confidential — For Family Use Only",
+  pdfShowContactDetails: true,
+  pdfShowAstrology: true,
 };
 
 export async function GET() {
@@ -54,6 +59,11 @@ export async function GET() {
       bankAccountHolder:     settings.bankAccountHolder     ?? DEFAULTS.bankAccountHolder,
       groomFreezeDays:       settings.groomFreezeDays       ?? 90,
       brideFreezeDays:       settings.brideFreezeDays       ?? 60,
+      pdfDownloadEnabled:    settings.pdfDownloadEnabled    ?? true,
+      pdfCompanyName:        settings.pdfCompanyName        ?? DEFAULTS.pdfCompanyName,
+      pdfFooterText:         settings.pdfFooterText         ?? DEFAULTS.pdfFooterText,
+      pdfShowContactDetails: settings.pdfShowContactDetails ?? true,
+      pdfShowAstrology:      settings.pdfShowAstrology      ?? true,
     });
   } catch (error) {
     console.error("GET /api/admin/settings error:", error);
@@ -99,6 +109,11 @@ export async function PUT(request: Request) {
     if ("bankAccountHolder" in body) allowed.bankAccountHolder = String(body.bankAccountHolder ?? "");
     if ("groomFreezeDays"   in body) allowed.groomFreezeDays   = Math.max(1, Number(body.groomFreezeDays) || 90);
     if ("brideFreezeDays"   in body) allowed.brideFreezeDays   = Math.max(1, Number(body.brideFreezeDays) || 60);
+    if ("pdfDownloadEnabled"    in body) allowed.pdfDownloadEnabled    = Boolean(body.pdfDownloadEnabled);
+    if ("pdfShowContactDetails" in body) allowed.pdfShowContactDetails = Boolean(body.pdfShowContactDetails);
+    if ("pdfShowAstrology"      in body) allowed.pdfShowAstrology      = Boolean(body.pdfShowAstrology);
+    if ("pdfCompanyName"        in body) allowed.pdfCompanyName        = String(body.pdfCompanyName ?? "").slice(0, 80);
+    if ("pdfFooterText"         in body) allowed.pdfFooterText         = String(body.pdfFooterText ?? "").slice(0, 120);
 
     allowed.updatedAt = new Date();
     allowed.updatedBy = (session.user as any).id;

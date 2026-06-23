@@ -66,7 +66,7 @@ export const Modal: React.FC<ModalProps> = ({
     >
       {/* Modal Content */}
       <div
-        className={`${sizeClasses[size]} w-full mx-4 bg-white rounded-xl shadow-2xl max-h-[90vh] flex flex-col animate-slideUp`}
+        className={`${sizeClasses[size]} w-full mx-4 bg-white dark:bg-neutral-100 rounded-xl shadow-2xl max-h-[90vh] flex flex-col animate-slideUp`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

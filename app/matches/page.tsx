@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 import { ProfileCard } from "@/components/ProfileCard";
-import { Navbar } from "@/components/Navbar";
 
 type Match = {
   userId: string;
@@ -86,8 +85,7 @@ export default function MatchesPage() {
 
   if (status === "loading") {
     return (
-      <div className="bg-[#faf7f2] min-h-screen">
-        <Navbar />
+      <div className="bg-[#faf7f2] dark:bg-neutral-100 min-h-screen">
         <div className="flex h-64 items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#d4af37] border-t-[#7a1f2b]" />
         </div>
@@ -97,8 +95,6 @@ export default function MatchesPage() {
 
   return (
     <div className="bg-[#faf7f2] min-h-screen">
-      <Navbar />
-
       {/* Interest sent toast */}
       {interestSentFor && (
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow-lg">
@@ -126,7 +122,7 @@ export default function MatchesPage() {
           </div>
 
           {/* Filter Section */}
-          <div className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-white/50">
+          <div className="rounded-3xl bg-white dark:bg-neutral-100 p-6 shadow-lg ring-1 ring-white/50 dark:ring-neutral-200/50">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <label className="flex-1">
                 <p className="text-sm font-bold text-[#7a1f2b] mb-3">Minimum Compatibility Score</p>
@@ -138,7 +134,7 @@ export default function MatchesPage() {
                     step="5"
                     value={minScore}
                     onChange={(e) => setMinScore(Number(e.target.value))}
-                    className="flex-1 h-2.5 bg-gradient-to-r from-slate-200 to-slate-300 rounded-full appearance-none cursor-pointer accent-[#d4af37]"
+                    className="flex-1 h-2.5 bg-gradient-to-r from-slate-200 to-slate-300 dark:from-neutral-300 dark:to-neutral-300 rounded-full appearance-none cursor-pointer accent-[#d4af37]"
                   />
                   <div className={`min-w-fit px-4 py-2.5 rounded-xl bg-gradient-to-r ${getScoreBg(minScore)} font-bold text-center`}>
                     {minScore}%+
@@ -150,10 +146,10 @@ export default function MatchesPage() {
 
           {/* Results */}
           {loading ? (
-            <div className="flex h-48 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-50 to-slate-100 shadow-md">
+            <div className="flex h-48 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-neutral-100 dark:to-neutral-200 shadow-md">
               <div className="text-center">
                 <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-[#7a1f2b] border-t-[#d4af37]" />
-                <p className="mt-4 text-slate-600 font-semibold">Finding your perfect matches...</p>
+                <p className="mt-4 text-slate-600 dark:text-neutral-700 font-semibold">Finding your perfect matches...</p>
               </div>
             </div>
           ) : error ? (
@@ -165,11 +161,11 @@ export default function MatchesPage() {
               </div>
             </div>
           ) : filteredMatches.length === 0 ? (
-            <div className="flex h-48 items-center justify-center rounded-3xl bg-slate-50 shadow-md ring-1 ring-slate-200">
+            <div className="flex h-48 items-center justify-center rounded-3xl bg-slate-50 dark:bg-neutral-100 shadow-md ring-1 ring-slate-200 dark:ring-neutral-200">
               <div className="text-center">
                 <p className="text-3xl mb-3">😊</p>
-                <p className="text-slate-600 font-bold">No matches at this score</p>
-                <p className="text-sm text-slate-500 mt-2">Try lowering the minimum score threshold</p>
+                <p className="text-slate-600 dark:text-neutral-700 font-bold">No matches at this score</p>
+                <p className="text-sm text-slate-500 dark:text-neutral-700 mt-2">Try lowering the minimum score threshold</p>
               </div>
             </div>
           ) : (
@@ -198,7 +194,7 @@ export default function MatchesPage() {
 
               {/* Profile Grid */}
               <div>
-                <p className="text-sm font-bold text-slate-600 mb-4">Showing {filteredMatches.length} results</p>
+                <p className="text-sm font-bold text-slate-600 dark:text-neutral-700 mb-4">Showing {filteredMatches.length} results</p>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {filteredMatches.map((match) => (
                     <div key={match.userId}>
@@ -227,7 +223,7 @@ export default function MatchesPage() {
           <div className="text-center py-8">
             <Link
               href="/profiles"
-              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-slate-100 to-slate-50 px-8 py-4 font-bold text-[#7a1f2b] transition hover:from-slate-200 hover:to-slate-100 hover:shadow-lg hover:scale-105 active:scale-95 shadow-md"
+              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-slate-100 to-slate-50 dark:from-neutral-200 dark:to-neutral-100 px-8 py-4 font-bold text-[#7a1f2b] transition hover:from-slate-200 hover:to-slate-100 dark:hover:from-neutral-300 dark:hover:to-neutral-200 hover:shadow-lg hover:scale-105 active:scale-95 shadow-md"
             >
               ← View All Profiles
             </Link>

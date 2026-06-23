@@ -68,7 +68,7 @@ export function InterestCard({ id, status, otherUser, variant, onAccepted, onDec
   const badge = statusBadge[status];
 
   return (
-    <div className="flex items-center gap-3 rounded-[var(--radius-2xl)] bg-white p-3 shadow-base border border-neutral-100">
+    <div className="flex items-center gap-3 rounded-[var(--radius-2xl)] bg-white dark:bg-neutral-100 p-3 shadow-base border border-neutral-100 dark:border-neutral-200">
       {/* Avatar */}
       <Link href={`/profiles/${otherUser.id}`} className="shrink-0">
         {photo ? (

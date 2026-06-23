@@ -36,8 +36,8 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const familyClass     = searchParams.get("familyClass") ?? "";
     const profileIdFilter = searchParams.get("profileId")   ?? "";
-    const minAge          = Number(searchParams.get("minAge") ?? 0);
-    const maxAge          = Number(searchParams.get("maxAge") ?? 100);
+    const minAge          = searchParams.get("minAge")  ? Number(searchParams.get("minAge"))  : null;
+    const maxAge          = searchParams.get("maxAge")  ? Number(searchParams.get("maxAge"))  : null;
     const caste           = searchParams.get("caste")         ?? "";
     const district        = searchParams.get("district")      ?? "";
     const nakshatra       = searchParams.get("nakshatra")     ?? "";
@@ -56,10 +56,10 @@ export async function GET(req: Request) {
       isAutoFrozen: { $ne: true },
     };
 
-    if (minAge || maxAge) {
+    if (minAge !== null || maxAge !== null) {
       profileQuery.age = {};
-      if (minAge) profileQuery.age.$gte = minAge;
-      if (maxAge && maxAge < 100) profileQuery.age.$lte = maxAge;
+      if (minAge !== null) profileQuery.age.$gte = minAge;
+      if (maxAge !== null) profileQuery.age.$lte = maxAge;
     }
     if (caste)    profileQuery.caste = new RegExp(caste, "i");
     if (district) profileQuery.$or = [

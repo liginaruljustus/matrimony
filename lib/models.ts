@@ -269,6 +269,12 @@ const settingsSchema = new Schema(
     // Auto-freeze thresholds (days of inactivity)
     groomFreezeDays:    { type: Number, default: 90 },
     brideFreezeDays:    { type: Number, default: 60 },
+    // PDF document settings
+    pdfDownloadEnabled:    { type: Boolean, default: true },
+    pdfCompanyName:        { type: String,  default: "Regin Matrimony" },
+    pdfFooterText:         { type: String,  default: "Confidential — For Family Use Only" },
+    pdfShowContactDetails: { type: Boolean, default: true },
+    pdfShowAstrology:      { type: Boolean, default: true },
     updatedAt:          { type: Date, default: Date.now },
     updatedBy:          { type: Schema.Types.ObjectId, ref: "User" },
   },

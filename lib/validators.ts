@@ -32,45 +32,64 @@ export const matrimonyProfileSchema = z.object({
   maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "SEPARATED", "WIDOWED"]),
   gender: z.enum(["MALE", "FEMALE"]),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  age: z.coerce.number().min(21).max(60),
+  age: z.coerce.number().min(18, "Age must be at least 18").max(80),
   religion: z.enum(["HINDU", "MUSLIM", "CHRISTIAN", "OTHER"]),
   caste: z.string().min(2),
-  subCaste: z.string().optional(),
-  placeOfBirth: z.string().optional(),
-  timeOfBirth: z.string().optional(),
-  rashi: z.string().optional(),
-  nakshatra: z.string().optional(),
-  lagnam: z.string().optional(),
-  motherTongue: z.string().optional(),
-  height: z.coerce.number().positive().optional(),
+  subCaste: z.string().min(1, "Sub Caste is required"),
+  placeOfBirth: z.string().min(2, "Place of Birth is required"),
+  timeOfBirth: z.string().min(1, "Time of Birth is required"),
+  rashi: z.string().min(2, "Rashi is required"),
+  nakshatra: z.string().min(2, "Nakshatra is required"),
+  lagnam: z.string().min(2, "Lagnam is required"),
+  motherTongue: z.string().min(2, "Mother Tongue is required"),
+  height: z.coerce.number().positive("Height must be positive"),
   weight: z.coerce.number().positive().optional(),
   education: z.string().min(2),
-  currentJob: z.string().optional(),
-  monthlyIncome: z.coerce.number().min(0).optional(),
-  complexion: z.string().optional(),
-  physicallyChallenge: z.boolean().optional(),
+  currentJob: z.string().min(2, "Current Job is required"),
+  monthlyIncome: z.coerce.number().min(0, "Enter monthly income"),
+  complexion: z.string().min(1, "Complexion is required"),
+  physicallyChallenge: z.preprocess(
+    (v) => v === "true" || v === true,
+    z.boolean()
+  ),
   otherDetails: z.string().max(500).optional(),
 
   // Family Details
-  fatherName: z.string().optional(),
-  fatherOccupation: z.string().optional(),
-  motherName: z.string().optional(),
-  motherOccupation: z.string().optional(),
-  totalBrothers: z.coerce.number().min(0).optional(),
-  marriedBrothers: z.coerce.number().min(0).optional(),
-  totalSisters: z.coerce.number().min(0).optional(),
-  marriedSisters: z.coerce.number().min(0).optional(),
-  houseDetails: z.string().optional(),
-  familyStatus: z.enum(["MC", "UC", "EC"]).optional(),
+  fatherName: z.string().min(2, "Father's Name is required"),
+  fatherOccupation: z.string().min(2, "Father's Occupation is required"),
+  motherName: z.string().min(2, "Mother's Name is required"),
+  motherOccupation: z.string().min(2, "Mother's Occupation is required"),
+  totalBrothers: z.coerce.number().min(0),
+  marriedBrothers: z.coerce.number().min(0),
+  totalSisters: z.coerce.number().min(0),
+  marriedSisters: z.coerce.number().min(0),
+  houseDetails: z.string().min(1, "House Details is required"),
+  familyStatus: z.enum(["MC", "UC", "EC"]),
 
   // Contact Details
-  contactPersonName: z.string().optional(),
-  contactNumber: z.string().regex(/^\d{10}$/).optional(),
-  whatsappNo: z.string().regex(/^\d{10}$/).optional(),
+  contactPersonName: z.string().min(2, "Contact Person Name is required"),
+  contactNumber: z.string().min(1, "Contact number is required").refine(
+    (v) => /^\+\d{7,15}$/.test(v),
+    { message: "Enter a valid contact number with country code" },
+  ),
+  whatsappNo: z.string().min(1, "WhatsApp number is required").refine(
+    (v) => /^\+\d{7,15}$/.test(v),
+    { message: "Enter a valid WhatsApp number with country code" },
+  ),
 
   // Additional
+  bio: z.string().max(500).optional(),
   expectations: z.string().max(1000).optional(),
   photos: z.array(z.string()).optional(),
+}).superRefine((data, ctx) => {
+  const minAge = data.gender === "FEMALE" ? 18 : 21;
+  if (data.age < minAge) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["age"],
+      message: `Minimum age for ${data.gender === "FEMALE" ? "Female" : "Male"} is ${minAge} years`,
+    });
+  }
 });
 
 export const messageSchema = z.object({

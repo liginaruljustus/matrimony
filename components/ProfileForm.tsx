@@ -114,7 +114,7 @@ export function ProfileForm({ defaultProfile }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* Profile details */}
-      <div className="rounded-[var(--radius-2xl)] bg-white p-4 shadow-base border border-neutral-100">
+      <div className="rounded-[var(--radius-2xl)] bg-white dark:bg-neutral-100 p-4 shadow-base border border-neutral-100 dark:border-neutral-200">
         <h2 className="mb-4 text-base font-semibold text-primary">
           {defaultProfile ? "Edit Profile" : "Create Profile"}
         </h2>
@@ -160,7 +160,7 @@ export function ProfileForm({ defaultProfile }: Props) {
       </div>
 
       {/* Photo management */}
-      <div className="rounded-[var(--radius-2xl)] bg-white p-4 shadow-base border border-neutral-100">
+      <div className="rounded-[var(--radius-2xl)] bg-white dark:bg-neutral-100 p-4 shadow-base border border-neutral-100 dark:border-neutral-200">
         <div className="mb-3 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-primary">Profile Photos</h3>

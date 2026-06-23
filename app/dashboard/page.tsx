@@ -7,12 +7,15 @@ import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { MatrimonyProfileForm } from "@/components/MatrimonyProfileForm";
-import { Navbar } from "@/components/Navbar";
 import {
   Users, UserCheck, User, Heart, CreditCard, BarChart3,
   CheckCircle, Eye, EyeOff, AlertCircle, Database, Lock,
   HardDrive, MessageCircle, Home, Snowflake, ChevronDown, Settings,
 } from "lucide-react";
+import {
+  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+} from "recharts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -45,6 +48,52 @@ type UserData = {
   frozenAt?: string | null;
   autoFrozenAt?: string | null;
 };
+
+// ─── Chart types & colours ────────────────────────────────────────────────────
+
+type ChartData = {
+  userGrowth:        { date: string; count: number }[];
+  profileStatus:     { status: string; count: number }[];
+  genderRatio:       { type: string; count: number }[];
+  religionBreakdown: { religion: string; count: number }[];
+  paymentsChart:     { month: string; approved: number; pending: number }[];
+};
+
+const PROFILE_STATUS_COLORS: Record<string, string> = {
+  APPROVED:         "#7a1f2b",
+  PENDING_APPROVAL: "#d4af37",
+  DRAFT:            "#94a3b8",
+  REJECTED:         "#ef4444",
+  FLAGGED:          "#f97316",
+};
+const PROFILE_STATUS_LABELS: Record<string, string> = {
+  APPROVED: "Approved", PENDING_APPROVAL: "Pending",
+  DRAFT: "Draft", REJECTED: "Rejected", FLAGGED: "Flagged",
+};
+const RELIGION_COLORS = ["#7a1f2b", "#985060", "#b07880", "#d4af37", "#c9a0a8"];
+
+function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-lg border border-slate-200 p-5">
+      <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-4">{title}</p>
+      {children}
+    </div>
+  );
+}
+
+function ChartTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-lg text-xs">
+      {label && <p className="text-slate-500 mb-1">{label}</p>}
+      {payload.map((p: any) => (
+        <p key={p.name} className="font-bold" style={{ color: p.color ?? p.fill }}>
+          {p.name}: {p.value}
+        </p>
+      ))}
+    </div>
+  );
+}
 
 // ─── Admin Dashboard ──────────────────────────────────────────────────────────
 
@@ -80,7 +129,7 @@ function StatCard({
   );
 
   const cls =
-    "bg-white rounded-xl border border-neutral-200 p-4 hover:shadow-md transition-shadow block";
+    "bg-white dark:bg-neutral-100 rounded-xl border border-neutral-200 dark:border-neutral-200 p-4 hover:shadow-md transition-shadow block";
 
   if (href) {
     return (
@@ -92,7 +141,14 @@ function StatCard({
   return <div className={cls}>{inner}</div>;
 }
 
-function AdminDashboard({ stats }: { stats: DashboardStats }) {
+function AdminDashboard({ stats, charts }: { stats: DashboardStats; charts: ChartData | null }) {
+  const brideCount = charts?.genderRatio.find((g) => g.type === "BRIDE")?.count ?? 0;
+  const groomCount = charts?.genderRatio.find((g) => g.type === "GROOM")?.count ?? 0;
+  const genderBarData = [
+    { name: "Bride", count: brideCount },
+    { name: "Groom", count: groomCount },
+  ];
+
   return (
     <div className="space-y-6">
       {/* ── Stats ─────────────────────────────────────────────────────────── */}
@@ -142,6 +198,108 @@ function AdminDashboard({ stats }: { stats: DashboardStats }) {
         />
       </div>
 
+      {/* ── Chart Row 1 — User Growth + Profile Status ───────────────────── */}
+      {charts && (
+        <div className="grid gap-4 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <ChartCard title="User Registrations — Last 30 Days">
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={charts.userGrowth} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="maroonGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%"  stopColor="#7a1f2b" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#7a1f2b" stopOpacity={0.03} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 9, fill: "#94a3b8" }}
+                    tickFormatter={(v) => { const d = new Date(v); return `${d.getDate()}/${d.getMonth() + 1}`; }}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis tick={{ fontSize: 9, fill: "#94a3b8" }} allowDecimals={false} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Area type="monotone" dataKey="count" name="Registrations" stroke="#7a1f2b" strokeWidth={2} fill="url(#maroonGrad)" dot={false} activeDot={{ r: 4, fill: "#7a1f2b" }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+          <div className="lg:col-span-2">
+            <ChartCard title="Profile Status">
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie data={charts.profileStatus} dataKey="count" nameKey="status" cx="50%" cy="45%" innerRadius={52} outerRadius={78} paddingAngle={2}>
+                    {charts.profileStatus.map((entry) => (
+                      <Cell key={entry.status} fill={PROFILE_STATUS_COLORS[entry.status] ?? "#94a3b8"} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: any, name: any) => [value, PROFILE_STATUS_LABELS[name] ?? name]} />
+                  <Legend iconType="circle" iconSize={8} formatter={(value) => (
+                    <span style={{ fontSize: 10, color: "#64748b" }}>{PROFILE_STATUS_LABELS[value] ?? value}</span>
+                  )} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+        </div>
+      )}
+
+      {/* ── Chart Row 2 — Gender + Religion + Payments ───────────────────── */}
+      {charts && (
+        <div className="grid gap-4 lg:grid-cols-3">
+          <ChartCard title="Bride / Groom Ratio">
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={genderBarData} layout="vertical" margin={{ top: 0, right: 24, left: 8, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 9, fill: "#94a3b8" }} allowDecimals={false} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#475569" }} width={36} />
+                <Tooltip content={<ChartTooltip />} />
+                <Bar dataKey="count" name="Count" radius={[0, 4, 4, 0]}>
+                  {genderBarData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.name === "Bride" ? "#d4af37" : "#7a1f2b"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          <ChartCard title="Religion Breakdown">
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={charts.religionBreakdown} layout="vertical" margin={{ top: 0, right: 24, left: 16, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 9, fill: "#94a3b8" }} allowDecimals={false} />
+                <YAxis type="category" dataKey="religion" tick={{ fontSize: 10, fill: "#475569" }} width={60}
+                  tickFormatter={(v) => v === "CHRISTIAN" ? "Christian" : v === "MUSLIM" ? "Muslim" : v === "HINDU" ? "Hindu" : v === "OTHER" ? "Other" : v}
+                />
+                <Tooltip content={<ChartTooltip />} />
+                <Bar dataKey="count" name="Profiles" radius={[0, 4, 4, 0]}>
+                  {charts.religionBreakdown.map((_, i) => (
+                    <Cell key={i} fill={RELIGION_COLORS[i % RELIGION_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          <ChartCard title="Payments — Last 6 Months">
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={charts.paymentsChart} margin={{ top: 0, right: 8, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="month" tick={{ fontSize: 9, fill: "#94a3b8" }} />
+                <YAxis tick={{ fontSize: 9, fill: "#94a3b8" }} allowDecimals={false} />
+                <Tooltip content={<ChartTooltip />} />
+                <Legend iconType="circle" iconSize={8} formatter={(v) => (
+                  <span style={{ fontSize: 10, color: "#64748b" }}>{v === "approved" ? "Approved" : "Pending"}</span>
+                )} />
+                <Bar dataKey="approved" name="approved" fill="#7a1f2b" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="pending"  name="pending"  fill="#d4af37" radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </div>
+      )}
+
       {/* ── Quick Links ───────────────────────────────────────────────────── */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[
@@ -155,13 +313,13 @@ function AdminDashboard({ stats }: { stats: DashboardStats }) {
           <Link
             key={href}
             href={href}
-            className="bg-white rounded-xl border border-neutral-200 p-5 hover:shadow-md transition-shadow group"
+            className="bg-white dark:bg-neutral-100 rounded-xl border border-neutral-200 dark:border-neutral-200 p-5 hover:shadow-md transition-shadow group"
           >
             <div className="flex items-center gap-3 mb-2.5">
               <div className={`p-2.5 ${bg} rounded-lg ${hover} transition-colors`}>
                 <Icon size={18} className={color} />
               </div>
-              <h3 className="font-bold text-neutral-900">{title}</h3>
+              <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{title}</h3>
             </div>
             <p className="text-sm text-neutral-500">{desc}</p>
           </Link>
@@ -174,13 +332,13 @@ function AdminDashboard({ stats }: { stats: DashboardStats }) {
         <div className="lg:col-span-2 grid gap-4 sm:grid-cols-2">
           <Link
             href="/admin/verification"
-            className="bg-white rounded-xl border border-neutral-200 p-5 hover:shadow-md transition-shadow group"
+            className="bg-white dark:bg-neutral-100 rounded-xl border border-neutral-200 dark:border-neutral-200 p-5 hover:shadow-md transition-shadow group"
           >
             <div className="flex items-center gap-3 mb-2.5">
               <div className="p-2 bg-warning/10 rounded-lg group-hover:bg-warning/20 transition-colors">
                 <CheckCircle size={16} className="text-warning" />
               </div>
-              <h3 className="font-bold text-neutral-900">Verification Queue</h3>
+              <h3 className="font-bold text-neutral-900 dark:text-neutral-900">Verification Queue</h3>
             </div>
             <p className="text-sm text-neutral-500">
               Review user identity documents and approve pending accounts
@@ -189,13 +347,13 @@ function AdminDashboard({ stats }: { stats: DashboardStats }) {
 
           <Link
             href="/admin/reports"
-            className="bg-white rounded-xl border border-neutral-200 p-5 hover:shadow-md transition-shadow group"
+            className="bg-white dark:bg-neutral-100 rounded-xl border border-neutral-200 dark:border-neutral-200 p-5 hover:shadow-md transition-shadow group"
           >
             <div className="flex items-center gap-3 mb-2.5">
               <div className="p-2 bg-error/10 rounded-lg group-hover:bg-error/20 transition-colors">
                 <AlertCircle size={16} className="text-error" />
               </div>
-              <h3 className="font-bold text-neutral-900">Reports</h3>
+              <h3 className="font-bold text-neutral-900 dark:text-neutral-900">Reports</h3>
             </div>
             <p className="text-sm text-neutral-500">
               Review flagged content and moderate user reports
@@ -204,8 +362,8 @@ function AdminDashboard({ stats }: { stats: DashboardStats }) {
         </div>
 
         {/* Platform Health */}
-        <div className="bg-white rounded-xl border border-neutral-200 p-5">
-          <h3 className="font-bold text-neutral-900 mb-4">Platform Health</h3>
+        <div className="bg-white dark:bg-neutral-100 rounded-xl border border-neutral-200 dark:border-neutral-200 p-5">
+          <h3 className="font-bold text-neutral-900 dark:text-neutral-900 mb-4">Platform Health</h3>
           <div className="space-y-3.5">
             {[
               { label: "Database",     status: "Connected",  icon: Database  },
@@ -266,9 +424,9 @@ function ProfileCompletionCard({
   const isComplete = pct === 100;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
+    <div className="rounded-2xl border border-slate-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-5">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+        <p className="text-[10px] font-bold text-slate-400 dark:text-neutral-600 uppercase tracking-widest">
           Profile Completion
         </p>
         <span className={`text-sm font-extrabold ${isComplete ? "text-green-700" : "text-[#7a1f2b]"}`}>
@@ -277,7 +435,7 @@ function ProfileCompletionCard({
       </div>
 
       {/* Progress bar */}
-      <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+      <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-neutral-200 overflow-hidden">
         <div
           className={`h-2 rounded-full transition-all duration-500 ${
             isComplete ? "bg-green-500" : pct >= 60 ? "bg-[#d4af37]" : "bg-[#7a1f2b]"
@@ -292,7 +450,7 @@ function ProfileCompletionCard({
         </p>
       ) : (
         <div className="mt-3">
-          <p className="text-xs font-semibold text-slate-600 mb-1.5">
+          <p className="text-xs font-semibold text-slate-600 dark:text-neutral-700 mb-1.5">
             Missing ({missing.length}):
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -361,10 +519,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
   ];
 
   return (
-    <div className="bg-[#faf7f2] min-h-screen">
-      {/* Navbar — only for regular users; admin uses AdminLayout */}
-      <Navbar />
-
+    <div className="bg-[#faf7f2] dark:bg-neutral-100 min-h-screen">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-5">
         {loadError && (
           <div className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -421,15 +576,15 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
           </div>
 
           {/* Profile Status card */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between">
+          <div className="bg-white dark:bg-neutral-100 rounded-2xl border border-slate-200 dark:border-neutral-200 p-6 flex flex-col justify-between">
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
+              <p className="text-[10px] font-bold text-slate-400 dark:text-neutral-600 uppercase tracking-widest mb-3">
                 Profile Status
               </p>
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${st.bg} ${st.color}`}>
                 {st.label}
               </span>
-              <p className="text-sm text-slate-500 mt-2 leading-relaxed">{st.desc}</p>
+              <p className="text-sm text-slate-500 dark:text-neutral-700 mt-2 leading-relaxed">{st.desc}</p>
 
               {/* Rejection reason */}
               {profileStatus === "REJECTED" && profile?.rejectionReason && (
@@ -459,7 +614,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
           {/* Credentials */}
-          <div className="bg-gradient-to-br from-white to-[#fff9ef] rounded-2xl border border-[#d4af37]/40 p-5">
+          <div className="bg-gradient-to-br from-white to-[#fff9ef] dark:from-neutral-100 dark:to-neutral-100 rounded-2xl border border-[#d4af37]/40 p-5">
             <p className="text-[10px] font-bold text-[#7a1f2b] uppercase tracking-widest mb-4">
               Login Credentials
             </p>
@@ -505,13 +660,13 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
           </div>
 
           {/* Account Info */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">
+          <div className="bg-white dark:bg-neutral-100 rounded-2xl border border-slate-200 dark:border-neutral-200 p-5">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-neutral-600 uppercase tracking-widest mb-4">
               Account
             </p>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-500">Profile Type</span>
+                <span className="text-sm text-slate-500 dark:text-neutral-700">Profile Type</span>
                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                   isGroom ? "bg-blue-100 text-blue-700" : "bg-pink-100 text-pink-700"
                 }`}>
@@ -521,7 +676,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
 
               {userData.familyClass && (
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-500">Family Class</span>
+                  <span className="text-sm text-slate-500 dark:text-neutral-700">Family Class</span>
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
                     {userData.familyClass}
                   </span>
@@ -529,7 +684,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
               )}
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-500">Account Status</span>
+                <span className="text-sm text-slate-500 dark:text-neutral-700">Account Status</span>
                 <span className={`text-xs font-semibold ${
                   isFrozen ? "text-blue-600" : "text-green-600"
                 }`}>
@@ -540,7 +695,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-500">Profile Status</span>
+                <span className="text-sm text-slate-500 dark:text-neutral-700">Profile Status</span>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${st.bg} ${st.color}`}>
                   {st.label}
                 </span>
@@ -549,13 +704,13 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
           </div>
 
           {/* How It Works */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">
+          <div className="bg-white dark:bg-neutral-100 rounded-2xl border border-slate-200 dark:border-neutral-200 p-5">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-neutral-600 uppercase tracking-widest mb-4">
               {isGroom ? "How It Works" : "For Bride Families"}
             </p>
             <ol className="space-y-2.5">
               {(isGroom ? groomSteps : brideSteps).map((step, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-sm text-slate-600">
+                <li key={i} className="flex items-start gap-2.5 text-sm text-slate-600 dark:text-neutral-700">
                   <span className="shrink-0 w-5 h-5 rounded-full bg-[#7a1f2b]/10 text-[#7a1f2b] text-[10px] font-bold flex items-center justify-center mt-0.5">
                     {i + 1}
                   </span>
@@ -588,28 +743,28 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
             </Link>
             <Link
               href="/inbox"
-              className="rounded-xl bg-white border border-slate-200 text-slate-700 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 transition"
+              className="rounded-xl bg-white dark:bg-neutral-100 border border-slate-200 dark:border-neutral-200 text-slate-700 dark:text-neutral-800 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-200 transition"
             >
               <MessageCircle size={22} />
               <span className="text-sm">My Inbox</span>
             </Link>
             <Link
               href="/contact-details"
-              className="rounded-xl bg-white border border-slate-200 text-slate-700 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 transition"
+              className="rounded-xl bg-white dark:bg-neutral-100 border border-slate-200 dark:border-neutral-200 text-slate-700 dark:text-neutral-800 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-200 transition"
             >
               <CreditCard size={22} />
               <span className="text-sm">Contacts</span>
             </Link>
             <Link
               href="/interests"
-              className="rounded-xl bg-white border border-slate-200 text-slate-700 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 transition"
+              className="rounded-xl bg-white dark:bg-neutral-100 border border-slate-200 dark:border-neutral-200 text-slate-700 dark:text-neutral-800 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-200 transition"
             >
               <Heart size={22} />
               <span className="text-sm">Interests</span>
             </Link>
             <Link
               href="/payment/history"
-              className="rounded-xl bg-white border border-slate-200 text-slate-700 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 transition"
+              className="rounded-xl bg-white dark:bg-neutral-100 border border-slate-200 dark:border-neutral-200 text-slate-700 dark:text-neutral-800 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-200 transition"
             >
               <CheckCircle size={22} />
               <span className="text-sm">Payments</span>
@@ -637,14 +792,14 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
             </Link>
             <Link
               href="/settings"
-              className="rounded-xl bg-white border border-slate-200 text-slate-700 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 transition"
+              className="rounded-xl bg-white dark:bg-neutral-100 border border-slate-200 dark:border-neutral-200 text-slate-700 dark:text-neutral-800 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-200 transition"
             >
               <Lock size={22} />
               <span className="text-sm">Settings</span>
             </Link>
             <Link
               href="/chat"
-              className="rounded-xl bg-white border border-slate-200 text-slate-700 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 transition"
+              className="rounded-xl bg-white dark:bg-neutral-100 border border-slate-200 dark:border-neutral-200 text-slate-700 dark:text-neutral-800 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-200 transition"
             >
               <MessageCircle size={22} />
               <span className="text-sm">Chat</span>
@@ -653,21 +808,21 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
         )}
 
         {/* ── Profile Form (collapsible) ────────────────────────────────────── */}
-        <div id="profile-form" className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div id="profile-form" className="bg-white dark:bg-neutral-100 rounded-2xl border border-slate-200 dark:border-neutral-200 overflow-hidden">
           {/* Toggle header */}
           <button
             onClick={() => setFormOpen(!formOpen)}
-            className="w-full flex items-center justify-between px-6 py-5 hover:bg-slate-50 transition text-left"
+            className="w-full flex items-center justify-between px-6 py-5 hover:bg-slate-50 dark:hover:bg-neutral-200 transition text-left"
           >
             <div className="flex items-center gap-3">
               <div className="p-2 bg-[#7a1f2b]/10 rounded-xl">
                 <User size={18} className="text-[#7a1f2b]" />
               </div>
               <div>
-                <p className="font-bold text-slate-900">
+                <p className="font-bold text-slate-900 dark:text-neutral-900">
                   {profile ? "Edit Your Profile" : "Complete Your Profile"}
                 </p>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-neutral-700 mt-0.5">
                   {profile
                     ? "Update your details, photos, and expectations"
                     : "Fill in your matrimony profile to start connecting with families"}
@@ -687,8 +842,8 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
 
           {/* Form body */}
           {formOpen && (
-            <div className="border-t border-slate-100 px-6 py-6">
-              <MatrimonyProfileForm defaultProfile={profile} />
+            <div className="border-t border-slate-100 dark:border-neutral-200 px-6 py-6">
+              <MatrimonyProfileForm defaultProfile={profile ? { ...profile, name: userData.name } : null} />
             </div>
           )}
         </div>
@@ -711,6 +866,7 @@ export default function DashboardPage() {
     acceptedInterests: 0,
     pendingPayments: 0,
   });
+  const [adminCharts, setAdminCharts] = useState<ChartData | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -718,10 +874,12 @@ export default function DashboardPage() {
 
   const loadAdminStats = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/stats");
-      if (!res.ok) throw new Error("Failed to load stats");
-      const data = await res.json();
-      setAdminStats(data);
+      const [statsRes, chartsRes] = await Promise.all([
+        fetch("/api/admin/stats"),
+        fetch("/api/admin/dashboard-charts"),
+      ]);
+      if (statsRes.ok)  setAdminStats(await statsRes.json());
+      if (chartsRes.ok) setAdminCharts(await chartsRes.json());
     } catch (error) {
       console.error("Error loading stats:", error);
     } finally {
@@ -762,7 +920,7 @@ export default function DashboardPage() {
   // Loading state
   if (status === "loading" || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#faf7f2]">
+      <div className="flex items-center justify-center min-h-screen bg-[#faf7f2] dark:bg-neutral-100">
         <div className="w-8 h-8 border-4 border-[#d4af37] border-t-[#7a1f2b] rounded-full animate-spin" />
       </div>
     );
@@ -778,7 +936,7 @@ export default function DashboardPage() {
     return (
       <AdminLayout>
         <AdminHeader title="Dashboard" description="Platform overview and metrics" />
-        <AdminDashboard stats={adminStats} />
+        <AdminDashboard stats={adminStats} charts={adminCharts} />
       </AdminLayout>
     );
   }

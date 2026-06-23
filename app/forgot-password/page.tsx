@@ -78,10 +78,10 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        <div className="rounded-2xl bg-white shadow-md ring-1 ring-neutral-200 p-6">
+        <div className="rounded-2xl bg-white dark:bg-neutral-100 shadow-md ring-1 ring-neutral-200 dark:ring-neutral-200 p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-neutral-700">
+              <label className="mb-1.5 block text-xs font-semibold text-neutral-700 dark:text-neutral-800">
                 Profile ID
               </label>
               <div className="relative">

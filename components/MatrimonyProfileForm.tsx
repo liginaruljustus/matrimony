@@ -1,13 +1,34 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { SearchDropdown } from "@/components/SearchDropdown";
+import { DatePickerSelect } from "@/components/DatePickerSelect";
+import { PhoneInput } from "@/components/PhoneInput";
+import { CASTE_LIST, SUBCASTE_LIST } from "@/lib/casteData";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { matrimonyProfileSchema } from "@/lib/validators";
 import { z } from "zod";
 import { updateMatrimonyProfileAction } from "@/app/actions/profileActions";
 import Image from "next/image";
-import { GripVertical, X, ImagePlus, Save, Star } from "lucide-react";
+import { X, ImagePlus, AlertCircle } from "lucide-react";
+
+const FIELD_LABELS: Record<string, string> = {
+  name: "Full Name", gender: "Gender", age: "Age", dateOfBirth: "Date of Birth",
+  maritalStatus: "Marital Status", nativeDistrict: "Native District",
+  religion: "Religion", caste: "Caste", subCaste: "Sub Caste",
+  education: "Education", address: "Address", motherTongue: "Mother Tongue",
+  height: "Height", complexion: "Complexion", currentJob: "Current Job",
+  monthlyIncome: "Monthly Income", placeOfBirth: "Place of Birth",
+  timeOfBirth: "Time of Birth", rashi: "Rashi", nakshatra: "Nakshatra",
+  lagnam: "Lagnam", fatherName: "Father's Name", fatherOccupation: "Father's Occupation",
+  motherName: "Mother's Name", motherOccupation: "Mother's Occupation",
+  totalBrothers: "Total Brothers", marriedBrothers: "Married Brothers",
+  totalSisters: "Total Sisters", marriedSisters: "Married Sisters",
+  houseDetails: "House Details", familyStatus: "Family Status",
+  contactPersonName: "Contact Person Name", contactNumber: "Contact Number",
+  whatsappNo: "WhatsApp Number", bio: "Bio / About Me",
+};
 
 // Derive the form type directly from the Zod schema so the resolver types always match
 type FormData = z.infer<typeof matrimonyProfileSchema>;
@@ -21,15 +42,32 @@ const STEPS = [
 ];
 
 const DISTRICTS = [
-  "Kanyakumari", "Tirunelveli", "Tuticorin", "Virudunagar", "Madurai",
-  "Sivagangai", "Dindigul", "Theni", "Coimbatore", "Nilgiris",
-  "Salem", "Namakkal", "Erode", "Tiruppur", "Krishnagiri",
-  "Vellore", "Ranipet", "Tirupathur", "Chengalpattu", "Kanchipuram",
-  "Thiruvallur", "Villupuram", "Cuddalore", "Tiruvannamalai", "Ariyalur",
-  "Perambalur", "Kallakurichi", "Nagapattinam", "Tikarur", "Mayiladuthurai",
-  "Thanjavur", "Pudukkottai", "Ramanathapuram", "Karur", "Trichy",
-  "Villupuram", "Chennai",
-];
+  "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore",
+  "Dharmapuri", "Dindigul", "Erode", "Kallakurichi", "Kanchipuram",
+  "Kanyakumari", "Karur", "Krishnagiri", "Madurai", "Mayiladuthurai",
+  "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai",
+  "Ramanathapuram", "Ranipet", "Salem", "Sivagangai", "Tenkasi",
+  "Thanjavur", "Theni", "Thiruvallur", "Thiruvarur", "Thoothukudi",
+  "Tirunelveli", "Tirupathur", "Tiruppur", "Tiruvallur", "Tiruvannamalai",
+  "Trichy", "Vellore", "Villupuram", "Virudhunagar",
+].sort((a, b) => a.localeCompare(b));
+
+function normalizeProfile(profile: any) {
+  if (!profile) return { gender: "MALE", religion: "HINDU", maritalStatus: "SINGLE", familyStatus: "MC" };
+
+  let dateOfBirth = "";
+  if (profile.dateOfBirth) {
+    const d = new Date(profile.dateOfBirth);
+    if (!isNaN(d.getTime())) dateOfBirth = d.toISOString().split("T")[0];
+  }
+
+  return {
+    ...profile,
+    dateOfBirth,
+    monthlyIncome: profile.monthlyIncome ?? profile.income,
+    physicallyChallenge: profile.physicallyChallenge ? "true" : "",
+  };
+}
 
 export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfile?: any; onSaved?: () => void }) {
   const [step, setStep] = useState(0);
@@ -38,13 +76,13 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
-  // Drag-to-reorder state
-  const [dragIndex, setDragIndex]   = useState<number | null>(null);
-  const [overIndex, setOverIndex]   = useState<number | null>(null);
-  const [orderChanged, setOrderChanged] = useState(false);
-  const [savingOrder, setSavingOrder]   = useState(false);
   const [dropZoneActive, setDropZoneActive] = useState(false);
-  const dragNode = useRef<EventTarget | null>(null);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
+
+  const onInvalid = (errs: Record<string, any>) => {
+    const labels = Object.keys(errs).map((k) => FIELD_LABELS[k] ?? k);
+    setMissingFields(labels);
+  };
 
   const {
     register,
@@ -52,15 +90,12 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
     formState: { errors },
     watch,
     setValue,
+    trigger,
+    control,
   } = useForm<FormData>({
     // cast required: @hookform/resolvers bundles its own react-hook-form types causing TS2719
     resolver: zodResolver(matrimonyProfileSchema) as any, // eslint-disable-line
-    defaultValues: defaultProfile || {
-      gender: "MALE",
-      religion: "HINDU",
-      maritalStatus: "SINGLE",
-      familyStatus: "MC",
-    },
+    defaultValues: normalizeProfile(defaultProfile),
   });
 
   const age = watch("age");
@@ -82,111 +117,101 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
     setSaving(false);
   };
 
-  const uploadPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || photos.length >= 6) return;
-
+  const uploadPhoto = async (file: File) => {
+    if (photos.length >= 1) return;
     setUploadingPhoto(true);
-    const fd = new FormData();
-    fd.append("photo", file);
-
-    const res = await fetch("/api/photos", { method: "POST", body: fd });
-    const data = await res.json();
-
-    if (res.ok && data.url) {
-      setPhotos((prev) => [...prev, data.url]);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/photos", { method: "POST", body: fd });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error("Photo upload failed:", err);
+        return;
+      }
+      const { url } = await res.json();
+      setPhotos([url]);
+    } finally {
+      setUploadingPhoto(false);
     }
-    setUploadingPhoto(false);
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) void uploadPhoto(file);
     e.target.value = "";
+  };
+
+  const handleZoneDragOver = (e: React.DragEvent) => { e.preventDefault(); setDropZoneActive(true); };
+
+  const handleZoneDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDropZoneActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) void uploadPhoto(file);
   };
 
   const removePhoto = async (url: string) => {
     const res = await fetch("/api/photos", {
-      method: "DELETE",
+      method:  "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url }),
+      body:    JSON.stringify({ url }),
     });
-    if (res.ok) {
-      setPhotos((prev) => prev.filter((p) => p !== url));
-      setOrderChanged(true);
-    }
-  };
-
-  // ── Drag-to-reorder handlers ──────────────────────────────────────────────
-  const handleDragStart = (e: React.DragEvent, i: number) => {
-    dragNode.current = e.target;
-    setDragIndex(i);
-    // Make the ghost image slightly transparent
-    const img = new window.Image();
-    img.src = photos[i];
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDragOver = (e: React.DragEvent, i: number) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    if (overIndex !== i) setOverIndex(i);
-  };
-
-  const handleDrop = (e: React.DragEvent, i: number) => {
-    e.preventDefault();
-    if (dragIndex === null || dragIndex === i) return;
-    const next = [...photos];
-    const [moved] = next.splice(dragIndex, 1);
-    next.splice(i, 0, moved);
-    setPhotos(next);
-    setOrderChanged(true);
-    setDragIndex(null);
-    setOverIndex(null);
-  };
-
-  const handleDragEnd = () => {
-    dragNode.current = null;
-    setDragIndex(null);
-    setOverIndex(null);
-  };
-
-  // ── OS file drop on the upload zone ──────────────────────────────────────
-  const handleZoneDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDropZoneActive(true);
-  };
-
-  const handleZoneDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    setDropZoneActive(false);
-    const file = e.dataTransfer.files?.[0];
-    if (!file || photos.length >= 6) return;
-    setUploadingPhoto(true);
-    const fd = new FormData();
-    fd.append("photo", file);
-    const res  = await fetch("/api/photos", { method: "POST", body: fd });
-    const data = await res.json();
-    if (res.ok && data.url) setPhotos((prev) => [...prev, data.url]);
-    setUploadingPhoto(false);
-  };
-
-  // ── Save reordered photos to DB without full form submit ──────────────────
-  const saveOrder = async () => {
-    setSavingOrder(true);
-    const res = await fetch("/api/photos/reorder", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ photos }),
-    });
-    if (res.ok) setOrderChanged(false);
-    setSavingOrder(false);
+    if (res.ok) setPhotos([]);
   };
 
   return (
     <div className="space-y-6">
+      {/* Missing Fields Dialog */}
+      {missingFields.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-neutral-100 shadow-xl">
+            <div className="flex items-center justify-between border-b border-neutral-100 px-6 py-4">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={20} className="text-red-600" />
+                <h2 className="text-base font-bold text-neutral-900">Required Fields Missing</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMissingFields([])}
+                className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="px-6 py-4">
+              <p className="mb-3 text-sm text-neutral-500">
+                Please fill in the following required fields before saving:
+              </p>
+              <ul className="space-y-1.5 max-h-60 overflow-y-auto">
+                {missingFields.map((label) => (
+                  <li key={label} className="flex items-center gap-2 text-sm text-red-700">
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+                    {label}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="border-t border-neutral-100 px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setMissingFields([])}
+                className="w-full rounded-xl bg-[#7a1f2b] py-2.5 text-sm font-semibold text-white hover:bg-[#6b1823] transition-colors"
+              >
+                OK, Let Me Fix It
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Progress Bar */}
       <div className="space-y-2">
         <div className="flex justify-between text-xs font-semibold">
           <span className="text-primary">{STEPS[step]}</span>
-          <span className="text-slate-500">{step + 1} of {STEPS.length}</span>
+          <span className="text-slate-500 dark:text-neutral-700">{step + 1} of {STEPS.length}</span>
         </div>
-        <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+        <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-neutral-300 overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-300"
             style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
@@ -195,7 +220,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="card p-6 space-y-4">
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="card p-6 space-y-4">
         {/* Step 1: Personal Details */}
         {step === 0 && (
           <div className="space-y-4">
@@ -215,8 +240,9 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
             </div>
 
             <div>
-              <label className="label">Address</label>
+              <label className="label">Address *</label>
               <input {...register("address")} className="input-field" placeholder="Street address" />
+              {errors.address && <p className="text-xs text-red-600 mt-1">{errors.address.message}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -226,6 +252,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                   <option value="MALE">Male</option>
                   <option value="FEMALE">Female</option>
                 </select>
+                {errors.gender && <p className="text-xs text-red-600 mt-1">{errors.gender.message}</p>}
               </div>
               <div>
                 <label className="label">Marital Status *</label>
@@ -236,13 +263,21 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                   <option value="SEPARATED">Separated</option>
                   <option value="WIDOWED">Widowed</option>
                 </select>
+                {errors.maritalStatus && <p className="text-xs text-red-600 mt-1">{errors.maritalStatus.message}</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label">Date of Birth *</label>
-                <input {...register("dateOfBirth")} type="date" className="input-field" />
+                <Controller
+                  name="dateOfBirth"
+                  control={control}
+                  render={({ field }) => (
+                    <DatePickerSelect value={field.value ?? ""} onChange={field.onChange} />
+                  )}
+                />
+                {errors.dateOfBirth && <p className="text-xs text-red-600 mt-1">{errors.dateOfBirth.message as string}</p>}
               </div>
               <div>
                 <label className="label">Native District *</label>
@@ -252,6 +287,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                     <option key={d} value={d}>{d}</option>
                   ))}
                 </select>
+                {errors.nativeDistrict && <p className="text-xs text-red-600 mt-1">{errors.nativeDistrict.message}</p>}
               </div>
             </div>
 
@@ -264,28 +300,55 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                   <option value="CHRISTIAN">Christian</option>
                   <option value="OTHER">Other</option>
                 </select>
+                {errors.religion && <p className="text-xs text-red-600 mt-1">{errors.religion.message}</p>}
               </div>
               <div>
                 <label className="label">Caste *</label>
-                <input {...register("caste")} className="input-field" placeholder="Caste/Community" />
+                <Controller
+                  name="caste"
+                  control={control}
+                  render={({ field }) => (
+                    <SearchDropdown
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      options={CASTE_LIST}
+                      placeholder="Type or search caste…"
+                    />
+                  )}
+                />
+                {errors.caste && <p className="text-xs text-red-600 mt-1">{errors.caste.message}</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Sub Caste</label>
-                <input {...register("subCaste")} className="input-field" />
+                <label className="label">Sub Caste *</label>
+                <Controller
+                  name="subCaste"
+                  control={control}
+                  render={({ field }) => (
+                    <SearchDropdown
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      options={SUBCASTE_LIST}
+                      placeholder="Type or search sub caste…"
+                    />
+                  )}
+                />
+                {errors.subCaste && <p className="text-xs text-red-600 mt-1">{errors.subCaste.message}</p>}
               </div>
               <div>
-                <label className="label">Mother Tongue</label>
+                <label className="label">Mother Tongue *</label>
                 <input {...register("motherTongue")} className="input-field" />
+                {errors.motherTongue && <p className="text-xs text-red-600 mt-1">{errors.motherTongue.message}</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Height (cm)</label>
+                <label className="label">Height (cm) *</label>
                 <input {...register("height", { valueAsNumber: true })} type="number" className="input-field" />
+                {errors.height && <p className="text-xs text-red-600 mt-1">{errors.height.message}</p>}
               </div>
               <div>
                 <label className="label">Weight (kg)</label>
@@ -294,7 +357,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
             </div>
 
             <div>
-              <label className="label">Complexion</label>
+              <label className="label">Complexion *</label>
               <select {...register("complexion")} className="input-field">
                 <option value="">Select</option>
                 <option value="VERY_FAIR">Very Fair</option>
@@ -303,26 +366,30 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                 <option value="BROWN">Brown</option>
                 <option value="DARK">Dark</option>
               </select>
+              {errors.complexion && <p className="text-xs text-red-600 mt-1">{errors.complexion.message}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label">Education *</label>
                 <input {...register("education")} className="input-field" placeholder="e.g., B.Tech" />
+                {errors.education && <p className="text-xs text-red-600 mt-1">{errors.education.message}</p>}
               </div>
               <div>
-                <label className="label">Current Job</label>
+                <label className="label">Current Job *</label>
                 <input {...register("currentJob")} className="input-field" />
+                {errors.currentJob && <p className="text-xs text-red-600 mt-1">{errors.currentJob.message}</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Monthly Income (₹)</label>
+                <label className="label">Monthly Income (₹) *</label>
                 <input {...register("monthlyIncome", { valueAsNumber: true })} type="number" className="input-field" />
+                {errors.monthlyIncome && <p className="text-xs text-red-600 mt-1">{errors.monthlyIncome.message}</p>}
               </div>
               <div>
-                <label className="label">Physically Challenged</label>
+                <label className="label">Physically Challenged *</label>
                 <select {...register("physicallyChallenge")} className="input-field">
                   <option value="">No</option>
                   <option value="true">Yes</option>
@@ -331,22 +398,32 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
             </div>
 
             <div>
-              <label className="label">Place of Birth</label>
+              <label className="label">Place of Birth *</label>
               <input {...register("placeOfBirth")} className="input-field" />
+              {errors.placeOfBirth && <p className="text-xs text-red-600 mt-1">{errors.placeOfBirth.message}</p>}
+            </div>
+
+            <div>
+              <label className="label">Time of Birth *</label>
+              <input {...register("timeOfBirth")} type="time" className="input-field" />
+              {errors.timeOfBirth && <p className="text-xs text-red-600 mt-1">{errors.timeOfBirth.message}</p>}
             </div>
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="label">Rashi</label>
+                <label className="label">Rashi *</label>
                 <input {...register("rashi")} className="input-field" placeholder="Zodiac sign" />
+                {errors.rashi && <p className="text-xs text-red-600 mt-1">{errors.rashi.message}</p>}
               </div>
               <div>
-                <label className="label">Nakshatra</label>
+                <label className="label">Nakshatra *</label>
                 <input {...register("nakshatra")} className="input-field" />
+                {errors.nakshatra && <p className="text-xs text-red-600 mt-1">{errors.nakshatra.message}</p>}
               </div>
               <div>
-                <label className="label">Lagnam</label>
+                <label className="label">Lagnam *</label>
                 <input {...register("lagnam")} className="input-field" />
+                {errors.lagnam && <p className="text-xs text-red-600 mt-1">{errors.lagnam.message}</p>}
               </div>
             </div>
 
@@ -364,53 +441,62 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Father&apos;s Name</label>
+                <label className="label">Father&apos;s Name *</label>
                 <input {...register("fatherName")} className="input-field" />
+                {errors.fatherName && <p className="text-xs text-red-600 mt-1">{errors.fatherName.message}</p>}
               </div>
               <div>
-                <label className="label">Father&apos;s Occupation</label>
+                <label className="label">Father&apos;s Occupation *</label>
                 <input {...register("fatherOccupation")} className="input-field" />
+                {errors.fatherOccupation && <p className="text-xs text-red-600 mt-1">{errors.fatherOccupation.message}</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Mother&apos;s Name</label>
+                <label className="label">Mother&apos;s Name *</label>
                 <input {...register("motherName")} className="input-field" />
+                {errors.motherName && <p className="text-xs text-red-600 mt-1">{errors.motherName.message}</p>}
               </div>
               <div>
-                <label className="label">Mother&apos;s Occupation</label>
+                <label className="label">Mother&apos;s Occupation *</label>
                 <input {...register("motherOccupation")} className="input-field" />
+                {errors.motherOccupation && <p className="text-xs text-red-600 mt-1">{errors.motherOccupation.message}</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-4 gap-4">
               <div>
-                <label className="label">Total Brothers</label>
-                <input {...register("totalBrothers", { valueAsNumber: true })} type="number" className="input-field" />
+                <label className="label">Total Brothers *</label>
+                <input {...register("totalBrothers", { valueAsNumber: true })} type="number" min="0" className="input-field" />
+                {errors.totalBrothers && <p className="text-xs text-red-600 mt-1">{errors.totalBrothers.message}</p>}
               </div>
               <div>
-                <label className="label">Married Brothers</label>
-                <input {...register("marriedBrothers", { valueAsNumber: true })} type="number" className="input-field" />
+                <label className="label">Married Brothers *</label>
+                <input {...register("marriedBrothers", { valueAsNumber: true })} type="number" min="0" className="input-field" />
+                {errors.marriedBrothers && <p className="text-xs text-red-600 mt-1">{errors.marriedBrothers.message}</p>}
               </div>
               <div>
-                <label className="label">Total Sisters</label>
-                <input {...register("totalSisters", { valueAsNumber: true })} type="number" className="input-field" />
+                <label className="label">Total Sisters *</label>
+                <input {...register("totalSisters", { valueAsNumber: true })} type="number" min="0" className="input-field" />
+                {errors.totalSisters && <p className="text-xs text-red-600 mt-1">{errors.totalSisters.message}</p>}
               </div>
               <div>
-                <label className="label">Married Sisters</label>
-                <input {...register("marriedSisters", { valueAsNumber: true })} type="number" className="input-field" />
+                <label className="label">Married Sisters *</label>
+                <input {...register("marriedSisters", { valueAsNumber: true })} type="number" min="0" className="input-field" />
+                {errors.marriedSisters && <p className="text-xs text-red-600 mt-1">{errors.marriedSisters.message}</p>}
               </div>
             </div>
 
             <div>
-              <label className="label">House Details</label>
+              <label className="label">House Details *</label>
               <select {...register("houseDetails")} className="input-field">
-                <option value="">Select</option>
+                <option value="" disabled>Select</option>
                 <option value="OWN">Own House</option>
                 <option value="FAMILY">Family House</option>
                 <option value="RENTED">Rented</option>
               </select>
+              {errors.houseDetails && <p className="text-xs text-red-600 mt-1">{errors.houseDetails.message}</p>}
             </div>
 
             <div>
@@ -420,6 +506,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                 <option value="UC">Upper Class</option>
                 <option value="EC">Elite Class</option>
               </select>
+              {errors.familyStatus && <p className="text-xs text-red-600 mt-1">{errors.familyStatus.message}</p>}
             </div>
           </div>
         )}
@@ -430,19 +517,32 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
             <h3 className="text-lg font-semibold text-primary">Contact Details</h3>
 
             <div>
-              <label className="label">Contact Person Name</label>
+              <label className="label">Contact Person Name *</label>
               <input {...register("contactPersonName")} className="input-field" />
+              {errors.contactPersonName && <p className="text-xs text-red-600 mt-1">{errors.contactPersonName.message}</p>}
             </div>
 
             <div>
-              <label className="label">Contact Number (10 digits)</label>
-              <input {...register("contactNumber")} type="tel" className="input-field" placeholder="9876543210" />
+              <label className="label">Contact Number *</label>
+              <Controller
+                name="contactNumber"
+                control={control}
+                render={({ field }) => (
+                  <PhoneInput value={field.value ?? ""} onChange={field.onChange} />
+                )}
+              />
               {errors.contactNumber && <p className="text-xs text-red-600 mt-1">{errors.contactNumber.message}</p>}
             </div>
 
             <div>
-              <label className="label">WhatsApp Number (10 digits)</label>
-              <input {...register("whatsappNo")} type="tel" className="input-field" placeholder="9876543210" />
+              <label className="label">WhatsApp Number *</label>
+              <Controller
+                name="whatsappNo"
+                control={control}
+                render={({ field }) => (
+                  <PhoneInput value={field.value ?? ""} onChange={field.onChange} />
+                )}
+              />
               {errors.whatsappNo && <p className="text-xs text-red-600 mt-1">{errors.whatsappNo.message}</p>}
             </div>
 
@@ -456,18 +556,15 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
         {/* Step 4: Photos & Expectations */}
         {step === 3 && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-primary">Photos & Expectations</h3>
-              <span className="text-xs font-medium text-neutral-400">{photos.length} / 6 photos</span>
-            </div>
+            <h3 className="text-lg font-semibold text-primary">Photo & Expectations</h3>
 
-            {/* Upload zone — supports click AND OS file drag-drop */}
-            {photos.length < 6 && (
+            {/* Single photo slot */}
+            {photos.length === 0 ? (
               <div>
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={uploadPhoto}
+                  onChange={handleFileInput}
                   disabled={uploadingPhoto}
                   className="hidden"
                   id="photo-input"
@@ -477,117 +574,68 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                   onDragOver={handleZoneDragOver}
                   onDragLeave={() => setDropZoneActive(false)}
                   onDrop={handleZoneDrop}
-                  className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-6 transition ${
+                  className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 transition ${
                     dropZoneActive
                       ? "border-[#7a1f2b] bg-[#7a1f2b]/5"
-                      : "border-slate-300 hover:border-[#7a1f2b] hover:bg-[#7a1f2b]/5"
+                      : "border-slate-300 dark:border-neutral-300 hover:border-[#7a1f2b] hover:bg-[#7a1f2b]/5"
                   }`}
                 >
                   {uploadingPhoto ? (
                     <>
-                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#7a1f2b] border-t-transparent" />
-                      <p className="text-sm font-medium text-neutral-500">Uploading…</p>
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#7a1f2b] border-t-transparent" />
+                      <p className="text-sm font-medium text-neutral-500">Uploading to Cloudinary…</p>
                     </>
                   ) : (
                     <>
-                      <ImagePlus size={24} className="text-neutral-400" />
-                      <p className="text-sm font-medium text-neutral-600">
-                        Click to upload <span className="text-neutral-400">or drag &amp; drop</span>
-                      </p>
-                      <p className="text-xs text-neutral-400">JPG, PNG, WEBP · max 5 MB</p>
+                      <ImagePlus size={32} className="text-neutral-300" />
+                      <div className="text-center">
+                        <p className="text-sm font-semibold text-neutral-600">
+                          Click to upload <span className="font-normal text-neutral-400">or drag &amp; drop</span>
+                        </p>
+                        <p className="mt-1 text-xs text-neutral-400">JPG, PNG, WEBP · max 5 MB · 1 photo only</p>
+                      </div>
                     </>
                   )}
                 </label>
               </div>
-            )}
-
-            {/* Drag-to-reorder grid */}
-            {photos.length > 0 && (
-              <>
-                {photos.length > 1 && (
-                  <p className="flex items-center gap-1.5 text-xs text-neutral-400">
-                    <GripVertical size={12} />
-                    Drag photos to reorder · First photo is the cover
-                  </p>
-                )}
-
-                <div className="grid grid-cols-3 gap-3">
-                  {photos.map((url, i) => (
-                    <div
-                      key={url}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, i)}
-                      onDragOver={(e) => handleDragOver(e, i)}
-                      onDrop={(e) => handleDrop(e, i)}
-                      onDragEnd={handleDragEnd}
-                      className={`group relative cursor-grab overflow-hidden rounded-xl border-2 transition-all duration-150 active:cursor-grabbing ${
-                        dragIndex === i
-                          ? "scale-95 opacity-40 border-neutral-300"
-                          : overIndex === i && dragIndex !== null
-                          ? "scale-105 border-[#7a1f2b] shadow-lg"
-                          : "border-transparent hover:border-neutral-200"
-                      }`}
-                    >
-                      {/* Cover / number badge */}
-                      <div className="absolute left-1.5 top-1.5 z-10">
-                        {i === 0 ? (
-                          <span className="inline-flex items-center gap-0.5 rounded-md bg-[#d4af37] px-1.5 py-0.5 text-[10px] font-bold text-white shadow">
-                            <Star size={8} fill="white" />
-                            Cover
-                          </span>
-                        ) : (
-                          <span className="rounded-md bg-black/50 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                            {i + 1}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Drag handle — visible on hover */}
-                      <div className="absolute right-1.5 top-1.5 z-10 opacity-0 transition group-hover:opacity-100">
-                        <div className="rounded bg-black/50 p-0.5">
-                          <GripVertical size={14} className="text-white" />
-                        </div>
-                      </div>
-
-                      {/* Photo */}
-                      <Image
-                        src={url}
-                        alt={`Photo ${i + 1}`}
-                        width={150}
-                        height={150}
-                        className="h-28 w-full object-cover"
-                        draggable={false}
-                      />
-
-                      {/* Delete overlay */}
-                      <button
-                        type="button"
-                        onClick={() => removePhoto(url)}
-                        className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition group-hover:opacity-100"
-                        title="Remove photo"
-                      >
-                        <div className="rounded-full bg-red-500 p-1.5">
-                          <X size={14} className="text-white" />
-                        </div>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Save order button — appears when order has changed */}
-                {orderChanged && (
+            ) : (
+              <div className="flex items-start gap-4">
+                {/* Preview */}
+                <div className="group relative h-40 w-40 shrink-0 overflow-hidden rounded-2xl border-2 border-[#7a1f2b] shadow-md">
+                  <Image
+                    src={photos[0]}
+                    alt="Profile photo"
+                    fill
+                    className="object-cover"
+                  />
                   <button
                     type="button"
-                    onClick={saveOrder}
-                    disabled={savingOrder}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#7a1f2b] py-2.5 text-sm font-semibold text-[#7a1f2b] transition hover:bg-[#7a1f2b]/5 disabled:opacity-50"
+                    onClick={() => removePhoto(photos[0])}
+                    className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition group-hover:opacity-100"
+                    title="Remove photo"
                   >
-                    <Save size={14} />
-                    {savingOrder ? "Saving order…" : "Save photo order"}
+                    <div className="rounded-full bg-red-500 p-2">
+                      <X size={16} className="text-white" />
+                    </div>
                   </button>
-                )}
-              </>
+                </div>
+                {/* Info */}
+                <div className="pt-1">
+                  <p className="text-sm font-semibold text-green-700">Photo uploaded ✓</p>
+                  <p className="mt-1 text-xs text-neutral-400">Hover on the photo and click × to remove and replace it.</p>
+                </div>
+              </div>
             )}
+
+            <div>
+              <label className="label">Bio / About Me</label>
+              <textarea
+                {...register("bio")}
+                className="input-field"
+                rows={3}
+                placeholder="Write a short introduction about yourself…"
+              />
+            </div>
 
             <div>
               <label className="label">Expectations About Partner</label>
@@ -606,7 +654,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-primary">Review Your Profile</h3>
 
-            <div className="rounded-xl bg-slate-50 p-4 max-h-96 overflow-y-auto space-y-2 text-sm">
+            <div className="rounded-xl bg-slate-50 dark:bg-neutral-100 p-4 max-h-96 overflow-y-auto space-y-2 text-sm">
               <p><strong>Name:</strong> {watch("name")}</p>
               <p><strong>Age:</strong> {watch("age")}</p>
               <p><strong>Religion:</strong> {watch("religion")}</p>
@@ -631,7 +679,31 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
             </button>
           )}
           {step < STEPS.length - 1 && (
-            <button type="button" onClick={() => setStep(step + 1)} className="flex-1 btn-primary">
+            <button
+              type="button"
+              onClick={async () => {
+                let ok = true;
+                if (step === 0) {
+                  ok = await trigger([
+                    "name", "gender", "age", "dateOfBirth", "maritalStatus", "nativeDistrict",
+                    "religion", "caste", "education", "address", "subCaste", "motherTongue",
+                    "height", "complexion", "currentJob", "monthlyIncome",
+                    "placeOfBirth", "timeOfBirth", "rashi", "nakshatra", "lagnam",
+                  ]);
+                } else if (step === 1) {
+                  ok = await trigger([
+                    "fatherName", "fatherOccupation", "motherName", "motherOccupation",
+                    "totalBrothers", "marriedBrothers", "totalSisters", "marriedSisters",
+                    "houseDetails", "familyStatus",
+                  ]);
+                } else if (step === 2) {
+                  ok = await trigger(["contactPersonName", "contactNumber", "whatsappNo"]);
+                }
+                if (!ok) return;
+                setStep(step + 1);
+              }}
+              className="flex-1 btn-primary"
+            >
               Next →
             </button>
           )}

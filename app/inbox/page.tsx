@@ -9,8 +9,6 @@ import {
   CheckCircle, CreditCard, Users, Briefcase,
   Home, ChevronDown, ChevronUp, AlertCircle, XCircle,
 } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-
 const PAYMENT_AMOUNTS: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
 type InboxItem = {
@@ -146,8 +144,7 @@ export default function InboxPage() {
   }
 
   return (
-    <div className="bg-[#faf7f2] min-h-screen">
-      <Navbar />
+    <div className="bg-[#faf7f2] dark:bg-neutral-100 min-h-screen">
       <div className="mx-auto max-w-4xl px-4 py-8">
       {/* Header */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -162,7 +159,7 @@ export default function InboxPage() {
         </div>
         <Link
           href="/contact-details"
-          className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors"
+          className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 px-3 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
         >
           <CreditCard size={14} />
           Contact Details
@@ -212,7 +209,7 @@ export default function InboxPage() {
             return (
               <div
                 key={item.favoriteId}
-                className="overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-sm"
+                className="overflow-hidden rounded-2xl border border-neutral-100 dark:border-neutral-200 bg-white dark:bg-neutral-100 shadow-sm"
               >
                 {/* Card header */}
                 <div className="flex items-start gap-4 p-5">
@@ -230,7 +227,7 @@ export default function InboxPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-bold text-neutral-900">{card.name}</h3>
+                        <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{card.name}</h3>
                         <p className="text-xs text-neutral-500">{card.age} yrs · {card.district}</p>
                       </div>
                       <span
@@ -296,7 +293,7 @@ export default function InboxPage() {
                 {/* Expand / collapse additional details */}
                 <button
                   onClick={() => toggleExpand(item.favoriteId)}
-                  className="flex w-full items-center justify-center gap-1 border-t border-neutral-100 py-2 text-xs font-semibold text-neutral-500 hover:bg-neutral-50 transition-colors"
+                  className="flex w-full items-center justify-center gap-1 border-t border-neutral-100 dark:border-neutral-200 py-2 text-xs font-semibold text-neutral-500 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
                 >
                   {isExpanded ? (
                     <><ChevronUp size={13} /> Hide Details</>
@@ -306,7 +303,7 @@ export default function InboxPage() {
                 </button>
 
                 {isExpanded && (
-                  <div className="border-t border-neutral-100 bg-neutral-50/50 p-5">
+                  <div className="border-t border-neutral-100 dark:border-neutral-200 bg-neutral-50/50 dark:bg-neutral-200/50 p-5">
                     <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
                       <Detail label="Profile ID"    value={card.profileId} />
                       {card.monthlyIncome && (
@@ -362,9 +359,9 @@ export default function InboxPage() {
 
                     {/* Inline 2nd payment form */}
                     {isPayingThis && (
-                      <div className="mt-4 rounded-xl border border-neutral-200 bg-white p-4">
-                        <p className="mb-1 text-sm font-semibold text-neutral-800">2nd Payment</p>
-                        <div className="mb-3 rounded-lg bg-[#faf7f2] px-3 py-2">
+                      <div className="mt-4 rounded-xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-4">
+                        <p className="mb-1 text-sm font-semibold text-neutral-800 dark:text-neutral-900">2nd Payment</p>
+                        <div className="mb-3 rounded-lg bg-[#faf7f2] dark:bg-neutral-200 px-3 py-2">
                           <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">Amount Due</p>
                           <p className="text-lg font-extrabold text-[#7a1f2b]">
                             ₹{(PAYMENT_AMOUNTS[card.familyClass] ?? 500).toLocaleString("en-IN")}
@@ -392,7 +389,7 @@ export default function InboxPage() {
                           </button>
                           <button
                             onClick={() => setPayingFor(null)}
-                            className="rounded-lg border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-600 hover:bg-neutral-50 transition-colors"
+                            className="rounded-lg border border-neutral-200 dark:border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
                           >
                             Cancel
                           </button>

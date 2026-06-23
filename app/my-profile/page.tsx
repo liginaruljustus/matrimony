@@ -8,7 +8,7 @@ import { MatrimonyProfileForm } from "@/components/MatrimonyProfileForm";
 import {
   User, MapPin, Briefcase, Users, Star,
   Phone, FileText, Pencil, ArrowLeft, Camera,
-  CheckCircle, Clock, AlertCircle, XCircle, Flag,
+  CheckCircle, Clock, AlertCircle, XCircle, Flag, Download,
 } from "lucide-react";
 
 // ── Status badge ──────────────────────────────────────────────────────────────
@@ -28,9 +28,9 @@ function Field({ label, value }: { label: string; value?: string | number | bool
   else display = String(value);
 
   return (
-    <div className="flex items-start gap-2 py-2 border-b border-neutral-100 last:border-0">
-      <span className="w-44 shrink-0 text-xs text-neutral-400">{label}</span>
-      <span className="text-sm font-medium text-neutral-800">{display}</span>
+    <div className="flex items-start gap-2 py-2 border-b border-neutral-100 dark:border-neutral-200 last:border-0">
+      <span className="w-44 shrink-0 text-xs text-neutral-400 dark:text-neutral-600">{label}</span>
+      <span className="text-sm font-medium text-neutral-800 dark:text-neutral-900">{display}</span>
     </div>
   );
 }
@@ -38,8 +38,8 @@ function Field({ label, value }: { label: string; value?: string | number | bool
 // ── Section card ──────────────────────────────────────────────────────────────
 function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
-      <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-neutral-700">
+    <div className="rounded-2xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-5 shadow-sm">
+      <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-neutral-700 dark:text-neutral-800">
         <span className="text-[#7a1f2b]">{icon}</span>
         {title}
       </h2>
@@ -55,8 +55,23 @@ export default function MyProfilePage() {
 
   const [userData, setUserData]     = useState<any>(null);
   const [profile, setProfile]       = useState<any>(null);
+  const [pdfSettings, setPdfSettings] = useState<any>(null);
   const [loading, setLoading]       = useState(true);
   const [editing, setEditing]       = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (pdfSettings && !pdfSettings.pdfDownloadEnabled) return;
+    setDownloading(true);
+    try {
+      const { downloadProfilePDF } = await import("@/components/ProfilePDF");
+      await downloadProfilePDF(profile, userData, pdfSettings ?? undefined);
+    } catch (e) {
+      console.error("PDF generation failed:", e);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return; }
@@ -64,10 +79,14 @@ export default function MyProfilePage() {
 
     const load = async () => {
       try {
-        const res  = await fetch("/api/user/profile");
-        const data = await res.json();
+        const [profileRes, pdfRes] = await Promise.all([
+          fetch("/api/user/profile"),
+          fetch("/api/settings/pdf"),
+        ]);
+        const data = await profileRes.json();
         setUserData(data.user ?? null);
         setProfile(data.profile ?? null);
+        if (pdfRes.ok) setPdfSettings(await pdfRes.json());
       } catch { /* silent */ }
       finally  { setLoading(false); }
     };
@@ -137,13 +156,29 @@ export default function MyProfilePage() {
             )}
           </p>
         </div>
-        <button
-          onClick={() => setEditing(true)}
-          className="flex items-center gap-2 rounded-xl bg-[#7a1f2b] px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#6b1823] transition-colors"
-        >
-          <Pencil size={14} />
-          Edit Profile
-        </button>
+        <div className="flex items-center gap-2">
+          {(pdfSettings?.pdfDownloadEnabled ?? true) && (
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="flex items-center gap-2 rounded-xl border border-[#7a1f2b] px-4 py-2.5 text-sm font-semibold text-[#7a1f2b] hover:bg-[#7a1f2b]/5 transition-colors disabled:opacity-50"
+            >
+              {downloading ? (
+                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#7a1f2b] border-t-transparent" />
+              ) : (
+                <Download size={14} />
+              )}
+              {downloading ? "Generating…" : "Download PDF"}
+            </button>
+          )}
+          <button
+            onClick={() => setEditing(true)}
+            className="flex items-center gap-2 rounded-xl bg-[#7a1f2b] px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#6b1823] transition-colors"
+          >
+            <Pencil size={14} />
+            Edit Profile
+          </button>
+        </div>
       </div>
 
       {/* Status badge */}
@@ -161,8 +196,8 @@ export default function MyProfilePage() {
 
       {/* Photos */}
       {photos.length > 0 ? (
-        <div className="mb-5 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-neutral-700">
+        <div className="mb-5 rounded-2xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-4 shadow-sm">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-neutral-700 dark:text-neutral-800">
             <Camera size={15} className="text-[#7a1f2b]" />
             Photos
           </h2>
@@ -183,11 +218,11 @@ export default function MyProfilePage() {
           </div>
         </div>
       ) : (
-        <div className="mb-5 flex items-center gap-3 rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 px-5 py-6">
+        <div className="mb-5 flex items-center gap-3 rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-300 bg-neutral-50 dark:bg-neutral-200 px-5 py-6">
           <Camera size={22} className="text-neutral-300" />
           <div>
-            <p className="text-sm font-semibold text-neutral-500">No photos uploaded</p>
-            <p className="text-xs text-neutral-400">Click &ldquo;Edit Profile&rdquo; to add photos.</p>
+            <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-700">No photos uploaded</p>
+            <p className="text-xs text-neutral-400 dark:text-neutral-600">Click &ldquo;Edit Profile&rdquo; to add photos.</p>
           </div>
         </div>
       )}
@@ -257,22 +292,36 @@ export default function MyProfilePage() {
         {/* Bio & Expectations */}
         <Section icon={<FileText size={15} />} title="Bio & Expectations">
           <div className="mb-3">
-            <p className="mb-1 text-xs text-neutral-400">Bio</p>
-            <p className="text-sm text-neutral-800 whitespace-pre-wrap">{p.bio || "—"}</p>
+            <p className="mb-1 text-xs text-neutral-400 dark:text-neutral-600">Bio</p>
+            <p className="text-sm text-neutral-800 dark:text-neutral-900 whitespace-pre-wrap">{p.bio || "—"}</p>
           </div>
           <div>
-            <p className="mb-1 text-xs text-neutral-400">Expectations</p>
-            <p className="text-sm text-neutral-800 whitespace-pre-wrap">{p.expectations || "—"}</p>
+            <p className="mb-1 text-xs text-neutral-400 dark:text-neutral-600">Expectations</p>
+            <p className="text-sm text-neutral-800 dark:text-neutral-900 whitespace-pre-wrap">{p.expectations || "—"}</p>
           </div>
         </Section>
 
       </div>
 
-      {/* Bottom edit button */}
-      <div className="mt-6 flex justify-center">
+      {/* Bottom buttons */}
+      <div className="mt-6 flex justify-center gap-3">
+        {(pdfSettings?.pdfDownloadEnabled ?? true) && (
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="flex items-center gap-2 rounded-xl border border-[#7a1f2b] px-6 py-2.5 text-sm font-semibold text-[#7a1f2b] hover:bg-[#7a1f2b]/5 transition-colors disabled:opacity-50"
+          >
+            {downloading ? (
+              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#7a1f2b] border-t-transparent" />
+            ) : (
+              <Download size={14} />
+            )}
+            {downloading ? "Generating…" : "Download Profile PDF"}
+          </button>
+        )}
         <button
           onClick={() => setEditing(true)}
-          className="flex items-center gap-2 rounded-xl border border-[#7a1f2b] px-6 py-2.5 text-sm font-semibold text-[#7a1f2b] hover:bg-[#7a1f2b]/5 transition-colors"
+          className="flex items-center gap-2 rounded-xl bg-[#7a1f2b] px-6 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#6b1823] transition-colors"
         >
           <Pencil size={14} />
           Edit Profile

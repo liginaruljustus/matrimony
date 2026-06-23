@@ -8,8 +8,6 @@ import {
   Phone, MessageCircle, Mail, User, Copy,
   CheckCircle, AlertCircle, CreditCard,
 } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-
 type Contact = {
   favoriteId: string;
   favoriteUserId: string;
@@ -69,8 +67,7 @@ export default function ContactDetailsPage() {
   }
 
   return (
-    <div className="bg-[#faf7f2] min-h-screen">
-      <Navbar />
+    <div className="bg-[#faf7f2] dark:bg-neutral-100 min-h-screen">
       <div className="mx-auto max-w-4xl px-4 py-8">
       {/* Header */}
       <div className="mb-6">
@@ -117,7 +114,7 @@ export default function ContactDetailsPage() {
             return (
               <div
                 key={contact.favoriteId}
-                className="overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-sm"
+                className="overflow-hidden rounded-2xl border border-neutral-100 dark:border-neutral-200 bg-white dark:bg-neutral-100 shadow-sm"
               >
                 {/* Top strip */}
                 <div className="flex items-center gap-4 bg-gradient-to-r from-[#7a1f2b]/5 to-[#d4af37]/5 p-4">
@@ -133,7 +130,7 @@ export default function ContactDetailsPage() {
                     </div>
                   )}
                   <div>
-                    <h3 className="font-bold text-neutral-900">{contact.name}</h3>
+                    <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{contact.name}</h3>
                     <p className="font-mono text-xs text-neutral-400">{contact.profileId}</p>
                     <p className="mt-0.5 flex items-center gap-1 text-[10px] text-green-700 font-semibold">
                       <CheckCircle size={10} />
@@ -143,7 +140,7 @@ export default function ContactDetailsPage() {
                 </div>
 
                 {/* Contact rows */}
-                <div className="divide-y divide-neutral-100 p-4">
+                <div className="divide-y divide-neutral-100 dark:divide-neutral-200 p-4">
                   {cd?.contactPersonName && (
                     <ContactRow
                       icon={<User size={15} className="text-[#7a1f2b]" />}
@@ -237,7 +234,7 @@ function ContactRow({
       {onCopy && (
         <button
           onClick={onCopy}
-          className="ml-2 shrink-0 flex items-center gap-1 rounded-lg border border-neutral-200 px-2 py-1 text-[10px] font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors"
+          className="ml-2 shrink-0 flex items-center gap-1 rounded-lg border border-neutral-200 dark:border-neutral-200 px-2 py-1 text-[10px] font-semibold text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
         >
           {copied ? <CheckCircle size={11} className="text-green-600" /> : <Copy size={11} />}
           {copied ? "Copied" : "Copy"}

@@ -24,7 +24,13 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.profileId || !credentials?.password) return null;
         await connectToDatabase();
 
-        const user = await UserModel.findOne({ profileId: credentials.profileId.trim().toUpperCase() }).lean<any>();
+        const identifier = credentials.profileId.trim();
+        const isEmail = identifier.includes("@");
+        const user = await UserModel.findOne(
+          isEmail
+            ? { email: identifier.toLowerCase() }
+            : { profileId: identifier.toUpperCase() },
+        ).lean<any>();
         if (!user) return null;
 
         // Block suspended / banned accounts before password check

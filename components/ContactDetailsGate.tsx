@@ -47,7 +47,7 @@ export function ContactDetailsGate({
       <div className="relative">
         <div className="blur-sm pointer-events-none">{children}</div>
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm rounded-lg">
-          <div className="bg-white rounded-xl p-6 shadow-xl max-w-sm mx-auto text-center">
+          <div className="bg-white dark:bg-neutral-100 rounded-xl p-6 shadow-xl max-w-sm mx-auto text-center">
             <div className="flex justify-center mb-4">
               <Lock size={48} className="text-primary" strokeWidth={1.5} />
             </div>
@@ -87,7 +87,7 @@ export function ContactDetailsGate({
       <div className="relative">
         <div className="blur-sm pointer-events-none">{children}</div>
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm rounded-lg">
-          <div className="bg-white rounded-xl p-6 shadow-xl max-w-sm mx-auto text-center">
+          <div className="bg-white dark:bg-neutral-100 rounded-xl p-6 shadow-xl max-w-sm mx-auto text-center">
             <div className="flex justify-center mb-4">
               <Clock size={48} className="text-warning animate-spin" strokeWidth={1.5} />
             </div>
@@ -114,7 +114,7 @@ export function ContactDetailsGate({
       <div className="relative">
         <div className="blur-sm pointer-events-none">{children}</div>
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm rounded-lg">
-          <div className="bg-white rounded-xl p-6 shadow-xl max-w-sm mx-auto text-center">
+          <div className="bg-white dark:bg-neutral-100 rounded-xl p-6 shadow-xl max-w-sm mx-auto text-center">
             <div className="flex justify-center mb-4">
               <X size={48} className="text-error" strokeWidth={3} />
             </div>
@@ -153,7 +153,7 @@ export function ContactDetailsGate({
     <div className="relative">
       <div className="blur-sm pointer-events-none">{children}</div>
       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm rounded-lg">
-        <div className="bg-white rounded-xl p-6 shadow-xl max-w-sm mx-auto text-center">
+        <div className="bg-white dark:bg-neutral-100 rounded-xl p-6 shadow-xl max-w-sm mx-auto text-center">
           <div className="flex justify-center mb-4">
             <Lock size={48} className="text-primary" strokeWidth={1.5} />
           </div>

@@ -5,7 +5,7 @@ import { ShieldAlert, Mail } from "lucide-react";
 
 export default function AccountSuspendedPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#faf7f2] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#faf7f2] dark:bg-neutral-100 px-4">
       <div className="w-full max-w-sm text-center">
         <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-red-100">
           <ShieldAlert size={40} className="text-red-600" />
@@ -27,7 +27,7 @@ export default function AccountSuspendedPage() {
 
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="mt-4 block w-full rounded-xl border border-neutral-200 py-3 text-sm font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors"
+          className="mt-4 block w-full rounded-xl border border-neutral-200 dark:border-neutral-200 py-3 text-sm font-semibold text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
         >
           Sign Out
         </button>

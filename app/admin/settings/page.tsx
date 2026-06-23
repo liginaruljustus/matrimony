@@ -15,6 +15,7 @@ import {
   TriangleAlert,
   ChevronRight,
   Loader2,
+  FileText,
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminHeader } from "@/components/admin/AdminHeader";
@@ -40,6 +41,12 @@ type Settings = {
   // Auto-freeze thresholds
   groomFreezeDays: number;
   brideFreezeDays: number;
+  // PDF document settings
+  pdfDownloadEnabled: boolean;
+  pdfCompanyName: string;
+  pdfFooterText: string;
+  pdfShowContactDetails: boolean;
+  pdfShowAstrology: boolean;
 };
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
@@ -333,6 +340,11 @@ export default function AdminSettingsPage() {
         bankAccountHolder: "Regin Matrimony Services",
         groomFreezeDays: 90,
         brideFreezeDays: 60,
+        pdfDownloadEnabled: true,
+        pdfCompanyName: "Regin Matrimony",
+        pdfFooterText: "Confidential — For Family Use Only",
+        pdfShowContactDetails: true,
+        pdfShowAstrology: true,
       };
       setSettings(defaults);
       setSaved(defaults);
@@ -600,6 +612,54 @@ export default function AdminSettingsPage() {
               min={1}
               onChange={(v) => set("brideFreezeDays", v)}
             />
+          </div>
+        </SectionCard>
+
+        {/* ── PDF Document Settings ──────────────────────────────────────── */}
+        <SectionCard>
+          <SectionTitle icon={FileText} title="PDF Document Settings" />
+          <p className="text-xs text-slate-500 mb-4 -mt-2">
+            Controls the content and availability of downloadable profile PDFs.
+          </p>
+          <div className="space-y-5 divide-y divide-slate-100">
+            <div className="pb-2">
+              <Toggle
+                checked={settings.pdfDownloadEnabled}
+                onChange={(v) => set("pdfDownloadEnabled", v)}
+                label="Allow PDF Download"
+                description="Users can download their profile as a PDF from My Profile"
+              />
+            </div>
+            <div className="pt-4 pb-2 space-y-4">
+              <TextInput
+                label="Company Name"
+                description="Shown in the PDF header and footer branding"
+                value={settings.pdfCompanyName}
+                placeholder="Regin Matrimony"
+                onChange={(v) => set("pdfCompanyName", v)}
+              />
+              <TextInput
+                label="Footer Confidential Text"
+                description="Small text printed at the bottom of every PDF page"
+                value={settings.pdfFooterText}
+                placeholder="Confidential — For Family Use Only"
+                onChange={(v) => set("pdfFooterText", v)}
+              />
+            </div>
+            <div className="pt-3 space-y-3">
+              <Toggle
+                checked={settings.pdfShowContactDetails}
+                onChange={(v) => set("pdfShowContactDetails", v)}
+                label="Include Contact Details"
+                description="Show contact person name, phone, and WhatsApp in the PDF"
+              />
+              <Toggle
+                checked={settings.pdfShowAstrology}
+                onChange={(v) => set("pdfShowAstrology", v)}
+                label="Include Astrology Section"
+                description="Show Rashi, Nakshatra, Lagnam, and birth details in the PDF"
+              />
+            </div>
           </div>
         </SectionCard>
 

@@ -44,7 +44,7 @@ function LoginContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center py-8 px-4 bg-gradient-to-br from-[#faf7f2] to-[#f5f0e8]">
+    <div className="flex min-h-screen items-center justify-center py-8 px-4 bg-gradient-to-br from-[#faf7f2] to-[#f5f0e8] dark:from-neutral-100 dark:to-neutral-100">
       <div className="w-full max-w-sm">
 
         {/* Brand mark */}
@@ -60,12 +60,15 @@ function LoginContent() {
         <div className="card p-6">
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <label className="label">Profile ID</label>
+              <label className="label">Profile ID or Email</label>
               <input
                 type="text"
                 value={profileId}
-                onChange={(e) => setProfileId(e.target.value.toUpperCase())}
-                placeholder="e.g. M0626H00042MC"
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setProfileId(v.includes("@") ? v : v.toUpperCase());
+                }}
+                placeholder="e.g. M0626H00042MC or admin@test.com"
                 required
                 autoComplete="username"
                 className="input-field font-mono tracking-wider"

@@ -7,7 +7,7 @@ export function HoroscopeUpload() {
   const [fileName, setFileName] = useState("");
 
   return (
-    <section className="rounded-[var(--radius-2xl)] bg-white p-4 shadow-base border border-neutral-100">
+    <section className="rounded-[var(--radius-2xl)] bg-white dark:bg-neutral-100 p-4 shadow-base border border-neutral-100 dark:border-neutral-200">
       <div className="mb-3 flex items-center gap-2">
         <span className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-accent/10">
           <Star size={16} className="text-accent" strokeWidth={2} />

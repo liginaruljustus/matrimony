@@ -65,7 +65,7 @@ export function ProfileSwipeCard() {
   };
 
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-white/50 transition-all hover:shadow-2xl">
+    <section className="relative overflow-hidden rounded-3xl bg-white dark:bg-neutral-100 shadow-xl ring-1 ring-white/50 dark:ring-neutral-200/50 transition-all hover:shadow-2xl">
       {/* Gradient border effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/10 via-transparent to-[#7a1f2b]/10 rounded-3xl pointer-events-none" />
 
@@ -73,7 +73,7 @@ export function ProfileSwipeCard() {
       <div className="relative flex items-center justify-between px-6 pt-6 pb-4 border-b border-gradient-to-r from-slate-100 to-transparent">
         <div>
           <h2 className="text-2xl font-serif font-bold text-[#7a1f2b]">Perfect Matches</h2>
-          <p className="text-sm text-slate-500 mt-1">✨ AI-powered recommendations for you</p>
+          <p className="text-sm text-slate-500 dark:text-neutral-700 mt-1">✨ AI-powered recommendations for you</p>
         </div>
         <div className="flex items-center gap-2.5">
           {sampleProfiles.map((_, i) => (
@@ -81,7 +81,7 @@ export function ProfileSwipeCard() {
               key={i}
               onClick={() => setIndex(i)}
               className={`transition-all duration-300 rounded-full ${
-                i === index ? "w-8 h-3 bg-gradient-to-r from-[#d4af37] to-[#f59e0b]" : "w-3 h-3 bg-slate-300 hover:bg-slate-400"
+                i === index ? "w-8 h-3 bg-gradient-to-r from-[#d4af37] to-[#f59e0b]" : "w-3 h-3 bg-slate-300 dark:bg-neutral-300 hover:bg-slate-400 dark:hover:bg-neutral-400"
               }`}
               aria-label={`Go to profile ${i + 1}`}
             />
@@ -90,7 +90,7 @@ export function ProfileSwipeCard() {
       </div>
 
       {/* Photo carousel */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-100 to-slate-50">
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-100 to-slate-50 dark:from-neutral-200 dark:to-neutral-100">
         <div
           className={`transition-all duration-300 ${
             direction === "next" ? "translate-x-full opacity-0" : direction === "prev" ? "-translate-x-full opacity-0" : "translate-x-0 opacity-100"
@@ -136,7 +136,7 @@ export function ProfileSwipeCard() {
       <div className="relative grid grid-cols-3 gap-3 p-6">
         <button
           onClick={handlePrev}
-          className="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-slate-100 to-slate-50 py-3 text-sm font-bold text-[#7a1f2b] transition hover:from-slate-200 hover:to-slate-100 active:scale-95 shadow-md"
+          className="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-slate-100 to-slate-50 dark:from-neutral-200 dark:to-neutral-100 py-3 text-sm font-bold text-[#7a1f2b] transition hover:from-slate-200 hover:to-slate-100 dark:hover:from-neutral-300 dark:hover:to-neutral-200 active:scale-95 shadow-md"
           aria-label="Previous profile"
         >
           <span className="group-hover:-translate-x-1 transition">←</span> Prev
@@ -149,7 +149,7 @@ export function ProfileSwipeCard() {
         </Link>
         <button
           onClick={handleNext}
-          className="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-slate-100 to-slate-50 py-3 text-sm font-bold text-[#7a1f2b] transition hover:from-slate-200 hover:to-slate-100 active:scale-95 shadow-md"
+          className="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-slate-100 to-slate-50 dark:from-neutral-200 dark:to-neutral-100 py-3 text-sm font-bold text-[#7a1f2b] transition hover:from-slate-200 hover:to-slate-100 dark:hover:from-neutral-300 dark:hover:to-neutral-200 active:scale-95 shadow-md"
           aria-label="Next profile"
         >
           Next <span className="group-hover:translate-x-1 transition">→</span>

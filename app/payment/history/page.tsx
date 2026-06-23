@@ -113,7 +113,7 @@ export default function PaymentHistoryPage() {
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors"
+          className="flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 px-3 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
         >
           <RefreshCw size={13} /> Refresh
         </button>
@@ -121,7 +121,7 @@ export default function PaymentHistoryPage() {
 
       {/* Summary cards */}
       <div className="mb-6 grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-3 shadow-sm">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Total Paid</p>
           <p className="mt-1 text-xl font-extrabold text-[#7a1f2b]">₹{totals.paid.toLocaleString("en-IN")}</p>
         </div>
@@ -129,7 +129,7 @@ export default function PaymentHistoryPage() {
           <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-600">Pending Review</p>
           <p className="mt-1 text-xl font-extrabold text-amber-700">{totals.pending}</p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-3 shadow-sm">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Total Payments</p>
           <p className="mt-1 text-xl font-extrabold text-neutral-800">{totals.count}</p>
         </div>
@@ -149,7 +149,7 @@ export default function PaymentHistoryPage() {
             className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
               filter === f.key
                 ? "bg-[#7a1f2b] text-white"
-                : "border border-neutral-200 bg-white text-neutral-600 hover:border-[#7a1f2b]/30"
+                : "border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 text-neutral-600 dark:text-neutral-700 hover:border-[#7a1f2b]/30"
             }`}
           >
             {f.label} ({f.key === "ALL" ? payments.length : payments.filter((p) => p.approvalStatus === f.key).length})
@@ -186,7 +186,7 @@ export default function PaymentHistoryPage() {
             return (
               <div
                 key={payment._id}
-                className="overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-sm"
+                className="overflow-hidden rounded-2xl border border-neutral-100 dark:border-neutral-200 bg-white dark:bg-neutral-100 shadow-sm"
               >
                 <div className="flex items-start gap-4 p-4">
                   {/* Icon */}
@@ -197,7 +197,7 @@ export default function PaymentHistoryPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="text-sm font-bold text-neutral-900">
+                        <p className="text-sm font-bold text-neutral-900 dark:text-neutral-900">
                           {TIER_LABEL[payment.tier] ?? payment.tier}
                         </p>
                         <p className="text-xs text-neutral-500">

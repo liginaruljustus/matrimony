@@ -27,7 +27,7 @@ export default function TermsPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-9rem)] bg-gradient-to-br from-[#fff9ef] to-[#fef6e4] py-8">
+    <div className="min-h-[calc(100vh-9rem)] bg-gradient-to-br from-[#fff9ef] to-[#fef6e4] dark:from-neutral-100 dark:to-neutral-100 py-8">
       <div className="mx-auto max-w-2xl px-4">
         {/* Header */}
         <div className="text-center mb-8">
@@ -35,7 +35,7 @@ export default function TermsPage() {
             <Clipboard size={32} className="text-white" />
           </div>
           <h1 className="text-3xl font-bold text-primary">Terms & Conditions</h1>
-          <p className="mt-2 text-slate-600">Please review and accept to continue</p>
+          <p className="mt-2 text-slate-600 dark:text-neutral-700">Please review and accept to continue</p>
         </div>
 
         {/* Content Card */}
@@ -44,14 +44,14 @@ export default function TermsPage() {
           <div className="max-h-96 overflow-y-auto space-y-6 pr-4">
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">1. Introduction</h2>
-              <p className="text-slate-700 leading-relaxed">
+              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
                 Welcome to Regin Matrimony (hereinafter &ldquo;the Platform&rdquo;). These Terms &amp; Conditions govern your use of our matrimony service. By registering and using our platform, you agree to comply with these terms.
               </p>
             </section>
 
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">2. User Eligibility</h2>
-              <ul className="space-y-2 text-slate-700">
+              <ul className="space-y-2 text-slate-700 dark:text-neutral-800">
                 <li>• You must be 18 years or older to use this platform</li>
                 <li>• You must be a legal resident of the region where the platform operates</li>
                 <li>• You agree to provide truthful and accurate information</li>
@@ -61,7 +61,7 @@ export default function TermsPage() {
 
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">3. Profile Information</h2>
-              <p className="text-slate-700 leading-relaxed">
+              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
                 You agree to provide accurate, complete, and genuine information in your profile. You are solely responsible for any false or misleading information. The Platform reserves the right to verify information and remove profiles found to be fraudulent.
               </p>
             </section>
@@ -69,7 +69,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">4. Code of Conduct</h2>
               <p className="text-slate-700 leading-relaxed mb-2">You agree NOT to:</p>
-              <ul className="space-y-2 text-slate-700">
+              <ul className="space-y-2 text-slate-700 dark:text-neutral-800">
                 <li>• Engage in any form of harassment, abuse, or discrimination</li>
                 <li>• Use the platform for any illegal or unethical purposes</li>
                 <li>• Impersonate another person or entity</li>
@@ -81,7 +81,7 @@ export default function TermsPage() {
 
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">5. Payment & Fees</h2>
-              <ul className="space-y-2 text-slate-700">
+              <ul className="space-y-2 text-slate-700 dark:text-neutral-800">
                 <li>• Profile creation and basic browsing are free</li>
                 <li>• Premium features require payment as per fee structure</li>
                 <li>• All payments are non-refundable unless stated otherwise</li>
@@ -91,35 +91,35 @@ export default function TermsPage() {
 
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">6. Privacy & Data Protection</h2>
-              <p className="text-slate-700 leading-relaxed">
+              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
                 We are committed to protecting your personal information. Your data will be used only for matrimony matching purposes and as disclosed in our Privacy Policy. We implement industry-standard security measures to protect your information.
               </p>
             </section>
 
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">7. Limitation of Liability</h2>
-              <p className="text-slate-700 leading-relaxed">
+              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
                 The Platform is provided &ldquo;as is&rdquo; without any warranties. We are not responsible for any direct, indirect, or consequential damages arising from your use of the platform, including decisions made based on profile information.
               </p>
             </section>
 
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">8. Dispute Resolution</h2>
-              <p className="text-slate-700 leading-relaxed">
+              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
                 Any disputes arising from the use of this platform shall be governed by the laws of the jurisdiction where the platform operates. Users agree to resolve disputes through amicable negotiation or legal proceedings.
               </p>
             </section>
 
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">9. Termination</h2>
-              <p className="text-slate-700 leading-relaxed">
+              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
                 The Platform reserves the right to terminate or suspend your account if you violate these terms or engage in any prohibited activities.
               </p>
             </section>
 
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">10. Changes to Terms</h2>
-              <p className="text-slate-700 leading-relaxed">
+              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
                 We may update these Terms & Conditions from time to time. Continued use of the platform constitutes your acceptance of the updated terms.
               </p>
             </section>
@@ -134,7 +134,7 @@ export default function TermsPage() {
                 onChange={(e) => setAccepted(e.target.checked)}
                 className="mt-1 h-5 w-5 rounded accent-primary cursor-pointer"
               />
-              <span className="text-sm text-slate-700">
+              <span className="text-sm text-slate-700 dark:text-neutral-800">
                 I have read and agree to the Terms & Conditions. I understand that I am responsible for the accuracy of the information provided and will comply with all rules of conduct.
               </span>
             </label>
@@ -147,7 +147,7 @@ export default function TermsPage() {
               {loading ? "Processing..." : "I Agree & Continue"}
             </button>
 
-            <p className="text-center text-xs text-slate-500 mt-4">
+            <p className="text-center text-xs text-slate-500 dark:text-neutral-700 mt-4">
               By accepting these terms, you agree to join our matrimony community and follow our code of conduct.
             </p>
           </div>

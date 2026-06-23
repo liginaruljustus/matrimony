@@ -133,7 +133,7 @@ const testimonials = [
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#faf7f2]">
+    <div className="min-h-screen bg-[#faf7f2] dark:bg-neutral-100">
       <HomeNavbar />
 
       {/* ── Hero ── */}
@@ -193,7 +193,7 @@ export default function HomePage() {
       </section>
 
       {/* ── How it Works ── */}
-      <section className="bg-white px-4 py-16 md:py-24">
+      <section className="bg-white dark:bg-neutral-100 px-4 py-16 md:py-24">
         <div className="mx-auto max-w-5xl">
           <div className="mb-12 text-center">
             <p className="text-xs font-bold uppercase tracking-widest text-[#d4af37]">Simple & Easy</p>
@@ -202,7 +202,7 @@ export default function HomePage() {
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             {steps.map(({ step, icon: Icon, label, desc }) => (
-              <div key={step} className="group relative rounded-2xl border border-neutral-100 bg-[#faf7f2] p-8 text-center hover:shadow-lg hover:border-[#d4af37]/30 transition-all duration-300">
+              <div key={step} className="group relative rounded-2xl border border-neutral-100 bg-[#faf7f2] dark:bg-neutral-200 p-8 text-center hover:shadow-lg hover:border-[#d4af37]/30 transition-all duration-300">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#7a1f2b] shadow-md group-hover:scale-110 transition-transform duration-300">
                   <Icon size={28} className="text-white" />
                 </div>
@@ -225,7 +225,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Trust & Verification ── */}
-      <section className="bg-gradient-to-br from-[#fff9ef] to-[#fef6e4] px-4 py-16 md:py-24">
+      <section className="bg-gradient-to-br from-[#fff9ef] to-[#fef6e4] dark:from-neutral-200 dark:to-neutral-200 px-4 py-16 md:py-24">
         <div className="mx-auto max-w-5xl">
           <div className="mb-12 text-center">
             <p className="text-xs font-bold uppercase tracking-widest text-[#d4af37]">Safe & Secure</p>
@@ -234,7 +234,7 @@ export default function HomePage() {
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {trustItems.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-[#d4af37]/20 hover:shadow-md transition-shadow">
+              <div key={title} className="rounded-2xl bg-white dark:bg-neutral-100 p-8 shadow-sm ring-1 ring-[#d4af37]/20 hover:shadow-md transition-shadow">
                 <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#7a1f2b]/10">
                   <Icon size={26} className="text-[#7a1f2b]" />
                 </div>
@@ -247,7 +247,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Testimonials ── */}
-      <section className="bg-white px-4 py-16 md:py-24">
+      <section className="bg-white dark:bg-neutral-100 px-4 py-16 md:py-24">
         <div className="mx-auto max-w-5xl">
           <div className="mb-12 text-center">
             <p className="text-xs font-bold uppercase tracking-widest text-[#d4af37]">Success Stories</p>
@@ -256,7 +256,7 @@ export default function HomePage() {
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {testimonials.map(({ name, district, text, stars }) => (
-              <div key={name} className="rounded-2xl border border-neutral-100 bg-[#faf7f2] p-6 hover:shadow-md transition-shadow">
+              <div key={name} className="rounded-2xl border border-neutral-100 dark:border-neutral-200 bg-[#faf7f2] dark:bg-neutral-200 p-6 hover:shadow-md transition-shadow">
                 <div className="flex gap-1 mb-4">
                   {Array.from({ length: stars }).map((_, i) => (
                     <Star key={i} size={14} className="fill-[#d4af37] text-[#d4af37]" />

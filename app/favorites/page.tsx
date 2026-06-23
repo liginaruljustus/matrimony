@@ -9,8 +9,6 @@ import {
   Clock, CheckCircle, Lock, AlertCircle, User,
   ShoppingCart, Inbox, ChevronRight,
 } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-
 type FavItem = {
   id: string;
   favoriteUserId: string;
@@ -168,8 +166,7 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="bg-[#faf7f2] min-h-screen">
-      <Navbar />
+    <div className="bg-[#faf7f2] dark:bg-neutral-100 min-h-screen">
       <div className="mx-auto max-w-5xl px-4 py-8">
       {/* Header */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -187,7 +184,7 @@ export default function FavoritesPage() {
         <div className="flex gap-2">
           <Link
             href="/inbox"
-            className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 px-3 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
           >
             <Inbox size={14} />
             Inbox
@@ -199,7 +196,7 @@ export default function FavoritesPage() {
           </Link>
           <Link
             href="/contact-details"
-            className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 px-3 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
           >
             <CreditCard size={14} />
             <span className="hidden xs:inline">Contact Details</span>
@@ -214,7 +211,7 @@ export default function FavoritesPage() {
         <>
           {/* ── Selection toolbar ─────────────────────────── */}
           {selectable.length > 0 && (
-            <div className="mb-5 rounded-xl border border-[#7a1f2b]/20 bg-[#faf7f2] p-4">
+            <div className="mb-5 rounded-xl border border-[#7a1f2b]/20 bg-[#faf7f2] dark:bg-neutral-200 p-4">
               <p className="mb-3 text-sm font-semibold text-[#7a1f2b]">
                 Select profiles to move to payment
               </p>
@@ -481,19 +478,19 @@ function FavCard({
 
   return (
     <div
-      className={`relative flex flex-col overflow-hidden rounded-2xl border bg-white transition-all ${
+      className={`relative flex flex-col overflow-hidden rounded-2xl border bg-white dark:bg-neutral-100 transition-all ${
         selected
           ? "border-[#7a1f2b] ring-2 ring-[#7a1f2b]/20 shadow-md"
           : frozen
-          ? "border-neutral-100 opacity-60"
-          : "border-neutral-100 shadow-sm hover:shadow-md"
+          ? "border-neutral-100 dark:border-neutral-200 opacity-60"
+          : "border-neutral-100 dark:border-neutral-200 shadow-sm hover:shadow-md"
       }`}
     >
       {/* Checkbox overlay */}
       {selectable && (
         <button
           onClick={onSelect}
-          className="absolute left-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full border-2 bg-white transition-colors"
+          className="absolute left-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full border-2 bg-white dark:bg-neutral-100 transition-colors"
           style={{ borderColor: selected ? "#7a1f2b" : "#d1d5db" }}
         >
           {selected && (
@@ -530,7 +527,7 @@ function FavCard({
       {/* Info */}
       <div className="flex flex-1 flex-col p-3">
         <div className="flex items-start justify-between">
-          <h3 className="font-bold text-neutral-900">{card.name}</h3>
+          <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{card.name}</h3>
           <span className="ml-1 font-mono text-[10px] text-neutral-400">{card.profileId}</span>
         </div>
         <p className="mt-0.5 text-xs text-neutral-500">
@@ -561,7 +558,7 @@ function FavCard({
 
         <Link
           href={`/profiles/${fav.favoriteUserId}`}
-          className="mt-3 flex w-full items-center justify-center rounded-lg border border-neutral-200 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
+          className="mt-3 flex w-full items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-200 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
         >
           View Profile
         </Link>

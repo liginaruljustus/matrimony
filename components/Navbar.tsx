@@ -91,7 +91,7 @@ function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-80 rounded-2xl border border-neutral-200 bg-white shadow-xl">
+        <div className="absolute right-0 top-12 z-50 w-80 rounded-2xl border border-neutral-200 bg-white dark:bg-neutral-100 shadow-xl">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
             <p className="text-sm font-bold text-neutral-800">Notifications</p>
@@ -197,7 +197,7 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-neutral-200 bg-white/95 shadow-sm backdrop-blur-sm">
+    <nav className="sticky top-0 z-40 border-b border-neutral-200 bg-white/95 dark:bg-neutral-100/95 shadow-sm backdrop-blur-sm">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -261,7 +261,7 @@ export function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-t border-neutral-100 bg-white px-4 pb-4 md:hidden">
+        <div className="border-t border-neutral-100 bg-white dark:bg-neutral-100 px-4 pb-4 md:hidden">
           <div className="flex flex-col gap-3 pt-3">
             {navLinks.map(({ href, label }) => (
               <Link

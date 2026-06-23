@@ -5,7 +5,7 @@
  * Validates form data, checks for duplicate email, generates a 6-digit OTP,
  * stores it (bcrypt-hashed) in PendingRegistration, then emails it to the user.
  *
- * Rate limit: if a pending record was created < 60 s ago → 429 (resend cooldown).
+ * Rate limit: if a pending record was created < 10 min ago → 429 (resend cooldown).
  */
 import bcrypt from "bcryptjs";
 import { randomInt } from "crypto";
@@ -29,14 +29,17 @@ export async function POST(request: Request) {
 
     await connectToDatabase();
 
-    // Resend cooldown: if a pending record was created < 60 s ago, don't spam
+    // Resend cooldown: if a pending record was created < 10 min ago, don't spam
     const existingPending = await PendingRegistrationModel.findOne({ email }).lean() as any;
     if (existingPending) {
       const ageMs = Date.now() - new Date(existingPending.createdAt).getTime();
-      if (ageMs < 60_000) {
-        const secondsLeft = Math.ceil((60_000 - ageMs) / 1000);
+      if (ageMs < 600_000) {
+        const secondsLeft = Math.ceil((600_000 - ageMs) / 1000);
+        const mins = Math.floor(secondsLeft / 60);
+        const secs = secondsLeft % 60;
+        const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
         return Response.json(
-          { message: `Please wait ${secondsLeft}s before requesting a new OTP.` },
+          { message: `Please wait ${timeStr} before requesting a new OTP.` },
           { status: 429 },
         );
       }

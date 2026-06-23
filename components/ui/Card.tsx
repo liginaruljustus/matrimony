@@ -22,7 +22,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ) => {
     // Base styles for all cards
     const baseStyles =
-      "bg-white rounded-[var(--radius-xl)] border border-[var(--color-border)]";
+      "bg-white dark:bg-neutral-100 rounded-[var(--radius-xl)] border border-[var(--color-border)]";
 
     // Elevation (shadow) variants
     const elevationClasses = {

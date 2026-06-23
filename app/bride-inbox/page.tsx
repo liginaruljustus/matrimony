@@ -8,8 +8,6 @@ import {
   Inbox, Star, MapPin, GraduationCap, CheckCircle,
   XCircle, Clock, AlertCircle, Heart, Users,
 } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-
 type InboxItem = {
   favoriteId: string;
   groomUserId: string;
@@ -120,8 +118,7 @@ export default function BrideInboxPage() {
   const pending2  = inbox.filter((i) => !i.isAccepted && !i.declinedAt);
 
   return (
-    <div className="bg-[#faf7f2] min-h-screen">
-      <Navbar />
+    <div className="bg-[#faf7f2] dark:bg-neutral-100 min-h-screen">
       <div className="mx-auto max-w-4xl px-4 py-8">
       {/* Header */}
       <div className="mb-6">
@@ -138,7 +135,7 @@ export default function BrideInboxPage() {
       {inbox.length > 0 && (
         <div className="mb-6 grid grid-cols-4 gap-3">
           {[
-            { label: "Total",    value: inbox.length,    color: "text-[#7a1f2b]",  bg: "bg-white border-neutral-200" },
+            { label: "Total",    value: inbox.length,    color: "text-[#7a1f2b]",  bg: "bg-white dark:bg-neutral-100 border-neutral-200 dark:border-neutral-200" },
             { label: "Pending",  value: pending2.length, color: "text-amber-700",  bg: "bg-amber-50 border-amber-200" },
             { label: "Accepted", value: accepted.length, color: "text-green-700",  bg: "bg-green-50 border-green-200" },
             { label: "Declined", value: declined.length, color: "text-red-600",    bg: "bg-red-50 border-red-200" },
@@ -267,8 +264,8 @@ function GroomCard({
   if (!card) return null;
 
   return (
-    <div className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition-all ${
-      accepted ? "border-green-200" : declined ? "border-neutral-200 opacity-60" : "border-neutral-100 hover:shadow-md"
+    <div className={`overflow-hidden rounded-2xl border bg-white dark:bg-neutral-100 shadow-sm transition-all ${
+      accepted ? "border-green-200" : declined ? "border-neutral-200 dark:border-neutral-200 opacity-60" : "border-neutral-100 dark:border-neutral-200 hover:shadow-md"
     }`}>
       {/* Photo */}
       <div className="relative h-44 bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
@@ -303,7 +300,7 @@ function GroomCard({
       {/* Info */}
       <div className="p-4">
         <div className="flex items-start justify-between">
-          <h3 className="font-bold text-neutral-900">{card.name}</h3>
+          <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{card.name}</h3>
           <span className="font-mono text-[10px] text-neutral-400">{card.profileId}</span>
         </div>
         <p className="mt-0.5 text-xs text-neutral-500">
@@ -351,7 +348,7 @@ function GroomCard({
             <button
               onClick={onDecline}
               disabled={responding}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 py-2 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-200 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50"
             >
               <XCircle size={13} />
               Decline

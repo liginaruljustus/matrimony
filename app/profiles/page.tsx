@@ -9,7 +9,6 @@ import {
   MapPin, GraduationCap, Star, RefreshCw, X,
 } from "lucide-react";
 import { FavoriteButton } from "@/components/FavoriteButton";
-import { Navbar } from "@/components/Navbar";
 
 type MDProfile = {
   _id: string;
@@ -147,8 +146,7 @@ export default function ProfilesPage() {
   }
 
   return (
-    <div className="bg-[#faf7f2] min-h-screen">
-      <Navbar />
+    <div className="bg-[#faf7f2] dark:bg-neutral-100 min-h-screen">
       <div className="mx-auto max-w-7xl px-4 py-8">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between gap-3">
@@ -160,7 +158,7 @@ export default function ProfilesPage() {
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="shrink-0 flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
+          className="shrink-0 flex items-center gap-2 rounded-lg border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
         >
           <SlidersHorizontal size={16} />
           <span className="hidden sm:inline">Filters</span>
@@ -176,7 +174,7 @@ export default function ProfilesPage() {
             className={`shrink-0 rounded-full px-5 py-2 text-sm font-semibold transition-all ${
               classTab === tab.key
                 ? "bg-[#7a1f2b] text-white shadow-sm"
-                : "bg-white border border-neutral-200 text-neutral-600 hover:border-[#7a1f2b]/30"
+                : "bg-white dark:bg-neutral-100 border border-neutral-200 dark:border-neutral-200 text-neutral-600 dark:text-neutral-700 hover:border-[#7a1f2b]/30"
             }`}
           >
             {tab.label}
@@ -186,9 +184,9 @@ export default function ProfilesPage() {
 
       {/* Filter Panel */}
       {showFilters && (
-        <div className="mb-6 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
+        <div className="mb-6 rounded-xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-neutral-800">Search Filters</h3>
+            <h3 className="font-semibold text-neutral-800 dark:text-neutral-900">Search Filters</h3>
             <button onClick={() => setShowFilters(false)}>
               <X size={18} className="text-neutral-400 hover:text-neutral-700" />
             </button>
@@ -239,7 +237,7 @@ export default function ProfilesPage() {
             </button>
             <button
               onClick={resetFilters}
-              className="flex items-center gap-2 rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors"
+              className="flex items-center gap-2 rounded-lg border border-neutral-200 dark:border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
             >
               <RefreshCw size={15} /> Reset
             </button>
@@ -300,15 +298,15 @@ function MDProfileCard({
   };
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-neutral-100 dark:border-neutral-200 bg-white dark:bg-neutral-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
       {/* Photo */}
       <div className="relative h-48 bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
         {profile.photo ? (
-          <img src={profile.photo} alt={profile.name} className="h-full w-full object-cover" />
+          <img src={profile.photo} alt={profile.profileId} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full items-center justify-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#7a1f2b]/20 text-3xl font-bold text-[#7a1f2b]">
-              {profile.name.charAt(0)}
+              {profile.profileId.charAt(0)}
             </div>
           </div>
         )}
@@ -328,9 +326,8 @@ function MDProfileCard({
 
       {/* Info */}
       <div className="flex flex-1 flex-col p-4">
-        <div className="flex items-start justify-between mb-1">
-          <h3 className="font-bold text-neutral-900 truncate">{profile.name}</h3>
-          <span className="shrink-0 ml-2 font-mono text-xs text-neutral-400">{profile.profileId}</span>
+        <div className="mb-1">
+          <h3 className="font-bold font-mono text-neutral-900 dark:text-neutral-900 truncate">{profile.profileId}</h3>
         </div>
 
         <p className="text-sm text-neutral-600">

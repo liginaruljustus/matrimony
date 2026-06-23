@@ -72,7 +72,7 @@ export function FavoriteButton({
       className={`${sizeClass} flex items-center justify-center rounded-full transition-all active:scale-95 ${
         isFavorited
           ? "bg-red-100 text-red-500 cursor-default"
-          : "bg-white/90 text-neutral-400 hover:bg-white hover:text-red-400"
+          : "bg-white/90 dark:bg-neutral-100/90 text-neutral-400 hover:bg-white dark:hover:bg-neutral-100 hover:text-red-400"
       } disabled:opacity-60`}
       title={isFavorited ? "Already in favourites" : "Add to favourites"}
     >

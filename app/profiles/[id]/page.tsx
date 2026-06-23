@@ -9,7 +9,6 @@ import {
   CheckCircle, Lock, ArrowLeft,
 } from "lucide-react";
 import { FavoriteButton } from "@/components/FavoriteButton";
-import { Navbar } from "@/components/Navbar";
 
 type PublicProfile = {
   profileId: string;
@@ -117,8 +116,7 @@ export default function ProfileDetailPage() {
   const photos = profile.photos;
 
   return (
-    <div className="bg-[#faf7f2] min-h-screen">
-      <Navbar />
+    <div className="bg-[#faf7f2] dark:bg-neutral-100 min-h-screen">
       <div className="mx-auto max-w-2xl space-y-4 px-4 py-6">
       {/* Back */}
       <Link
@@ -131,7 +129,7 @@ export default function ProfileDetailPage() {
 
       {/* Frozen banner */}
       {frozen && !isOwn && (
-        <div className="flex items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-500">
+        <div className="flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-neutral-200 bg-neutral-50 dark:bg-neutral-200 px-4 py-3 text-sm text-neutral-500 dark:text-neutral-700">
           <Lock size={15} />
           This profile is temporarily unavailable.
         </div>
@@ -142,13 +140,13 @@ export default function ProfileDetailPage() {
         {photos[activePhoto] ? (
           <img
             src={photos[activePhoto]}
-            alt={profile.name}
+            alt={profile.profileId}
             className="h-80 w-full object-cover"
           />
         ) : (
           <div className="flex h-80 items-center justify-center">
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#7a1f2b]/20 text-4xl font-bold text-[#7a1f2b]">
-              {profile.name.charAt(0)}
+              {profile.profileId.charAt(0)}
             </div>
           </div>
         )}
@@ -170,15 +168,14 @@ export default function ProfileDetailPage() {
       </div>
 
       {/* Name + badges + CTA */}
-      <div className="flex items-start justify-between rounded-2xl bg-white p-4 shadow-sm ring-1 ring-neutral-100">
+      <div className="flex items-start justify-between rounded-2xl bg-white dark:bg-neutral-100 p-4 shadow-sm ring-1 ring-neutral-100 dark:ring-neutral-200">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-neutral-900">{profile.name}</h1>
+            <h1 className="text-2xl font-bold font-mono text-neutral-900 dark:text-neutral-900">{profile.profileId}</h1>
             <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${CLASS_COLOR[profile.familyClass] ?? "bg-neutral-100 text-neutral-700"}`}>
               {profile.familyClass}
             </span>
           </div>
-          <p className="mt-0.5 font-mono text-xs text-neutral-400">{profile.profileId}</p>
           <p className="mt-1 text-sm text-neutral-500">
             {profile.age} yrs · {profile.maritalStatus?.replace("_", " ") ?? "Single"}
           </p>
@@ -216,24 +213,24 @@ export default function ProfileDetailPage() {
           profile.rashi       ? { label: "Rashi",      value: profile.rashi }       : null,
           profile.subCaste    ? { label: "Sub-caste",  value: profile.subCaste }    : null,
         ].filter(Boolean).map(({ label, value }: any) => (
-          <div key={label} className="rounded-xl bg-white p-3 shadow-sm ring-1 ring-neutral-100">
+          <div key={label} className="rounded-xl bg-white dark:bg-neutral-100 p-3 shadow-sm ring-1 ring-neutral-100 dark:ring-neutral-200">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-[#d4af37]">{label}</p>
-            <p className="mt-0.5 text-sm font-semibold text-neutral-800">{value}</p>
+            <p className="mt-0.5 text-sm font-semibold text-neutral-800 dark:text-neutral-900">{value}</p>
           </div>
         ))}
       </div>
 
       {/* Bio */}
       {profile.bio && (
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-neutral-100">
+        <div className="rounded-2xl bg-white dark:bg-neutral-100 p-4 shadow-sm ring-1 ring-neutral-100 dark:ring-neutral-200">
           <h2 className="mb-2 text-sm font-semibold text-[#7a1f2b]">About</h2>
-          <p className="text-sm leading-relaxed text-neutral-600">{profile.bio}</p>
+          <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-700">{profile.bio}</p>
         </div>
       )}
 
       {/* Payment tier info — non-owner, non-frozen */}
       {!isOwn && !frozen && (
-        <div className="rounded-2xl border border-[#d4af37]/30 bg-[#fff9ef] p-4">
+        <div className="rounded-2xl border border-[#d4af37]/30 bg-[#fff9ef] dark:bg-neutral-200 p-4">
           <h2 className="mb-3 text-sm font-semibold text-[#7a1f2b]">Unlock More Details</h2>
           <div className="space-y-2">
             <TierRow
@@ -269,7 +266,7 @@ function TierRow({ step, desc, color }: { step: string; desc: string; color: str
       <CheckCircle size={14} className={`mt-0.5 shrink-0 ${color}`} />
       <div>
         <span className={`text-xs font-bold ${color}`}>{step}: </span>
-        <span className="text-xs text-neutral-600">{desc}</span>
+        <span className="text-xs text-neutral-600 dark:text-neutral-700">{desc}</span>
       </div>
     </div>
   );

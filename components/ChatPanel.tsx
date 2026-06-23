@@ -130,12 +130,12 @@ export function ChatPanel({ initialConvId }: Props) {
   };
 
   return (
-    <div className="flex h-[calc(100vh-9rem)] overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
+    <div className="flex h-[calc(100vh-9rem)] overflow-hidden rounded-2xl bg-white dark:bg-neutral-100 shadow-sm ring-1 ring-slate-100 dark:ring-neutral-200">
       {/* ── Sidebar ── */}
       <aside
-        className={`flex w-full flex-col border-r border-slate-100 md:w-72 md:flex ${mobileShowChat ? "hidden" : "flex"}`}
+        className={`flex w-full flex-col border-r border-slate-100 dark:border-neutral-200 md:w-72 md:flex ${mobileShowChat ? "hidden" : "flex"}`}
       >
-        <div className="border-b border-slate-100 px-4 py-3">
+        <div className="border-b border-slate-100 dark:border-neutral-200 px-4 py-3">
           <h2 className="text-sm font-semibold text-[#7a1f2b]">Messages</h2>
         </div>
 
@@ -143,8 +143,8 @@ export function ChatPanel({ initialConvId }: Props) {
           {conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 px-4 py-12 text-center">
               <span className="text-4xl">💬</span>
-              <p className="text-sm font-semibold text-slate-600">No conversations yet</p>
-              <p className="text-xs text-slate-400">Accept an interest to start chatting</p>
+              <p className="text-sm font-semibold text-slate-600 dark:text-neutral-700">No conversations yet</p>
+              <p className="text-xs text-slate-400 dark:text-neutral-600">Accept an interest to start chatting</p>
               <Link
                 href="/matches"
                 className="mt-1 rounded-xl bg-[#7a1f2b] px-4 py-2 text-xs font-semibold text-white"
@@ -159,24 +159,24 @@ export function ChatPanel({ initialConvId }: Props) {
                 <button
                   key={conv.id}
                   onClick={() => selectConversation(conv.id)}
-                  className={`flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50 ${isActive ? "bg-[#fff9ef]" : ""}`}
+                  className={`flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-neutral-200 ${isActive ? "bg-[#fff9ef] dark:bg-neutral-200" : ""}`}
                 >
                   <Avatar photo={conv.otherUser.photo} image={conv.otherUser.image} name={conv.otherUser.name} size={10} />
                   <div className="min-w-0 flex-1">
-                    <p className={`truncate text-sm font-semibold ${isActive ? "text-[#7a1f2b]" : "text-slate-800"}`}>
+                    <p className={`truncate text-sm font-semibold ${isActive ? "text-[#7a1f2b]" : "text-slate-800 dark:text-neutral-900"}`}>
                       {conv.otherUser.name}
                     </p>
                     {conv.lastMessage ? (
-                      <p className="truncate text-xs text-slate-400">
+                      <p className="truncate text-xs text-slate-400 dark:text-neutral-600">
                         {conv.lastMessage.isOwn ? "You: " : ""}
                         {conv.lastMessage.body}
                       </p>
                     ) : (
-                      <p className="text-xs italic text-slate-300">No messages yet</p>
+                      <p className="text-xs italic text-slate-300 dark:text-neutral-600">No messages yet</p>
                     )}
                   </div>
                   {conv.lastMessage && (
-                    <span className="shrink-0 text-[10px] text-slate-300">
+                    <span className="shrink-0 text-[10px] text-slate-300 dark:text-neutral-600">
                       {formatTime(String(conv.lastMessage.createdAt))}
                     </span>
                   )}
@@ -192,7 +192,7 @@ export function ChatPanel({ initialConvId }: Props) {
         {activeConversation ? (
           <>
             {/* Header */}
-            <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
+            <div className="flex items-center gap-3 border-b border-slate-100 dark:border-neutral-200 px-4 py-3">
               <button
                 className="mr-1 text-sm font-medium text-[#7a1f2b] md:hidden"
                 onClick={() => setMobileShowChat(false)}
@@ -206,10 +206,10 @@ export function ChatPanel({ initialConvId }: Props) {
                 size={9}
               />
               <div className="flex-1">
-                <p className="text-sm font-semibold text-slate-900">{activeConversation.otherUser.name}</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-neutral-900">{activeConversation.otherUser.name}</p>
                 <Link
                   href={`/profiles/${activeConversation.otherUser.id}`}
-                  className="text-xs text-slate-400 hover:text-[#7a1f2b] hover:underline"
+                  className="text-xs text-slate-400 dark:text-neutral-600 hover:text-[#7a1f2b] hover:underline"
                 >
                   View profile →
                 </Link>
@@ -221,10 +221,10 @@ export function ChatPanel({ initialConvId }: Props) {
               {activeMessages.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
                   <span className="text-4xl">👋</span>
-                  <p className="text-sm font-semibold text-slate-600">
+                  <p className="text-sm font-semibold text-slate-600 dark:text-neutral-700">
                     Say hello to {activeConversation.otherUser.name}!
                   </p>
-                  <p className="text-xs text-slate-400">Be the first to send a message.</p>
+                  <p className="text-xs text-slate-400 dark:text-neutral-600">Be the first to send a message.</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -239,7 +239,7 @@ export function ChatPanel({ initialConvId }: Props) {
                       <div key={msg.id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
                         <div className={`flex max-w-[72%] flex-col ${isOwn ? "items-end" : "items-start"}`}>
                           {!isOwn && isFirstInGroup && (
-                            <span className="mb-0.5 px-1 text-[10px] font-medium text-slate-400">
+                            <span className="mb-0.5 px-1 text-[10px] font-medium text-slate-400 dark:text-neutral-600">
                               {msg.senderName}
                             </span>
                           )}
@@ -247,13 +247,13 @@ export function ChatPanel({ initialConvId }: Props) {
                             className={`px-3 py-2 text-sm leading-relaxed ${
                               isOwn
                                 ? `bg-[#7a1f2b] text-white ${isFirstInGroup ? "rounded-t-2xl" : "rounded-t-md"} ${isLastInGroup ? "rounded-bl-2xl rounded-br-sm" : "rounded-b-md"}`
-                                : `bg-slate-100 text-slate-800 ${isFirstInGroup ? "rounded-t-2xl" : "rounded-t-md"} ${isLastInGroup ? "rounded-br-2xl rounded-bl-sm" : "rounded-b-md"}`
+                                : `bg-slate-100 dark:bg-neutral-200 text-slate-800 dark:text-neutral-900 ${isFirstInGroup ? "rounded-t-2xl" : "rounded-t-md"} ${isLastInGroup ? "rounded-br-2xl rounded-bl-sm" : "rounded-b-md"}`
                             }`}
                           >
                             {msg.body}
                           </div>
                           {isLastInGroup && (
-                            <span className={`mt-0.5 px-1 text-[10px] text-slate-300`}>
+                            <span className={`mt-0.5 px-1 text-[10px] text-slate-300 dark:text-neutral-600`}>
                               {formatTime(msg.createdAt)}
                             </span>
                           )}
@@ -269,7 +269,7 @@ export function ChatPanel({ initialConvId }: Props) {
             {/* Input */}
             <form
               onSubmit={onSend}
-              className="flex items-end gap-2 border-t border-slate-100 px-4 py-3"
+              className="flex items-end gap-2 border-t border-slate-100 dark:border-neutral-200 px-4 py-3"
             >
               <textarea
                 ref={textareaRef}
@@ -278,7 +278,7 @@ export function ChatPanel({ initialConvId }: Props) {
                 onKeyDown={onKeyDown}
                 rows={1}
                 placeholder="Message... (Enter to send, Shift+Enter for newline)"
-                className="flex-1 resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/20"
+                className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 px-3 py-2.5 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/20"
                 style={{ minHeight: "2.75rem", maxHeight: "6rem", overflowY: "auto" }}
               />
               <button
@@ -300,8 +300,8 @@ export function ChatPanel({ initialConvId }: Props) {
           /* No conversation selected */
           <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
             <span className="text-5xl opacity-40">💍</span>
-            <p className="text-sm font-semibold text-slate-600">Select a conversation</p>
-            <p className="text-xs text-slate-400">Choose someone from the list to start chatting</p>
+            <p className="text-sm font-semibold text-slate-600 dark:text-neutral-700">Select a conversation</p>
+            <p className="text-xs text-slate-400 dark:text-neutral-600">Choose someone from the list to start chatting</p>
           </div>
         )}
       </div>

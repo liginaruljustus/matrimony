@@ -121,7 +121,7 @@ export default function InterestsPage() {
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors"
+          className="flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 px-3 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
         >
           <RefreshCw size={13} /> Refresh
         </button>
@@ -152,7 +152,7 @@ export default function InterestsPage() {
             className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
               filter === f
                 ? "bg-[#7a1f2b] text-white"
-                : "border border-neutral-200 bg-white text-neutral-600 hover:border-[#7a1f2b]/30"
+                : "border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 text-neutral-600 dark:text-neutral-700 hover:border-[#7a1f2b]/30"
             }`}
           >
             {f === "ALL" ? "All" : STATUS_CONFIG[f].label} ({counts[f]})
@@ -199,7 +199,7 @@ export default function InterestsPage() {
             return (
               <div
                 key={interest.id}
-                className="flex items-start gap-4 overflow-hidden rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm"
+                className="flex items-start gap-4 overflow-hidden rounded-2xl border border-neutral-100 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-4 shadow-sm"
               >
                 {/* Photo */}
                 <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
@@ -216,7 +216,7 @@ export default function InterestsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h3 className="font-bold text-neutral-900">{user.name}</h3>
+                      <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{user.name}</h3>
                       <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5">
                         {user.age && (
                           <span className="flex items-center gap-1 text-[11px] text-neutral-500">
@@ -253,7 +253,7 @@ export default function InterestsPage() {
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/profiles/${user.id}`}
-                        className="rounded-lg border border-neutral-200 px-2.5 py-1 text-[11px] font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors"
+                        className="rounded-lg border border-neutral-200 dark:border-neutral-200 px-2.5 py-1 text-[11px] font-semibold text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
                       >
                         View Profile
                       </Link>

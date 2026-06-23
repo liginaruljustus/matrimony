@@ -125,7 +125,7 @@ function PaymentContent() {
           <Link href="/inbox" className="rounded-lg bg-[#7a1f2b] py-3 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors text-center">
             Go to Inbox
           </Link>
-          <Link href="/favorites" className="rounded-lg border border-neutral-200 py-3 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors text-center">
+          <Link href="/favorites" className="rounded-lg border border-neutral-200 dark:border-neutral-200 py-3 text-sm font-semibold text-neutral-700 dark:text-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors text-center">
             Back to Favourites
           </Link>
         </div>
@@ -151,7 +151,7 @@ function PaymentContent() {
       </p>
 
       {/* Amount due */}
-      <div className="mt-6 rounded-xl border-2 border-[#7a1f2b]/20 bg-[#faf7f2] p-5">
+      <div className="mt-6 rounded-xl border-2 border-[#7a1f2b]/20 bg-[#faf7f2] dark:bg-neutral-200 p-5">
         <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Total Due</p>
         <p className="mt-1 text-4xl font-extrabold text-[#7a1f2b]">
           ₹{totalAmount.toLocaleString("en-IN")}
@@ -172,7 +172,7 @@ function PaymentContent() {
               className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 text-xs font-semibold transition-all ${
                 method === m
                   ? "border-[#7a1f2b] bg-[#7a1f2b] text-white"
-                  : "border-neutral-200 text-neutral-600 hover:border-[#7a1f2b]/40"
+                  : "border-neutral-200 dark:border-neutral-200 text-neutral-600 dark:text-neutral-700 hover:border-[#7a1f2b]/40"
               }`}
             >
               {m === "gpay"  && <Smartphone size={18} />}
@@ -185,7 +185,7 @@ function PaymentContent() {
       </div>
 
       {/* Payment details */}
-      <div className="mt-5 rounded-xl border border-neutral-200 bg-white p-5">
+      <div className="mt-5 rounded-xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-5">
         {(method === "gpay" || method === "upi") && (
           <div className="space-y-3">
             <InfoRow label="UPI ID" value={details.upiId} onCopy={() => copy(details.upiId, "upi")} copied={copied === "upi"} />
@@ -211,7 +211,7 @@ function PaymentContent() {
 
       {/* Transaction ID input */}
       <div className="mt-5">
-        <label className="mb-1.5 block text-sm font-semibold text-neutral-700">
+        <label className="mb-1.5 block text-sm font-semibold text-neutral-700 dark:text-neutral-800">
           Transaction Reference ID *
         </label>
         <input
@@ -266,7 +266,7 @@ function InfoRow({
       {onCopy && (
         <button
           onClick={onCopy}
-          className="flex items-center gap-1 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors"
+          className="flex items-center gap-1 rounded-lg border border-neutral-200 dark:border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
         >
           {copied ? <CheckCircle size={12} className="text-green-600" /> : <Copy size={12} />}
           {copied ? "Copied!" : "Copy"}

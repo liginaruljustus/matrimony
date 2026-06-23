@@ -3,7 +3,7 @@ import { Heart, Home, Search } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#faf7f2] px-4 text-center">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#faf7f2] dark:bg-neutral-50 px-4 text-center">
       {/* Logo */}
       <div className="mb-6 flex items-center gap-2">
         <Heart size={28} className="fill-[#7a1f2b] text-[#7a1f2b]" />
@@ -34,7 +34,7 @@ export default function NotFound() {
         </Link>
         <Link
           href="/profiles"
-          className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-6 py-3 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
+          className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white dark:bg-neutral-100 px-6 py-3 text-sm font-semibold text-neutral-700 dark:text-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
         >
           <Search size={15} />
           Browse Profiles

@@ -89,16 +89,20 @@ export async function updateMatrimonyProfileAction(payload: any) {
   const userId = toObjectId(session.user.id);
   if (!userId) return { ok: false, message: "Invalid user ID" };
 
-  const profileData = {
-    ...parsed.data,
-    userId,
-  };
+  // Strip photos (managed via /api/photos) and name (lives on UserModel, not ProfileModel)
+  const { photos: _photos, name, ...profileFields } = parsed.data as any;
 
-  await ProfileModel.findOneAndUpdate(
-    { userId },
-    { $set: profileData, $setOnInsert: { photos: [], userId } },
-    { upsert: true, new: true },
-  );
+  await Promise.all([
+    ProfileModel.findOneAndUpdate(
+      { userId },
+      {
+        $set: { ...profileFields, userId },
+        $setOnInsert: { photos: [] },
+      },
+      { upsert: true, new: true },
+    ),
+    name ? UserModel.findByIdAndUpdate(userId, { $set: { name } }) : Promise.resolve(),
+  ]);
 
   const user = await UserModel.findById(userId).select("profileId autoPassword").lean() as { profileId?: string; autoPassword?: string } | null;
 
