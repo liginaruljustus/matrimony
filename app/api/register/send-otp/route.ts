@@ -10,7 +10,7 @@
 import bcrypt from "bcryptjs";
 import { randomInt } from "crypto";
 import { connectToDatabase } from "@/lib/mongodb";
-import { UserModel, PendingRegistrationModel } from "@/lib/models";
+import { PendingRegistrationModel } from "@/lib/models";
 import { sendOtpSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
@@ -28,12 +28,6 @@ export async function POST(request: Request) {
     const { name, email, phone, profileType, familyClass, religion } = parsed.data;
 
     await connectToDatabase();
-
-    // Check if email already registered
-    const existingUser = await UserModel.findOne({ email }).lean();
-    if (existingUser) {
-      return Response.json({ message: "Email already registered. Please sign in." }, { status: 409 });
-    }
 
     // Resend cooldown: if a pending record was created < 60 s ago, don't spam
     const existingPending = await PendingRegistrationModel.findOne({ email }).lean() as any;

@@ -176,12 +176,14 @@ export function Navbar() {
     { href: "/inbox",            label: "Inbox" },
     { href: "/contact-details",  label: "Contacts" },
     { href: "/payment/history",  label: "Payments" },
+    { href: "/my-profile",       label: "My Profile" },
     { href: "/settings",         label: "Settings" },
   ];
 
   const brideLinks = [
-    { href: "/bride-inbox", label: "Proposals" },
-    { href: "/settings",    label: "Settings" },
+    { href: "/bride-inbox",  label: "Proposals" },
+    { href: "/my-profile",   label: "My Profile" },
+    { href: "/settings",     label: "Settings" },
   ];
 
   const commonLinks = [

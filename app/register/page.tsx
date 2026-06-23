@@ -217,7 +217,7 @@ export default function RegisterPage() {
     setAutoLoggingIn(true);
     try {
       const res = await signIn("credentials", {
-        email: pendingEmail,
+        profileId: credentials.profileId,
         password: credentials.autoPassword,
         redirect: false,
       });
@@ -497,14 +497,14 @@ export default function RegisterPage() {
 
             {/* Profile Type */}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-neutral-700">I am looking for</label>
+              <label className="mb-1.5 block text-xs font-semibold text-neutral-700">Gender</label>
               <select
                 {...register("profileType")}
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-[#7a1f2b] focus:ring-2 focus:ring-[#7a1f2b]/20"
               >
                 <option value="">Select...</option>
-                <option value="BRIDE">Bride</option>
-                <option value="GROOM">Groom</option>
+                <option value="GROOM">Male</option>
+                <option value="BRIDE">Female</option>
               </select>
             </div>
 
@@ -535,20 +535,6 @@ export default function RegisterPage() {
                 <option value="CHRISTIAN">Christian</option>
                 <option value="OTHER">Other</option>
               </select>
-              <p className="mt-1 text-[10px] text-neutral-400">
-                Used to generate your Profile ID (e.g. M0326H00001MC)
-              </p>
-            </div>
-
-            {/* Auto-password info box */}
-            <div className="rounded-xl bg-[#7a1f2b]/5 p-3 ring-1 ring-[#7a1f2b]/20">
-              <div className="flex items-start gap-2">
-                <Key size={15} className="text-[#7a1f2b] shrink-0 mt-0.5" />
-                <p className="text-xs text-[#7a1f2b]">
-                  <span className="font-semibold">Password auto-generated</span> from your phone number,
-                  registration date &amp; name — no need to create one!
-                </p>
-              </div>
             </div>
 
             {/* Error */}

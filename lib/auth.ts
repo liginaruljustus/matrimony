@@ -17,14 +17,14 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email:    { label: "Email",    type: "email" },
-        password: { label: "Password", type: "password" },
+        profileId: { label: "Profile ID", type: "text" },
+        password:  { label: "Password",   type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.profileId || !credentials?.password) return null;
         await connectToDatabase();
 
-        const user = await UserModel.findOne({ email: credentials.email }).lean<any>();
+        const user = await UserModel.findOne({ profileId: credentials.profileId.trim().toUpperCase() }).lean<any>();
         if (!user) return null;
 
         // Block suspended / banned accounts before password check

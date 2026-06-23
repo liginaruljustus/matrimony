@@ -9,7 +9,7 @@ import { Heart, Eye, EyeOff, AlertCircle } from "lucide-react";
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("");
+  const [profileId, setProfileId] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState("");
@@ -19,7 +19,7 @@ function LoginContent() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const res = await signIn("credentials", { email, password, redirect: false });
+    const res = await signIn("credentials", { profileId, password, redirect: false });
     if (res?.error) {
       // NextAuth wraps thrown errors in res.error as "CredentialsSignin"
       // but the original message is passed through in some versions.
@@ -32,7 +32,7 @@ function LoginContent() {
       } else if (raw.includes("ACCOUNT_INACTIVE")) {
         setError("Your account is inactive. Please contact support.");
       } else {
-        setError("Invalid email or password. Please try again.");
+        setError("Invalid Profile ID or password. Please try again.");
       }
       setLoading(false);
       return;
@@ -60,24 +60,21 @@ function LoginContent() {
         <div className="card p-6">
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <label className="label">Email Address</label>
+              <label className="label">Profile ID</label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                type="text"
+                value={profileId}
+                onChange={(e) => setProfileId(e.target.value.toUpperCase())}
+                placeholder="e.g. M0626H00042MC"
                 required
-                autoComplete="email"
-                className="input-field"
+                autoComplete="username"
+                className="input-field font-mono tracking-wider"
               />
             </div>
 
             <div>
               <div className="mb-1.5 flex items-center justify-between">
                 <label className="label !mb-0">Password</label>
-                <Link href="/forgot-password" className="text-xs font-semibold text-primary hover:underline">
-                  Forgot password?
-                </Link>
               </div>
               <div className="relative">
                 <input

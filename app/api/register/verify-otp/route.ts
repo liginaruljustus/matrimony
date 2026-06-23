@@ -12,6 +12,7 @@
 import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, PendingRegistrationModel } from "@/lib/models";
+// UserModel imported for create only; no uniqueness guard on email (multiple accounts per email allowed)
 import { verifyOtpSchema } from "@/lib/validators";
 import { generateProfileId, generatePassword } from "@/lib/profileIdGenerator";
 
@@ -67,16 +68,6 @@ export async function POST(request: Request) {
     }
 
     // ── OTP correct — create the user account ────────────────────────────────
-
-    // Guard against race condition: email may have been registered while OTP was pending
-    const existingUser = await UserModel.findOne({ email }).lean();
-    if (existingUser) {
-      await PendingRegistrationModel.deleteOne({ email });
-      return Response.json(
-        { message: "Email already registered. Please sign in." },
-        { status: 409 },
-      );
-    }
 
     // Generate credentials
     const submissionDate = new Date();

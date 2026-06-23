@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
   Lock, Unlock, AlertCircle, CheckCircle,
-  Eye, EyeOff, Shield, Clock, KeyRound,
+  Eye, EyeOff, Shield, Clock,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -23,14 +23,6 @@ export default function SettingsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult]         = useState<{ ok: boolean; message: string } | null>(null);
 
-  // Change password state
-  const [cpCurrent, setCpCurrent]   = useState("");
-  const [cpNew, setCpNew]           = useState("");
-  const [cpConfirm, setCpConfirm]   = useState("");
-  const [showCpCurrent, setShowCpCurrent] = useState(false);
-  const [showCpNew, setShowCpNew]   = useState(false);
-  const [cpSubmitting, setCpSubmitting] = useState(false);
-  const [cpResult, setCpResult]     = useState<{ ok: boolean; message: string } | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return; }
@@ -56,39 +48,6 @@ export default function SettingsPage() {
     };
     void load();
   }, [status]);
-
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!cpCurrent.trim() || !cpNew.trim() || !cpConfirm.trim()) return;
-    if (cpNew !== cpConfirm) {
-      setCpResult({ ok: false, message: "New passwords do not match" });
-      return;
-    }
-    if (cpNew.length < 8) {
-      setCpResult({ ok: false, message: "New password must be at least 8 characters" });
-      return;
-    }
-    setCpSubmitting(true);
-    setCpResult(null);
-    try {
-      const res  = await fetch("/api/user/change-password", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ currentPassword: cpCurrent, newPassword: cpNew }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setCpResult({ ok: true, message: data.message });
-        setCpCurrent(""); setCpNew(""); setCpConfirm("");
-      } else {
-        setCpResult({ ok: false, message: data.error ?? "Failed" });
-      }
-    } catch {
-      setCpResult({ ok: false, message: "Network error" });
-    } finally {
-      setCpSubmitting(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,97 +196,6 @@ export default function SettingsPage() {
               : frozen
               ? "Unfreeze My Profile"
               : "Freeze My Profile"}
-          </button>
-        </form>
-      </div>
-
-      {/* Change Password */}
-      <div className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-1 flex items-center gap-2 text-base font-bold text-neutral-800">
-          <KeyRound size={17} className="text-[#7a1f2b]" />
-          Change Password
-        </h2>
-        <p className="mb-4 text-sm text-neutral-500">
-          Set a new password for your account. You&apos;ll need your current password to confirm.
-        </p>
-
-        <form onSubmit={handleChangePassword} className="space-y-4">
-          {/* Current password */}
-          <div>
-            <label className="mb-1.5 block text-sm font-semibold text-neutral-700">Current Password</label>
-            <div className="relative">
-              <input
-                type={showCpCurrent ? "text" : "password"}
-                value={cpCurrent}
-                onChange={(e) => setCpCurrent(e.target.value)}
-                placeholder="Enter current password"
-                className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 pr-10 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/20"
-                required
-              />
-              <button type="button" onClick={() => setShowCpCurrent((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600">
-                {showCpCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-          </div>
-
-          {/* New password */}
-          <div>
-            <label className="mb-1.5 block text-sm font-semibold text-neutral-700">New Password</label>
-            <div className="relative">
-              <input
-                type={showCpNew ? "text" : "password"}
-                value={cpNew}
-                onChange={(e) => setCpNew(e.target.value)}
-                placeholder="Min. 8 characters"
-                className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 pr-10 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/20"
-                required
-              />
-              <button type="button" onClick={() => setShowCpNew((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600">
-                {showCpNew ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Confirm new password */}
-          <div>
-            <label className="mb-1.5 block text-sm font-semibold text-neutral-700">Confirm New Password</label>
-            <input
-              type="password"
-              value={cpConfirm}
-              onChange={(e) => setCpConfirm(e.target.value)}
-              placeholder="Re-enter new password"
-              className={`w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 ${
-                cpConfirm && cpNew !== cpConfirm
-                  ? "border-red-300 focus:border-red-400 focus:ring-red-200"
-                  : "border-neutral-300 focus:border-[#7a1f2b] focus:ring-[#7a1f2b]/20"
-              }`}
-              required
-            />
-            {cpConfirm && cpNew !== cpConfirm && (
-              <p className="mt-1 text-xs text-red-600">Passwords do not match</p>
-            )}
-          </div>
-
-          {cpResult && (
-            <div className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm ${
-              cpResult.ok
-                ? "border-green-200 bg-green-50 text-green-800"
-                : "border-red-200 bg-red-50 text-red-800"
-            }`}>
-              {cpResult.ok ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
-              {cpResult.message}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={cpSubmitting || !cpCurrent.trim() || !cpNew.trim() || !cpConfirm.trim() || cpNew !== cpConfirm}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#7a1f2b] py-3 text-sm font-bold text-white transition-colors hover:bg-[#6b1823] disabled:opacity-50"
-          >
-            <KeyRound size={14} />
-            {cpSubmitting ? "Changing…" : "Change Password"}
           </button>
         </form>
       </div>

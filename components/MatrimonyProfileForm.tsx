@@ -31,7 +31,7 @@ const DISTRICTS = [
   "Villupuram", "Chennai",
 ];
 
-export function MatrimonyProfileForm({ defaultProfile }: { defaultProfile?: any }) {
+export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfile?: any; onSaved?: () => void }) {
   const [step, setStep] = useState(0);
   const [photos, setPhotos] = useState<string[]>(defaultProfile?.photos || []);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -72,6 +72,7 @@ export function MatrimonyProfileForm({ defaultProfile }: { defaultProfile?: any 
     const result = await updateMatrimonyProfileAction({ ...data, photos });
     if (result.ok) {
       setMessage({ text: "Profile saved successfully! 🎉", ok: true });
+      onSaved?.();
       if (result.profileId) {
         setTimeout(() => window.location.reload(), 2000);
       }
