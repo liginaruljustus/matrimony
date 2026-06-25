@@ -22,11 +22,9 @@ type MDProfile = {
   district: string;
   education: string;
   currentJob?: string;
-  height?: number;
-  complexion?: string;
-  maritalStatus?: string;
   photo?: string;
   familyClass: "MC" | "UC" | "EC";
+  maritalStatus?: string;
   nakshatra?: string;
   rashi?: string;
   createdAt: string;
@@ -67,19 +65,14 @@ export default function ProfilesPage() {
   const [classTab, setClassTab]      = useState("ALL");
   const [showFilters, setShowFilters]= useState(false);
   const [favoritedIds, setFavoritedIds] = useState<Set<string>>(new Set());
+  const [favoriteData, setFavoriteData] = useState<Record<string, any>>({}); // Full favorite info with expiry
 
   const [filters, setFilters] = useState({
     profileId:     "",
     minAge:        "",
     maxAge:        "",
-    religion:      "",
     caste:         "",
     district:      "",
-    nakshatra:     "",
-    maritalStatus: "",
-    minHeight:     "",
-    maxHeight:     "",
-    complexion:    "",
   });
 
   const loadProfiles = useCallback(async () => {
@@ -90,14 +83,8 @@ export default function ProfilesPage() {
       if (filters.profileId)     params.set("profileId",     filters.profileId);
       if (filters.minAge)        params.set("minAge",         filters.minAge);
       if (filters.maxAge)        params.set("maxAge",         filters.maxAge);
-      if (filters.religion)      params.set("religion",       filters.religion);
       if (filters.caste)         params.set("caste",          filters.caste);
       if (filters.district)      params.set("district",       filters.district);
-      if (filters.nakshatra)     params.set("nakshatra",      filters.nakshatra);
-      if (filters.maritalStatus) params.set("maritalStatus",  filters.maritalStatus);
-      if (filters.minHeight)     params.set("minHeight",      filters.minHeight);
-      if (filters.maxHeight)     params.set("maxHeight",      filters.maxHeight);
-      if (filters.complexion)    params.set("complexion",     filters.complexion);
 
       const res = await fetch(`/api/profiles/search?${params}`);
       const data = await res.json();
@@ -117,6 +104,18 @@ export default function ProfilesPage() {
       .then((data) => {
         if (data?.favorites) {
           setFavoritedIds(new Set(data.favorites.map((f: any) => f.favoriteUserId)));
+          // Store full favorite data keyed by favoriteUserId
+          const favDataMap: Record<string, any> = {};
+          data.favorites.forEach((f: any) => {
+            favDataMap[f.favoriteUserId] = {
+              id: f.id,
+              expiresAt: f.expiresAt,
+              isPaid: f.isPaid,
+              daysLeft: f.daysLeft,
+              isTrialExpired: f.isTrialExpired,
+            };
+          });
+          setFavoriteData(favDataMap);
         }
       })
       .catch(() => {});
@@ -133,7 +132,7 @@ export default function ProfilesPage() {
   }, [status, session, loadProfiles, router]);
 
   const resetFilters = () => {
-    setFilters({ profileId: "", minAge: "", maxAge: "", religion: "", caste: "", district: "", nakshatra: "", maritalStatus: "", minHeight: "", maxHeight: "", complexion: "" });
+    setFilters({ profileId: "", minAge: "", maxAge: "", caste: "", district: "" });
     setClassTab("ALL");
   };
 
@@ -193,40 +192,10 @@ export default function ProfilesPage() {
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             <FilterInput label="Profile ID"   value={filters.profileId}   onChange={(v) => setFilters({ ...filters, profileId: v })}   placeholder="e.g. F0326H00001MC" />
-            <FilterInput label="Religion"     value={filters.religion}    onChange={(v) => setFilters({ ...filters, religion: v })}    placeholder="e.g. Hindu" />
             <FilterInput label="Caste"        value={filters.caste}       onChange={(v) => setFilters({ ...filters, caste: v })}       placeholder="e.g. Mudaliar" />
             <FilterInput label="District"     value={filters.district}    onChange={(v) => setFilters({ ...filters, district: v })}    placeholder="e.g. Chennai" />
             <FilterInput label="Min Age"      value={filters.minAge}      onChange={(v) => setFilters({ ...filters, minAge: v })}      placeholder="18" type="number" />
             <FilterInput label="Max Age"      value={filters.maxAge}      onChange={(v) => setFilters({ ...filters, maxAge: v })}      placeholder="40" type="number" />
-            <FilterInput label="Min Height (cm)" value={filters.minHeight} onChange={(v) => setFilters({ ...filters, minHeight: v })} placeholder="150" type="number" />
-            <FilterInput label="Max Height (cm)" value={filters.maxHeight} onChange={(v) => setFilters({ ...filters, maxHeight: v })} placeholder="175" type="number" />
-            <FilterInput label="Nakshatra"    value={filters.nakshatra}   onChange={(v) => setFilters({ ...filters, nakshatra: v })}   placeholder="e.g. Rohini" />
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-neutral-600">Marital Status</label>
-              <select
-                value={filters.maritalStatus}
-                onChange={(e) => setFilters({ ...filters, maritalStatus: e.target.value })}
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
-              >
-                <option value="">Any</option>
-                <option value="NEVER_MARRIED">Never Married</option>
-                <option value="DIVORCED">Divorced</option>
-                <option value="WIDOWED">Widowed</option>
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-neutral-600">Complexion</label>
-              <select
-                value={filters.complexion}
-                onChange={(e) => setFilters({ ...filters, complexion: e.target.value })}
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
-              >
-                <option value="">Any</option>
-                <option value="Fair">Fair</option>
-                <option value="Wheatish">Wheatish</option>
-                <option value="Dark">Dark</option>
-              </select>
-            </div>
           </div>
           <div className="mt-4 flex gap-3">
             <button
@@ -269,6 +238,7 @@ export default function ProfilesPage() {
               profile={profile}
               currentUserId={session?.user?.id ?? ""}
               isFavorited={favoritedIds.has(profile.userId)}
+              favoriteData={favoriteData[profile.userId] ?? null}
               onFavorited={() => setFavoritedIds((prev) => new Set([...Array.from(prev), profile.userId]))}
             />
           ))}
@@ -284,11 +254,13 @@ function MDProfileCard({
   profile,
   currentUserId,
   isFavorited,
+  favoriteData,
   onFavorited,
 }: {
   profile: MDProfile;
   currentUserId: string;
   isFavorited: boolean;
+  favoriteData?: any;
   onFavorited: () => void;
 }) {
   const classColors: Record<string, string> = {
@@ -319,6 +291,7 @@ function MDProfileCard({
           <FavoriteButton
             targetUserId={profile.userId}
             initialIsFavorited={isFavorited}
+            favoriteData={favoriteData}
             onToggle={(v) => { if (v) onFavorited(); }}
           />
         </div>
@@ -367,6 +340,7 @@ function MDProfileCard({
             variant="button"
             label="Add Favourite"
             initialIsFavorited={isFavorited}
+            favoriteData={favoriteData}
             onToggle={(v) => { if (v) onFavorited(); }}
           />
         </div>

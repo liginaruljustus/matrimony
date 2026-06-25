@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     await connectToDatabase();
 
     // Block suspended / banned accounts from browsing
-    const groomUser = await UserModel.findById(session.user.id).select("status").lean() as any;
+    const groomUser = await UserModel.findById(session.user.id).select("status religion").lean() as any;
     if (!groomUser || groomUser.status !== "ACTIVE") {
       return Response.json(
         { error: "Your account is not active. Contact support for assistance." },
@@ -66,9 +66,10 @@ export async function GET(req: Request) {
       { nativeDistrict: new RegExp(district, "i") },
       { location:       new RegExp(district, "i") },
     ];
-    // Religion is an explicit filter only — no auto-restrict by groom's religion
-    const religionFilter = searchParams.get("religion") ?? "";
-    if (religionFilter)  profileQuery.religion      = new RegExp(religionFilter, "i");
+    // Auto-restrict by groom's religion — only show profiles matching their religion
+    if (groomUser.religion) {
+      profileQuery.religion = groomUser.religion;
+    }
     if (familyClass)     profileQuery.familyClass   = familyClass;
     if (nakshatra)       profileQuery.nakshatra     = new RegExp(nakshatra, "i");
     if (maritalStatus)   profileQuery.maritalStatus = maritalStatus;

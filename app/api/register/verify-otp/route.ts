@@ -94,10 +94,12 @@ export async function POST(request: Request) {
     // Remove the pending record (fire-and-forget; TTL will also clean up)
     PendingRegistrationModel.deleteOne({ email }).catch(() => {});
 
-    // Email credentials (fire-and-forget)
-    sendCredentialsEmail(email, pending.name, profileId, autoPassword).catch((err) => {
+    // Email credentials
+    try {
+      await sendCredentialsEmail(email, pending.name, profileId, autoPassword);
+    } catch (err) {
       console.error("[Credentials Email] Failed to send:", err);
-    });
+    }
 
     return Response.json({
       ok: true,

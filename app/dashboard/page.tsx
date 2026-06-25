@@ -532,6 +532,9 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
           </div>
         )}
 
+        {/* ── Profile Completion (First Section) ───────────────────────────────── */}
+        {profile && <ProfileCompletionCard profile={profile} onEdit={scrollToForm} />}
+
         {/* ── Row 1: Welcome + Profile Status ──────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
@@ -720,92 +723,6 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
             </ol>
           </div>
         </div>
-
-        {/* ── Profile Completion ───────────────────────────────────────────── */}
-        {profile && <ProfileCompletionCard profile={profile} onEdit={scrollToForm} />}
-
-        {/* ── Quick Actions ─────────────────────────────────────────────────── */}
-        {isGroom ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-            <Link
-              href="/profiles"
-              className="rounded-xl bg-[#7a1f2b] text-white p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-[#6b1823] transition"
-            >
-              <Users size={22} />
-              <span className="text-sm">Browse Brides</span>
-            </Link>
-            <Link
-              href="/favorites"
-              className="rounded-xl bg-[#d4af37] text-[#7a1f2b] p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-[#c9a02a] transition"
-            >
-              <Heart size={22} className="fill-current" />
-              <span className="text-sm">My Favourites</span>
-            </Link>
-            <Link
-              href="/inbox"
-              className="rounded-xl bg-white dark:bg-neutral-100 border border-slate-200 dark:border-neutral-200 text-slate-700 dark:text-neutral-800 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-200 transition"
-            >
-              <MessageCircle size={22} />
-              <span className="text-sm">My Inbox</span>
-            </Link>
-            <Link
-              href="/contact-details"
-              className="rounded-xl bg-white dark:bg-neutral-100 border border-slate-200 dark:border-neutral-200 text-slate-700 dark:text-neutral-800 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-200 transition"
-            >
-              <CreditCard size={22} />
-              <span className="text-sm">Contacts</span>
-            </Link>
-            <Link
-              href="/interests"
-              className="rounded-xl bg-white dark:bg-neutral-100 border border-slate-200 dark:border-neutral-200 text-slate-700 dark:text-neutral-800 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-200 transition"
-            >
-              <Heart size={22} />
-              <span className="text-sm">Interests</span>
-            </Link>
-            <Link
-              href="/payment/history"
-              className="rounded-xl bg-white dark:bg-neutral-100 border border-slate-200 dark:border-neutral-200 text-slate-700 dark:text-neutral-800 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-200 transition"
-            >
-              <CheckCircle size={22} />
-              <span className="text-sm">Payments</span>
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Link
-              href="/bride-inbox"
-              className="rounded-xl bg-[#7a1f2b] text-white p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-[#6b1823] transition"
-            >
-              <Heart size={22} className="fill-white" />
-              <span className="text-sm">Proposals</span>
-            </Link>
-            <Link
-              href={profile?.userId ? `/profiles/${profile.userId}` : "/dashboard"}
-              className={`rounded-xl p-4 flex flex-col items-center justify-center gap-2 font-semibold transition ${
-                profile?.userId
-                  ? "bg-[#d4af37] text-[#7a1f2b] hover:bg-[#c9a02a]"
-                  : "bg-slate-100 text-slate-400 cursor-not-allowed"
-              }`}
-            >
-              <Eye size={22} />
-              <span className="text-sm">My Profile</span>
-            </Link>
-            <Link
-              href="/settings"
-              className="rounded-xl bg-white dark:bg-neutral-100 border border-slate-200 dark:border-neutral-200 text-slate-700 dark:text-neutral-800 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-200 transition"
-            >
-              <Lock size={22} />
-              <span className="text-sm">Settings</span>
-            </Link>
-            <Link
-              href="/chat"
-              className="rounded-xl bg-white dark:bg-neutral-100 border border-slate-200 dark:border-neutral-200 text-slate-700 dark:text-neutral-800 p-4 flex flex-col items-center justify-center gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-neutral-200 transition"
-            >
-              <MessageCircle size={22} />
-              <span className="text-sm">Chat</span>
-            </Link>
-          </div>
-        )}
 
         {/* ── Profile Form (collapsible) ────────────────────────────────────── */}
         <div id="profile-form" className="bg-white dark:bg-neutral-100 rounded-2xl border border-slate-200 dark:border-neutral-200 overflow-hidden">

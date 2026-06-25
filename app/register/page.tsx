@@ -490,9 +490,6 @@ export default function RegisterPage() {
                   className="w-full rounded-lg border border-neutral-300 pl-9 pr-3 py-2.5 text-sm outline-none focus:border-[#7a1f2b] focus:ring-2 focus:ring-[#7a1f2b]/20"
                 />
               </div>
-              <p className="mt-1 text-[10px] text-neutral-400">
-                Used to auto-generate your login password
-              </p>
             </div>
 
             {/* Profile Type */}

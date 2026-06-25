@@ -27,7 +27,7 @@ const FIELD_LABELS: Record<string, string> = {
   totalSisters: "Total Sisters", marriedSisters: "Married Sisters",
   houseDetails: "House Details", familyStatus: "Family Status",
   contactPersonName: "Contact Person Name", contactNumber: "Contact Number",
-  whatsappNo: "WhatsApp Number", bio: "Bio / About Me",
+  whatsappNo: "WhatsApp Number", emailId: "Email ID", bio: "Bio / About Me",
 };
 
 // Derive the form type directly from the Zod schema so the resolver types always match
@@ -351,8 +351,9 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                 {errors.height && <p className="text-xs text-red-600 mt-1">{errors.height.message}</p>}
               </div>
               <div>
-                <label className="label">Weight (kg)</label>
+                <label className="label">Weight (kg) *</label>
                 <input {...register("weight", { valueAsNumber: true })} type="number" className="input-field" />
+                {errors.weight && <p className="text-xs text-red-600 mt-1">{errors.weight.message}</p>}
               </div>
             </div>
 
@@ -398,30 +399,30 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
             </div>
 
             <div>
-              <label className="label">Place of Birth *</label>
+              <label className="label">Place of Birth</label>
               <input {...register("placeOfBirth")} className="input-field" />
               {errors.placeOfBirth && <p className="text-xs text-red-600 mt-1">{errors.placeOfBirth.message}</p>}
             </div>
 
             <div>
-              <label className="label">Time of Birth *</label>
+              <label className="label">Time of Birth</label>
               <input {...register("timeOfBirth")} type="time" className="input-field" />
               {errors.timeOfBirth && <p className="text-xs text-red-600 mt-1">{errors.timeOfBirth.message}</p>}
             </div>
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="label">Rashi *</label>
+                <label className="label">Rashi</label>
                 <input {...register("rashi")} className="input-field" placeholder="Zodiac sign" />
                 {errors.rashi && <p className="text-xs text-red-600 mt-1">{errors.rashi.message}</p>}
               </div>
               <div>
-                <label className="label">Nakshatra *</label>
+                <label className="label">Nakshatra</label>
                 <input {...register("nakshatra")} className="input-field" />
                 {errors.nakshatra && <p className="text-xs text-red-600 mt-1">{errors.nakshatra.message}</p>}
               </div>
               <div>
-                <label className="label">Lagnam *</label>
+                <label className="label">Lagnam</label>
                 <input {...register("lagnam")} className="input-field" />
                 {errors.lagnam && <p className="text-xs text-red-600 mt-1">{errors.lagnam.message}</p>}
               </div>
@@ -544,6 +545,17 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                 )}
               />
               {errors.whatsappNo && <p className="text-xs text-red-600 mt-1">{errors.whatsappNo.message}</p>}
+            </div>
+
+            <div>
+              <label className="label">Email ID *</label>
+              <input
+                {...register("emailId")}
+                type="email"
+                placeholder="your.email@example.com"
+                className="input"
+              />
+              {errors.emailId && <p className="text-xs text-red-600 mt-1">{errors.emailId.message}</p>}
             </div>
 
             <div className="rounded-xl bg-blue-50 p-3 text-xs text-blue-700 ring-1 ring-blue-200">
@@ -697,7 +709,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                     "houseDetails", "familyStatus",
                   ]);
                 } else if (step === 2) {
-                  ok = await trigger(["contactPersonName", "contactNumber", "whatsappNo"]);
+                  ok = await trigger(["contactPersonName", "contactNumber", "whatsappNo", "emailId"]);
                 }
                 if (!ok) return;
                 setStep(step + 1);

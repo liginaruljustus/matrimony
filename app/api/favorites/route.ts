@@ -10,7 +10,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
-import { UserModel, ProfileModel, FavoriteModel, PaymentModel } from "@/lib/models";
+import { UserModel, ProfileModel, FavoriteModel, PaymentModel, SettingsModel } from "@/lib/models";
 import { buildMDCard, isPaymentLockExpired } from "@/lib/cardGenerator";
 
 export async function GET() {
@@ -59,6 +59,11 @@ export async function GET() {
       // exists in the list so the groom knows they have a favorite there.
       const cardVisible = !isBrideFrozen && !isBrideBanned;
 
+      const isTrialExpired = fav.expiresAt && new Date() > new Date(fav.expiresAt) && !fav.isPaid;
+      const daysLeft = fav.expiresAt && !fav.isPaid
+        ? Math.max(0, Math.ceil((new Date(fav.expiresAt).getTime() - new Date().getTime()) / (24 * 60 * 60 * 1000)))
+        : null;
+
       return {
         id:                    String(fav._id),
         favoriteUserId:        uid,
@@ -76,6 +81,12 @@ export async function GET() {
                                  ? approvedPaymentSet.has(String(fav.secondPaymentId))
                                  : false,
         createdAt:             fav.createdAt,
+        // Trial expiry info
+        addedAt:               fav.addedAt ?? fav.createdAt,
+        expiresAt:             fav.expiresAt ?? null,
+        isPaid:                fav.isPaid ?? false,
+        isTrialExpired,
+        daysLeft,
         mdCard:                cardVisible && u && p ? buildMDCard(u, p) : null,
         isBrideFrozen,
         isBrideBanned,
@@ -126,10 +137,23 @@ export async function POST(req: Request) {
       return Response.json({ error: "Can only favourite bride profiles" }, { status: 400 });
     }
 
+    // Get favorite trial days from settings
+    const settings = await SettingsModel.findOne().select("favoriteTrialDays").lean() as any;
+    const trialDays = settings?.favoriteTrialDays ?? 7;
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + trialDays * 24 * 60 * 60 * 1000);
+
     // Upsert — silently succeed if already exists
     await FavoriteModel.findOneAndUpdate(
       { userId: session.user.id, favoriteUserId },
-      { $setOnInsert: { userId: session.user.id, favoriteUserId, status: "ACTIVE" } },
+      { $setOnInsert: {
+        userId: session.user.id,
+        favoriteUserId,
+        status: "ACTIVE",
+        addedAt: now,
+        expiresAt,
+        isPaid: false,
+      } },
       { upsert: true, new: true },
     );
 

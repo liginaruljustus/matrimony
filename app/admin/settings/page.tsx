@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Loader2,
   FileText,
+  Heart,
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminHeader } from "@/components/admin/AdminHeader";
@@ -47,6 +48,8 @@ type Settings = {
   pdfFooterText: string;
   pdfShowContactDetails: boolean;
   pdfShowAstrology: boolean;
+  // Favorites trial settings
+  favoriteTrialDays: number;
 };
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
@@ -345,6 +348,7 @@ export default function AdminSettingsPage() {
         pdfFooterText: "Confidential — For Family Use Only",
         pdfShowContactDetails: true,
         pdfShowAstrology: true,
+        favoriteTrialDays: 7,
       };
       setSettings(defaults);
       setSaved(defaults);
@@ -659,6 +663,30 @@ export default function AdminSettingsPage() {
                 label="Include Astrology Section"
                 description="Show Rashi, Nakshatra, Lagnam, and birth details in the PDF"
               />
+            </div>
+          </div>
+        </SectionCard>
+
+        {/* ── Favorites Trial Settings ────────────────────────────────────── */}
+        <SectionCard>
+          <SectionTitle icon={Heart} title="Favorites Trial Settings" />
+          <p className="text-xs text-slate-500 mb-4 -mt-2">
+            Configure how long users can keep favorites before they need to pay.
+          </p>
+          <div className="space-y-5">
+            <div>
+              <label className="mb-2 block text-xs font-semibold text-slate-900">Free Trial Period (Days)</label>
+              <input
+                type="number"
+                min="1"
+                max="365"
+                value={settings.favoriteTrialDays}
+                onChange={(e) => set("favoriteTrialDays", Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Number of days users can keep a favorited profile before payment is required. After this period, the favorite is automatically removed unless paid.
+              </p>
             </div>
           </div>
         </SectionCard>

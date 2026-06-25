@@ -86,6 +86,7 @@ const profileSchema = new Schema(
     contactPersonName: { type: String },
     contactNumber: { type: String },
     whatsappNo: { type: String },
+    emailId: { type: String },
     // System
     profileType: { type: String, enum: ["BRIDE", "GROOM"] },
     familyClass: { type: String, enum: ["MC", "UC", "EC"] },
@@ -173,6 +174,10 @@ const favoriteSchema = new Schema(
     isAccepted:          { type: Boolean, default: false },
     acceptedAt:          { type: Date },
     declinedAt:          { type: Date },
+    // Favorite trial period
+    addedAt:             { type: Date, default: Date.now, index: true },
+    expiresAt:           { type: Date, index: true }, // addedAt + favoriteTrialDays
+    isPaid:              { type: Boolean, default: false },
   },
   { timestamps: true },
 );
@@ -275,6 +280,8 @@ const settingsSchema = new Schema(
     pdfFooterText:         { type: String,  default: "Confidential — For Family Use Only" },
     pdfShowContactDetails: { type: Boolean, default: true },
     pdfShowAstrology:      { type: Boolean, default: true },
+    // Favorites trial settings
+    favoriteTrialDays:     { type: Number, default: 7 },
     updatedAt:          { type: Date, default: Date.now },
     updatedBy:          { type: Schema.Types.ObjectId, ref: "User" },
   },
