@@ -19,6 +19,15 @@ type PaymentDetails = {
   bankAccountHolder: string;
 };
 
+type LockedFav = {
+  id: string;
+  name: string;
+  profileId: string;
+  familyClass: string;
+  amount: number;
+  paymentLockExpiresAt: string | null;
+};
+
 const DETAIL_DEFAULTS: PaymentDetails = {
   upiId: "reginmatrimony@upi",
   bankName: "State Bank of India",
@@ -27,13 +36,14 @@ const DETAIL_DEFAULTS: PaymentDetails = {
   bankAccountHolder: "Regin Matrimony Services",
 };
 
+const PAYMENT_AMT: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
+
 function PaymentContent() {
   const router    = useRouter();
   const { status } = useSession();
   const params    = useSearchParams();
 
   const rawIds    = params.get("ids") ?? "";
-  const rawAmount = Number(params.get("amount") ?? 0);
 
   const [method, setMethod]         = useState<Method>("gpay");
   const [txnId, setTxnId]           = useState("");
@@ -42,6 +52,8 @@ function PaymentContent() {
   const [error, setError]           = useState("");
   const [copied, setCopied]         = useState("");
   const [details, setDetails]       = useState<PaymentDetails>(DETAIL_DEFAULTS);
+  const [lockedFavs, setLockedFavs] = useState<LockedFav[]>([]);
+  const [loadingFavs, setLoadingFavs] = useState(true);
 
   useEffect(() => {
     fetch("/api/settings/payment")
@@ -64,8 +76,41 @@ function PaymentContent() {
     if (status === "unauthenticated") router.push("/login");
   }, [status, router]);
 
-  const favoriteIds = rawIds ? rawIds.split(",").filter(Boolean) : [];
-  const totalAmount = rawAmount;
+  // Load the user's payment-locked favorites from the server —
+  // works even when the page is opened without ?ids= in the URL.
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    fetch("/api/favorites")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (!data?.favorites) return;
+        const urlIds = rawIds ? rawIds.split(",").filter(Boolean) : [];
+        let locked = (data.favorites as any[]).filter(
+          (f) => f.movedToPayment && !f.firstPaidAt && !f.lockExpired && !f.isBrideFrozen,
+        );
+        // If specific ids were passed (fresh redirect from favorites), honour them
+        if (urlIds.length) {
+          const subset = locked.filter((f) => urlIds.includes(f.id));
+          if (subset.length) locked = subset;
+        }
+        setLockedFavs(locked.map((f) => {
+          const fc = f.mdCard?.familyClass ?? "MC";
+          return {
+            id:                   f.id,
+            name:                 f.mdCard?.name ?? "Profile",
+            profileId:            f.mdCard?.profileId ?? "—",
+            familyClass:          fc,
+            amount:               PAYMENT_AMT[fc] ?? 500,
+            paymentLockExpiresAt: f.paymentLockExpiresAt ?? null,
+          };
+        }));
+      })
+      .catch(() => {})
+      .finally(() => setLoadingFavs(false));
+  }, [status, rawIds]);
+
+  const favoriteIds = lockedFavs.map((f) => f.id);
+  const totalAmount = lockedFavs.reduce((acc, f) => acc + f.amount, 0);
 
   const copy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -98,7 +143,7 @@ function PaymentContent() {
     }
   };
 
-  if (status === "loading") return <Loader />;
+  if (status === "loading" || loadingFavs) return <Loader />;
 
   if (submitted) {
     return (
@@ -149,6 +194,53 @@ function PaymentContent() {
         Unlock additional details for {favoriteIds.length} bride profile
         {favoriteIds.length !== 1 ? "s" : ""}
       </p>
+
+      {/* Empty state — nothing awaiting payment */}
+      {lockedFavs.length === 0 && (
+        <div className="mt-8 rounded-xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-8 text-center">
+          <AlertCircle size={32} className="mx-auto text-neutral-300" />
+          <p className="mt-3 font-semibold text-neutral-700 dark:text-neutral-800">
+            No profiles awaiting payment
+          </p>
+          <p className="mt-1 text-sm text-neutral-400">
+            Move favourites to payment first, or the payment lock may have expired.
+          </p>
+          <Link
+            href="/favorites"
+            className="mt-5 inline-block rounded-lg bg-[#7a1f2b] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors"
+          >
+            Go to My Favourites
+          </Link>
+        </div>
+      )}
+
+      {lockedFavs.length > 0 && (
+      <>
+      {/* Profiles being paid for */}
+      <div className="mt-6 rounded-xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-4">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          Profiles in this payment
+        </p>
+        <div className="space-y-2.5">
+          {lockedFavs.map((f) => (
+            <div key={f.id} className="flex items-center justify-between rounded-lg bg-neutral-50 dark:bg-neutral-200 px-3 py-2.5">
+              <div>
+                <p className="text-sm font-bold text-neutral-800">{f.name}</p>
+                <p className="text-xs font-mono text-neutral-400">{f.profileId}</p>
+                {f.paymentLockExpiresAt && (
+                  <p className="mt-0.5 text-[10px] text-amber-600">
+                    Pay before {new Date(f.paymentLockExpiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} or it will be removed from favourites
+                  </p>
+                )}
+              </div>
+              <div className="text-right shrink-0">
+                <span className="rounded-full bg-[#7a1f2b]/10 px-2 py-0.5 text-[10px] font-bold text-[#7a1f2b]">{f.familyClass}</span>
+                <p className="mt-1 text-sm font-bold text-[#7a1f2b]">₹{f.amount.toLocaleString("en-IN")}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Amount due */}
       <div className="mt-6 rounded-xl border-2 border-[#7a1f2b]/20 bg-[#faf7f2] dark:bg-neutral-200 p-5">
@@ -248,6 +340,8 @@ function PaymentContent() {
       <p className="mt-4 text-center text-xs text-neutral-400">
         Your payment will be manually verified by our team within 24 hours.
       </p>
+      </>
+      )}
     </div>
   );
 }

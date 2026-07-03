@@ -50,6 +50,8 @@ type Settings = {
   pdfShowAstrology: boolean;
   // Favorites trial settings
   favoriteTrialDays: number;
+  paymentLockDays: number;
+  inboxFreezeDays: number;
 };
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
@@ -349,6 +351,8 @@ export default function AdminSettingsPage() {
         pdfShowContactDetails: true,
         pdfShowAstrology: true,
         favoriteTrialDays: 7,
+        paymentLockDays: 3,
+        inboxFreezeDays: 30,
       };
       setSettings(defaults);
       setSaved(defaults);
@@ -686,6 +690,36 @@ export default function AdminSettingsPage() {
               />
               <p className="text-xs text-slate-500 mt-1">
                 Number of days users can keep a favorited profile before payment is required. After this period, the favorite is automatically removed unless paid.
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-xs font-semibold text-slate-900">Payment Lock Period (Days)</label>
+              <input
+                type="number"
+                min="1"
+                max="365"
+                value={settings.paymentLockDays}
+                onChange={(e) => set("paymentLockDays", Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                After a groom moves a favorite to payment, he must pay within this many days. If not paid, the favorite is removed and the profile appears again in Browse Profiles.
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-xs font-semibold text-slate-900">Inbox Waiting Period (Days)</label>
+              <input
+                type="number"
+                min="1"
+                max="365"
+                value={settings.inboxFreezeDays}
+                onChange={(e) => set("inboxFreezeDays", Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                After the 1st payment is approved, the bride&apos;s additional details stay locked in the groom&apos;s inbox for this many days (only her Profile ID is shown). Details unlock when the period ends.
               </p>
             </div>
           </div>

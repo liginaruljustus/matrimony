@@ -123,7 +123,13 @@ export default function MyProfilePage() {
           Back to Profile
         </button>
         <MatrimonyProfileForm
-          defaultProfile={profile}
+          defaultProfile={
+            profile
+              ? { ...profile, name: profile.name ?? userData?.name ?? (session?.user as any)?.name ?? "" }
+              : userData?.name
+                ? { name: userData.name }
+                : null
+          }
           onSaved={handleSaved}
         />
       </div>

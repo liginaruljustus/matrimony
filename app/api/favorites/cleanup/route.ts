@@ -26,16 +26,31 @@ export async function POST(req: Request) {
 
     await connectToDatabase();
 
-    // Find and delete expired, unpaid favorites
-    const result = await FavoriteModel.deleteMany({
-      expiresAt: { $lt: new Date() },
+    const now = new Date();
+
+    // 1. Trial expiry: free-trial window ended without payment
+    const trialResult = await FavoriteModel.deleteMany({
+      expiresAt: { $lt: now },
+      isPaid: { $ne: true },
+      firstPaidAt: null,
+    });
+
+    // 2. Payment-lock expiry: moved to payment but not paid within paymentLockDays
+    const lockResult = await FavoriteModel.deleteMany({
+      movedToPayment: true,
+      paymentLockExpiresAt: { $lt: now },
+      firstPaidAt: null,
       isPaid: { $ne: true },
     });
 
+    const deletedCount = trialResult.deletedCount + lockResult.deletedCount;
+
     return Response.json({
       ok: true,
-      message: `Deleted ${result.deletedCount} expired favorites`,
-      deletedCount: result.deletedCount,
+      message: `Deleted ${deletedCount} expired favorites (${trialResult.deletedCount} trial-expired, ${lockResult.deletedCount} payment-lock-expired)`,
+      deletedCount,
+      trialExpired: trialResult.deletedCount,
+      paymentLockExpired: lockResult.deletedCount,
     });
   } catch (error) {
     console.error("POST /api/favorites/cleanup error:", error);

@@ -34,16 +34,20 @@ const styles = StyleSheet.create({
   },
   // Wrapper clips the image to borderRadius (react-pdf Image ignores borderRadius alone)
   headerPhotoWrapper: {
-    width: 80,
-    height: 80,
+    width: 96,
+    height: 96,
     borderRadius: 8,
     border: `2 solid ${GOLD}`,
     overflow: "hidden",
+    backgroundColor: "#5c1520",
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerPhoto: {
-    width: 80,
-    height: 80,
-    objectFit: "cover",
+    width: 92,
+    height: 92,
+    // "contain" shows the FULL image (no cropping) — letterboxed on maroon background
+    objectFit: "contain",
     objectPosition: "center center",
   },
   headerPhotoPlaceholder: {
@@ -59,6 +63,12 @@ const styles = StyleSheet.create({
     fontSize: 32,
     color: GOLD,
     fontFamily: "Helvetica-Bold",
+  },
+  photoHint: {
+    fontSize: 6.5,
+    color: GOLD,
+    marginTop: 4,
+    textAlign: "center",
   },
   headerInfo: {
     flex: 1,
@@ -155,6 +165,80 @@ const styles = StyleSheet.create({
     lineHeight: 1.55,
   },
 
+  // ── Repeating page header band (matches footer design) ─────────────────────
+  photoPage: {
+    fontFamily: "Helvetica",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 32,
+    paddingTop: 58,
+    paddingBottom: 50,
+  },
+  pageHeaderBand: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 34,
+    backgroundColor: MAROON,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 32,
+  },
+  pageHeaderBrand: {
+    fontSize: 10,
+    color: GOLD,
+    fontFamily: "Helvetica-Bold",
+    letterSpacing: 1.5,
+  },
+  pageHeaderTitle: {
+    fontSize: 8,
+    color: "#ffffff",
+  },
+  pageHeaderGold: {
+    position: "absolute",
+    top: 34,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: GOLD,
+  },
+  mainPhotoFrame: {
+    width: "100%",
+    height: 480,
+    border: `1 solid ${BORDER}`,
+    borderRadius: 8,
+    backgroundColor: LIGHT,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 14,
+    overflow: "hidden",
+  },
+  mainPhoto: {
+    width: "100%",
+    height: 478,
+    objectFit: "contain",
+  },
+  photoGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  gridPhotoFrame: {
+    width: "48.5%",
+    height: 220,
+    border: `1 solid ${BORDER}`,
+    borderRadius: 8,
+    backgroundColor: LIGHT,
+    marginBottom: 10,
+    overflow: "hidden",
+  },
+  gridPhoto: {
+    width: "100%",
+    height: 218,
+    objectFit: "contain",
+  },
+
   // ── Footer ─────────────────────────────────────────────────────────────────
   footer: {
     position: "absolute",
@@ -249,9 +333,12 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
         {/* ── Header ──────────────────────────────────────────────────── */}
         <View style={styles.header}>
           {mainPhoto ? (
-            <View style={styles.headerPhotoWrapper}>
-              {/* eslint-disable-next-line jsx-a11y/alt-text */}
-              <Image src={mainPhoto} style={styles.headerPhoto} />
+            <View style={{ alignItems: "center" }}>
+              <View style={styles.headerPhotoWrapper}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                <Image src={mainPhoto} style={styles.headerPhoto} />
+              </View>
+              <Text style={styles.photoHint}>Full photo on last page »</Text>
             </View>
           ) : (
             <View style={styles.headerPhotoPlaceholder}>
@@ -397,6 +484,45 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
         </View>
 
       </Page>
+
+      {/* ── Photos page — full uncropped photos ─────────────────────────── */}
+      {photos.length > 0 && (
+        <Page size="A4" style={styles.photoPage}>
+          {/* Repeating header band — mirrors the footer design */}
+          <View style={styles.pageHeaderBand} fixed>
+            <Text style={styles.pageHeaderBrand}>{cfg.pdfCompanyName.toUpperCase()}</Text>
+            <Text style={styles.pageHeaderTitle}>Photos — {name} ({profileId})</Text>
+          </View>
+          <View style={styles.pageHeaderGold} fixed />
+
+          {/* Main photo, full size, no cropping */}
+          <View style={styles.mainPhotoFrame}>
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
+            <Image src={photos[0]} style={styles.mainPhoto} />
+          </View>
+
+          {/* Additional photos in a 2-column grid */}
+          {photos.length > 1 && (
+            <View style={styles.photoGrid}>
+              {photos.slice(1).map((photo, i) => (
+                <View key={i} style={styles.gridPhotoFrame}>
+                  {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                  <Image src={photo} style={styles.gridPhoto} />
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Footer */}
+          <View style={styles.footer} fixed>
+            <Text style={styles.footerText}>
+              Generated on {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+            </Text>
+            <Text style={styles.footerBrand}>{cfg.pdfCompanyName}</Text>
+            <Text style={styles.footerText}>{cfg.pdfFooterText}</Text>
+          </View>
+        </Page>
+      )}
     </Document>
   );
 }

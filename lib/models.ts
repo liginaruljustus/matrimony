@@ -282,6 +282,10 @@ const settingsSchema = new Schema(
     pdfShowAstrology:      { type: Boolean, default: true },
     // Favorites trial settings
     favoriteTrialDays:     { type: Number, default: 7 },
+    // Move-to-payment lock: days a groom has to pay before the favorite is auto-removed
+    paymentLockDays:       { type: Number, default: 3 },
+    // Inbox waiting period: days AD details stay locked after 1st payment approval
+    inboxFreezeDays:       { type: Number, default: 30 },
     updatedAt:          { type: Date, default: Date.now },
     updatedBy:          { type: Schema.Types.ObjectId, ref: "User" },
   },

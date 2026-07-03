@@ -7,13 +7,15 @@
  *  - Each favorite must belong to the current user
  *  - Profile (bride) must NOT be frozen / auto-frozen
  *  - If paymentLock already active & not expired → 409
- *  - Sets movedToPayment=true, paymentLockExpiresAt = now + 3 days, status = PAYMENT_LOCKED
+ *  - Sets movedToPayment=true, paymentLockExpiresAt = now + paymentLockDays (admin setting, default 3),
+ *    status = PAYMENT_LOCKED
+ *  - If not paid within the lock window, the favorite is auto-removed (GET /api/favorites + cleanup job)
  *  - Returns total amount due (based on familyClass of each bride)
  */
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
-import { UserModel, ProfileModel, FavoriteModel } from "@/lib/models";
+import { UserModel, ProfileModel, FavoriteModel, SettingsModel } from "@/lib/models";
 import { PAYMENT_AMOUNTS, addDays } from "@/lib/cardGenerator";
 
 export async function POST(req: Request) {
@@ -88,7 +90,11 @@ export async function POST(req: Request) {
       return Response.json({ error: "No profiles can be moved", details: errors }, { status: 400 });
     }
 
-    const expiresAt = addDays(now, 3);
+    // Payment lock window — admin-configurable (Settings → paymentLockDays)
+    const settings = await SettingsModel.findOne().select("paymentLockDays").lean() as any;
+    const lockDays = settings?.paymentLockDays ?? 3;
+
+    const expiresAt = addDays(now, lockDays);
     const ids = toProcess.map((x) => x.fav._id);
 
     await FavoriteModel.updateMany(

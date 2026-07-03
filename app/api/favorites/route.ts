@@ -22,6 +22,16 @@ export async function GET() {
 
     await connectToDatabase();
 
+    // Auto-remove favorites whose payment lock expired without payment —
+    // the bride becomes available again in Browse Profiles.
+    await FavoriteModel.deleteMany({
+      userId: session.user.id,
+      movedToPayment: true,
+      paymentLockExpiresAt: { $lt: new Date() },
+      firstPaidAt: null,
+      isPaid: { $ne: true },
+    });
+
     const favorites = await FavoriteModel.find({ userId: session.user.id })
       .sort({ firstPaidAt: 1, createdAt: -1 }) // unpaid (no firstPaidAt) first
       .lean() as any[];

@@ -64,12 +64,20 @@ export async function GET() {
 
       const isBrideFrozen = !!(u?.isFrozen || u?.isAutoFrozen || p?.isFrozen || p?.isAutoFrozen);
 
+      // AD details are LOCKED during the 30-day waiting window — only the
+      // bride's Profile ID is shown. After the window ends (or once the
+      // 2nd payment is made) the AD card becomes visible.
+      const adLocked = !!inboxFrozen && !fav.secondPaidAt;
+
       return {
         favoriteId:       String(fav._id),
         favoriteUserId:   uid,
         firstPaidAt:      fav.firstPaidAt,
         inboxFrozenUntil: fav.inboxFrozenUntil ?? null,
         inboxFrozen,
+        adLocked,
+        brideProfileId:   u?.profileId ?? "",
+        brideFamilyClass: u?.familyClass ?? p?.familyClass ?? "MC",
         secondPaidAt:     fav.secondPaidAt ?? null,
         // Bride's response to this groom
         isAccepted:       fav.isAccepted ?? false,
@@ -77,7 +85,8 @@ export async function GET() {
         declinedAt:       fav.declinedAt ?? null,
         // Whether the bride's profile is currently frozen (she may have frozen after groom paid)
         isBrideFrozen,
-        adCard:           u && p ? buildADCard(u, p) : null,
+        // AD card is only served after the 30-day waiting window
+        adCard:           u && p && !adLocked ? buildADCard(u, p) : null,
       };
     });
 

@@ -7,7 +7,7 @@ import Link from "next/link";
 import {
   Inbox, MapPin, GraduationCap, Star, Clock,
   CheckCircle, CreditCard, Users, Briefcase,
-  Home, ChevronDown, ChevronUp, AlertCircle, XCircle,
+  Home, ChevronDown, ChevronUp, AlertCircle, XCircle, Lock,
 } from "lucide-react";
 const PAYMENT_AMOUNTS: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
@@ -17,6 +17,9 @@ type InboxItem = {
   firstPaidAt: string;
   inboxFrozenUntil: string | null;
   inboxFrozen: boolean;
+  adLocked: boolean;
+  brideProfileId: string;
+  brideFamilyClass: string;
   secondPaidAt: string | null;
   isAccepted: boolean;
   acceptedAt: string | null;
@@ -199,6 +202,61 @@ export default function InboxPage() {
         <div className="space-y-4">
           {inbox.map((item) => {
             const card = item.adCard;
+
+            // ── 30-day waiting period: AD locked, only Profile ID shows ──
+            if (!card && item.adLocked) {
+              const unlockDays = item.inboxFrozenUntil ? daysLeft(item.inboxFrozenUntil) : 0;
+              return (
+                <div
+                  key={item.favoriteId}
+                  className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 shadow-sm p-5"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-200">
+                      <Lock size={22} className="text-neutral-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-mono font-bold text-neutral-900 dark:text-neutral-900">
+                        {item.brideProfileId || "Profile"}
+                      </h3>
+                      <p className="mt-0.5 text-xs text-neutral-500">
+                        Additional details are locked during the 30-day waiting period.
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700">
+                          <Clock size={10} />
+                          Unlocks in {unlockDays} day{unlockDays !== 1 ? "s" : ""}
+                          {item.inboxFrozenUntil && (
+                            <> · {new Date(item.inboxFrozenUntil).toLocaleDateString("en-IN", {
+                              day: "numeric", month: "short", year: "numeric",
+                            })}</>
+                          )}
+                        </span>
+                        {item.isAccepted && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-700">
+                            <CheckCircle size={10} />
+                            Bride accepted
+                          </span>
+                        )}
+                        {!item.isAccepted && item.declinedAt && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-red-600">
+                            <XCircle size={10} />
+                            Bride declined
+                          </span>
+                        )}
+                        {item.isBrideFrozen && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-neutral-500">
+                            <AlertCircle size={10} />
+                            Profile temporarily unavailable
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
             if (!card) return null;
             const isExpanded   = expanded.has(item.favoriteId);
             // Cannot pay 2nd if inbox freeze is active, already paid, or bride is frozen

@@ -46,6 +46,12 @@ export function FavoriteButton({
     }
   }, [favoriteData]);
 
+  // Sync when the parent learns the favorite status after mount
+  // (e.g. profile detail page fetches /api/favorites after first render)
+  useEffect(() => {
+    if (initialIsFavorited) setIsFavorited(true);
+  }, [initialIsFavorited]);
+
   const handleAdd = async () => {
     if (loading) return;
 

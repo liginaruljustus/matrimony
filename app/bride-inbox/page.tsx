@@ -7,6 +7,7 @@ import Link from "next/link";
 import {
   Inbox, Star, MapPin, GraduationCap, CheckCircle,
   XCircle, Clock, AlertCircle, Heart, Users,
+  ChevronDown, ChevronUp,
 } from "lucide-react";
 type InboxItem = {
   favoriteId: string;
@@ -32,6 +33,23 @@ type InboxItem = {
     familyClass: string;
     nakshatra?: string;
     rashi?: string;
+    // AD-level details (1st payment admin-approved)
+    fatherName?: string;
+    fatherOccupation?: string;
+    motherName?: string;
+    motherOccupation?: string;
+    totalBrothers?: number;
+    marriedBrothers?: number;
+    totalSisters?: number;
+    marriedSisters?: number;
+    houseDetails?: string;
+    familyStatus?: string;
+    monthlyIncome?: number;
+    placeOfBirth?: string;
+    timeOfBirth?: string;
+    lagnam?: string;
+    photos?: string[];
+    expectations?: string;
   } | null;
 };
 
@@ -260,8 +278,16 @@ function GroomCard({
   accepted?: boolean;
   declined?: boolean;
 }) {
+  const [showDetails, setShowDetails] = useState(false);
   const card = item.mdCard;
   if (!card) return null;
+
+  const fmtVal = (v: any) => (v !== null && v !== undefined && v !== "" ? String(v) : "—");
+  const familyStatusLabel =
+    card.familyStatus === "MC" ? "Middle Class"
+    : card.familyStatus === "UC" ? "Upper Class"
+    : card.familyStatus === "EC" ? "Elite Class"
+    : fmtVal(card.familyStatus);
 
   return (
     <div className={`overflow-hidden rounded-2xl border bg-white dark:bg-neutral-100 shadow-sm transition-all ${
@@ -328,6 +354,71 @@ function GroomCard({
           )}
         </div>
 
+        {/* ── Additional Details (AD) — unlocked by admin-approved 1st payment ── */}
+        <button
+          onClick={() => setShowDetails(!showDetails)}
+          className="mt-3 flex w-full items-center justify-between rounded-lg bg-[#7a1f2b]/5 px-3 py-2 text-[11px] font-bold text-[#7a1f2b] hover:bg-[#7a1f2b]/10 transition-colors"
+        >
+          <span className="flex items-center gap-1.5">
+            <Users size={12} />
+            Family &amp; Additional Details
+          </span>
+          {showDetails ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+        </button>
+
+        {showDetails && (
+          <div className="mt-2 rounded-lg border border-neutral-100 dark:border-neutral-200 bg-neutral-50 dark:bg-neutral-200 p-3">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+              <DetailField label="Father" value={fmtVal(card.fatherName)} />
+              <DetailField label="Father's Occupation" value={fmtVal(card.fatherOccupation)} />
+              <DetailField label="Mother" value={fmtVal(card.motherName)} />
+              <DetailField label="Mother's Occupation" value={fmtVal(card.motherOccupation)} />
+              <DetailField
+                label="Brothers"
+                value={card.totalBrothers != null ? `${card.totalBrothers} (${card.marriedBrothers ?? 0} married)` : "—"}
+              />
+              <DetailField
+                label="Sisters"
+                value={card.totalSisters != null ? `${card.totalSisters} (${card.marriedSisters ?? 0} married)` : "—"}
+              />
+              <DetailField label="Family Status" value={familyStatusLabel} />
+              <DetailField
+                label="Monthly Income"
+                value={card.monthlyIncome != null ? `₹${Number(card.monthlyIncome).toLocaleString("en-IN")}` : "—"}
+              />
+              <DetailField label="House Details" value={fmtVal(card.houseDetails)} />
+              <DetailField label="Place of Birth" value={fmtVal(card.placeOfBirth)} />
+              <DetailField label="Time of Birth" value={fmtVal(card.timeOfBirth)} />
+              <DetailField label="Lagnam" value={fmtVal(card.lagnam)} />
+            </div>
+
+            {card.expectations && (
+              <div className="mt-3 border-t border-neutral-200 pt-2">
+                <p className="text-[9px] font-bold uppercase tracking-wide text-neutral-400">Partner Expectations</p>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-neutral-600">{card.expectations}</p>
+              </div>
+            )}
+
+            {/* Extra photos */}
+            {card.photos && card.photos.length > 1 && (
+              <div className="mt-3 border-t border-neutral-200 pt-2">
+                <p className="mb-1.5 text-[9px] font-bold uppercase tracking-wide text-neutral-400">More Photos</p>
+                <div className="flex gap-2 overflow-x-auto">
+                  {card.photos.slice(1).map((photo, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={i}
+                      src={photo}
+                      alt={`${card.name} photo ${i + 2}`}
+                      className="h-16 w-16 shrink-0 rounded-lg object-cover border border-neutral-200"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <p className="mt-2 text-[10px] text-neutral-400">
           Interested on {new Date(item.firstPaidAt).toLocaleDateString("en-IN", {
             day: "numeric", month: "short", year: "numeric",
@@ -369,6 +460,16 @@ function GroomCard({
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── Detail field (label + value) ─────────────────────────────────────────────
+function DetailField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[9px] font-bold uppercase tracking-wide text-neutral-400">{label}</p>
+      <p className="mt-0.5 text-[11px] font-semibold text-neutral-700">{value}</p>
     </div>
   );
 }

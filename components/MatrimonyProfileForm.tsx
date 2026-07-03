@@ -11,7 +11,7 @@ import { matrimonyProfileSchema } from "@/lib/validators";
 import { z } from "zod";
 import { updateMatrimonyProfileAction } from "@/app/actions/profileActions";
 import Image from "next/image";
-import { X, ImagePlus, AlertCircle } from "lucide-react";
+import { X, ImagePlus, AlertCircle, CheckCircle } from "lucide-react";
 
 const FIELD_LABELS: Record<string, string> = {
   name: "Full Name", gender: "Gender", age: "Age", dateOfBirth: "Date of Birth",
@@ -73,6 +73,10 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
   const [step, setStep] = useState(0);
   const [photos, setPhotos] = useState<string[]>(defaultProfile?.photos || []);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
@@ -117,23 +121,65 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
     setSaving(false);
   };
 
-  const uploadPhoto = async (file: File) => {
-    if (photos.length >= 1) return;
-    setUploadingPhoto(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/photos", { method: "POST", body: fd });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        console.error("Photo upload failed:", err);
-        return;
-      }
-      const { url } = await res.json();
-      setPhotos([url]);
-    } finally {
-      setUploadingPhoto(false);
+  const uploadPhoto = (file: File) => {
+    if (photos.length >= 1 || uploadingPhoto) return;
+
+    // Client-side validation with friendly messages
+    if (!file.type.startsWith("image/")) {
+      setUploadError("That file is not an image. Please choose a JPG, PNG or WEBP photo.");
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError(`Photo is too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Maximum size is 5 MB.`);
+      return;
+    }
+
+    setUploadError("");
+    setUploadSuccess(false);
+    setUploadingPhoto(true);
+    setUploadProgress(0);
+
+    // Instant local preview while uploading
+    const preview = URL.createObjectURL(file);
+    setUploadPreview(preview);
+
+    const cleanup = () => {
+      URL.revokeObjectURL(preview);
+      setUploadPreview(null);
+      setUploadingPhoto(false);
+    };
+
+    const fd = new FormData();
+    fd.append("file", file);
+
+    // XMLHttpRequest — fetch() cannot report upload progress
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/photos");
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => {
+      cleanup();
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const { url } = JSON.parse(xhr.responseText);
+          setPhotos([url]);
+          setUploadSuccess(true);
+          setTimeout(() => setUploadSuccess(false), 5000);
+        } catch {
+          setUploadError("Upload finished but something went wrong. Please try again.");
+        }
+      } else {
+        let msg = "Upload failed. Please try again.";
+        try { msg = JSON.parse(xhr.responseText).error ?? msg; } catch { /* keep default */ }
+        setUploadError(msg);
+      }
+    };
+    xhr.onerror = () => {
+      cleanup();
+      setUploadError("Network error during upload. Check your connection and try again.");
+    };
+    xhr.send(fd);
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -570,6 +616,29 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-primary">Photo & Expectations</h3>
 
+            {/* Upload error banner */}
+            {uploadError && (
+              <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <AlertCircle size={15} className="mt-0.5 shrink-0" />
+                <span>{uploadError}</span>
+                <button
+                  type="button"
+                  onClick={() => setUploadError("")}
+                  className="ml-auto text-red-400 hover:text-red-600"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
+
+            {/* Upload success banner */}
+            {uploadSuccess && (
+              <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700 animate-in fade-in">
+                <CheckCircle size={15} className="shrink-0" />
+                Photo uploaded successfully! It will be saved with your profile.
+              </div>
+            )}
+
             {/* Single photo slot */}
             {photos.length === 0 ? (
               <div>
@@ -581,34 +650,66 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                   className="hidden"
                   id="photo-input"
                 />
-                <label
-                  htmlFor="photo-input"
-                  onDragOver={handleZoneDragOver}
-                  onDragLeave={() => setDropZoneActive(false)}
-                  onDrop={handleZoneDrop}
-                  className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 transition ${
-                    dropZoneActive
-                      ? "border-[#7a1f2b] bg-[#7a1f2b]/5"
-                      : "border-slate-300 dark:border-neutral-300 hover:border-[#7a1f2b] hover:bg-[#7a1f2b]/5"
-                  }`}
-                >
-                  {uploadingPhoto ? (
-                    <>
-                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#7a1f2b] border-t-transparent" />
-                      <p className="text-sm font-medium text-neutral-500">Uploading to Cloudinary…</p>
-                    </>
-                  ) : (
-                    <>
-                      <ImagePlus size={32} className="text-neutral-300" />
-                      <div className="text-center">
-                        <p className="text-sm font-semibold text-neutral-600">
-                          Click to upload <span className="font-normal text-neutral-400">or drag &amp; drop</span>
-                        </p>
-                        <p className="mt-1 text-xs text-neutral-400">JPG, PNG, WEBP · max 5 MB · 1 photo only</p>
+                {uploadingPhoto ? (
+                  /* ── In-progress: preview + progress bar ── */
+                  <div className="flex items-center gap-4 rounded-2xl border-2 border-[#7a1f2b]/30 bg-[#7a1f2b]/5 p-5">
+                    {/* Live preview of the selected photo */}
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-neutral-200">
+                      {uploadPreview && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={uploadPreview}
+                          alt="Uploading preview"
+                          className="h-full w-full object-cover opacity-70"
+                        />
+                      )}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-bold text-[#7a1f2b]">
+                          {uploadProgress}%
+                        </span>
                       </div>
-                    </>
-                  )}
-                </label>
+                    </div>
+                    {/* Progress details */}
+                    <div className="flex-1">
+                      <p className="flex items-center gap-2 text-sm font-semibold text-[#7a1f2b]">
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#7a1f2b] border-t-transparent" />
+                        Uploading your photo…
+                      </p>
+                      <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-neutral-200">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-[#7a1f2b] to-[#d4af37] transition-all duration-300"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                      <p className="mt-1.5 text-xs text-neutral-500">
+                        {uploadProgress < 100
+                          ? `${uploadProgress}% uploaded — please keep this page open`
+                          : "Processing photo…"}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  /* ── Idle: drop zone ── */
+                  <label
+                    htmlFor="photo-input"
+                    onDragOver={handleZoneDragOver}
+                    onDragLeave={() => setDropZoneActive(false)}
+                    onDrop={handleZoneDrop}
+                    className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 transition ${
+                      dropZoneActive
+                        ? "border-[#7a1f2b] bg-[#7a1f2b]/5"
+                        : "border-slate-300 dark:border-neutral-300 hover:border-[#7a1f2b] hover:bg-[#7a1f2b]/5"
+                    }`}
+                  >
+                    <ImagePlus size={32} className="text-neutral-300" />
+                    <div className="text-center">
+                      <p className="text-sm font-semibold text-neutral-600">
+                        Click to upload <span className="font-normal text-neutral-400">or drag &amp; drop</span>
+                      </p>
+                      <p className="mt-1 text-xs text-neutral-400">JPG, PNG, WEBP · max 5 MB · 1 photo only</p>
+                    </div>
+                  </label>
+                )}
               </div>
             ) : (
               <div className="flex items-start gap-4">

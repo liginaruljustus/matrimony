@@ -10,7 +10,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
-import { PaymentModel, FavoriteModel, NotificationModel } from "@/lib/models";
+import { PaymentModel, FavoriteModel, NotificationModel, SettingsModel } from "@/lib/models";
 import { addDays } from "@/lib/cardGenerator";
 
 export async function POST(
@@ -60,7 +60,10 @@ export async function POST(
         : [];
 
       if (receiverIds.length) {
-        const inboxFrozenUntil = addDays(now, 30);
+        // Waiting period is admin-configurable (Settings → inboxFreezeDays, default 30)
+        const settings = await SettingsModel.findOne().select("inboxFreezeDays").lean() as any;
+        const freezeDays = settings?.inboxFreezeDays ?? 30;
+        const inboxFrozenUntil = addDays(now, freezeDays);
         await FavoriteModel.updateMany(
           {
             userId:         payment.userId,

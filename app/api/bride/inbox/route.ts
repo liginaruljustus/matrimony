@@ -6,14 +6,16 @@
  *  - Favourited this bride
  *  - Had their 1st payment admin-approved (firstPaidAt set + payment APPROVED)
  *
- * Returns the groom's MD card (public info only — bride sees name, age, religion, etc.)
+ * Returns the groom's AD card (MD + additional details: family, income, horoscope,
+ * photos, expectations) — the groom's 1st payment is admin-approved, so the bride
+ * family gets the fuller picture to evaluate the proposal. Contact details stay hidden.
  * Sorted: accepted first, then by firstPaidAt DESC (most recent first)
  */
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel, FavoriteModel, PaymentModel } from "@/lib/models";
-import { buildMDCard } from "@/lib/cardGenerator";
+import { buildMDCard, buildADCard } from "@/lib/cardGenerator";
 
 export async function GET() {
   try {
@@ -66,6 +68,8 @@ export async function GET() {
       const uid = String(fav.userId);
       const u   = userMap[uid];
       const p   = profileMap[uid];
+      // Merge MD (public) + AD (additional) — never CD (contact) fields
+      const card = u && p ? { ...buildMDCard(u, p), ...buildADCard(u, p) } : null;
       return {
         favoriteId:     String(fav._id),
         groomUserId:    uid,
@@ -73,7 +77,7 @@ export async function GET() {
         isAccepted:     fav.isAccepted ?? false,
         acceptedAt:     fav.acceptedAt  ?? null,
         declinedAt:     fav.declinedAt  ?? null,
-        mdCard:         u && p ? buildMDCard(u, p) : null,
+        mdCard:         card,
       };
     });
 

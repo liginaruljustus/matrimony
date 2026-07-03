@@ -535,7 +535,48 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
         {/* ── Profile Completion (First Section) ───────────────────────────────── */}
         {profile && <ProfileCompletionCard profile={profile} onEdit={scrollToForm} />}
 
-        {/* ── Row 1: Welcome + Profile Status ──────────────────────────────── */}
+        {/* ── Profile Form (collapsible) ────────────────────────────────────── */}
+        <div id="profile-form" className="bg-white dark:bg-neutral-100 rounded-2xl border border-slate-200 dark:border-neutral-200 overflow-hidden">
+          {/* Toggle header */}
+          <button
+            onClick={() => setFormOpen(!formOpen)}
+            className="w-full flex items-center justify-between px-6 py-5 hover:bg-slate-50 dark:hover:bg-neutral-200 transition text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-[#7a1f2b]/10 rounded-xl">
+                <User size={18} className="text-[#7a1f2b]" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-900 dark:text-neutral-900">
+                  {profile ? "Edit Your Profile" : "Complete Your Profile"}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-neutral-700 mt-0.5">
+                  {profile
+                    ? "Update your details, photos, and expectations"
+                    : "Fill in your matrimony profile to start connecting with families"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${st.bg} ${st.color}`}>
+                {st.label}
+              </span>
+              <ChevronDown
+                size={18}
+                className={`text-slate-400 transition-transform duration-200 ${formOpen ? "rotate-180" : ""}`}
+              />
+            </div>
+          </button>
+
+          {/* Form body */}
+          {formOpen && (
+            <div className="border-t border-slate-100 dark:border-neutral-200 px-6 py-6">
+              <MatrimonyProfileForm defaultProfile={profile ? { ...profile, name: userData.name } : null} />
+            </div>
+          )}
+        </div>
+
+        {/* ── Row: Welcome + Profile Status (bottom) ────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
           {/* Welcome card */}
@@ -613,7 +654,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
           </div>
         </div>
 
-        {/* ── Row 2: Credentials / Account Info / How It Works ─────────────── */}
+        {/* ── Row: Credentials / Account Info / How It Works (bottom) ──────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
           {/* Credentials */}
@@ -722,47 +763,6 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
               ))}
             </ol>
           </div>
-        </div>
-
-        {/* ── Profile Form (collapsible) ────────────────────────────────────── */}
-        <div id="profile-form" className="bg-white dark:bg-neutral-100 rounded-2xl border border-slate-200 dark:border-neutral-200 overflow-hidden">
-          {/* Toggle header */}
-          <button
-            onClick={() => setFormOpen(!formOpen)}
-            className="w-full flex items-center justify-between px-6 py-5 hover:bg-slate-50 dark:hover:bg-neutral-200 transition text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#7a1f2b]/10 rounded-xl">
-                <User size={18} className="text-[#7a1f2b]" />
-              </div>
-              <div>
-                <p className="font-bold text-slate-900 dark:text-neutral-900">
-                  {profile ? "Edit Your Profile" : "Complete Your Profile"}
-                </p>
-                <p className="text-xs text-slate-500 dark:text-neutral-700 mt-0.5">
-                  {profile
-                    ? "Update your details, photos, and expectations"
-                    : "Fill in your matrimony profile to start connecting with families"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${st.bg} ${st.color}`}>
-                {st.label}
-              </span>
-              <ChevronDown
-                size={18}
-                className={`text-slate-400 transition-transform duration-200 ${formOpen ? "rotate-180" : ""}`}
-              />
-            </div>
-          </button>
-
-          {/* Form body */}
-          {formOpen && (
-            <div className="border-t border-slate-100 dark:border-neutral-200 px-6 py-6">
-              <MatrimonyProfileForm defaultProfile={profile ? { ...profile, name: userData.name } : null} />
-            </div>
-          )}
         </div>
 
       </div>
