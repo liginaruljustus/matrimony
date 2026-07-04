@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Heart, Clock, AlertCircle } from "lucide-react";
 
 type FavoriteData = {
@@ -32,9 +33,9 @@ export function FavoriteButton({
   onToggle,
   onPayNeeded,
 }: FavoriteButtonProps) {
+  const router = useRouter();
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
   const [loading, setLoading] = useState(false);
-  const [showPayPrompt, setShowPayPrompt] = useState(false);
   const [favoriteInfo, setFavoriteInfo] = useState<FavoriteData | null>(favoriteData ?? null);
 
   const iconSize = size === "sm" ? 14 : size === "lg" ? 22 : 18;
@@ -80,8 +81,9 @@ export function FavoriteButton({
   };
 
   const handlePayClick = () => {
-    setShowPayPrompt(true);
     onPayNeeded?.();
+    // The real payment flow lives on the Favourites page (move to payment → 1st payment)
+    router.push("/favorites");
   };
 
   // Determine button state

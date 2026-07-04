@@ -8,7 +8,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
-import { PaymentModel, FavoriteModel, NotificationModel } from "@/lib/models";
+import { PaymentModel, FavoriteModel, NotificationModel, SettingsModel } from "@/lib/models";
 
 export async function POST(
   req: Request,
@@ -51,7 +51,10 @@ export async function POST(
       ? [payment.receiverId]
       : [];
 
-    const freshLockExpiry = new Date(now.getTime() + 3 * 24 * 3600 * 1000);
+    // Fresh re-submit window — admin-configurable (Settings → paymentLockDays)
+    const lockSettings = await SettingsModel.findOne().select("paymentLockDays").lean() as any;
+    const lockDays = lockSettings?.paymentLockDays ?? 3;
+    const freshLockExpiry = new Date(now.getTime() + lockDays * 24 * 3600 * 1000);
 
     if (payment.tier === "FIRST_PAYMENT" && receiverIds.length) {
       // Reset so groom can re-submit with a fresh 3-day window

@@ -94,6 +94,25 @@ export async function POST(
       });
     } catch { /* non-critical */ }
 
+    // ── Notify each bride of the new proposal (1st payment only) ──────────
+    if (payment.tier === "FIRST_PAYMENT") {
+      const brideIds = payment.receiverIds?.length
+        ? payment.receiverIds
+        : payment.receiverId
+        ? [payment.receiverId]
+        : [];
+      for (const brideId of brideIds) {
+        try {
+          await NotificationModel.create({
+            userId:  brideId,
+            type:    "NEW_PROPOSAL",
+            message: "A groom family has expressed interest in your profile. Open your inbox to accept or decline.",
+            link:    "/bride-inbox",
+          });
+        } catch { /* non-critical */ }
+      }
+    }
+
     return Response.json({ ok: true, message: "Payment approved successfully" });
   } catch (error) {
     console.error("Payment approve error:", error);

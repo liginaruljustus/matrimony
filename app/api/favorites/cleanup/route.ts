@@ -28,11 +28,14 @@ export async function POST(req: Request) {
 
     const now = new Date();
 
-    // 1. Trial expiry: free-trial window ended without payment
+    // 1. Trial expiry: free-trial window ended without payment.
+    //    Favorites moved to payment are excluded — they are governed by the
+    //    payment-lock rule below, not the trial rule.
     const trialResult = await FavoriteModel.deleteMany({
       expiresAt: { $lt: now },
       isPaid: { $ne: true },
       firstPaidAt: null,
+      movedToPayment: { $ne: true },
     });
 
     // 2. Payment-lock expiry: moved to payment but not paid within paymentLockDays

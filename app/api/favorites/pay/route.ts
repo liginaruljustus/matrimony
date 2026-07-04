@@ -74,12 +74,12 @@ export async function POST(req: Request) {
     // Create payment record
     const payment = await PaymentModel.create({
       userId: session.user.id,
-      type: "FAVORITE_EXTENSION",
-      favoriteUserId,
+      receiverIds: [favoriteUserId],
+      tier: "FAVORITE_EXTENSION",
       amount: paymentAmount,
-      currency: "INR",
-      approvalStatus: "PENDING",
-      createdAt: new Date(),
+      status: "PENDING",
+      approvalStatus: "PENDING_ADMIN_REVIEW",
+      paymentDate: new Date(),
     });
 
     // Return payment ID for frontend to initiate payment

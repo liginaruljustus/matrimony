@@ -32,6 +32,16 @@ export async function GET() {
       isPaid: { $ne: true },
     });
 
+    // Auto-remove favorites whose free trial expired without any payment
+    // activity (not moved to payment, nothing paid).
+    await FavoriteModel.deleteMany({
+      userId: session.user.id,
+      expiresAt: { $lt: new Date() },
+      isPaid: { $ne: true },
+      firstPaidAt: null,
+      movedToPayment: { $ne: true },
+    });
+
     const favorites = await FavoriteModel.find({ userId: session.user.id })
       .sort({ firstPaidAt: 1, createdAt: -1 }) // unpaid (no firstPaidAt) first
       .lean() as any[];
@@ -69,8 +79,12 @@ export async function GET() {
       // exists in the list so the groom knows they have a favorite there.
       const cardVisible = !isBrideFrozen && !isBrideBanned;
 
-      const isTrialExpired = fav.expiresAt && new Date() > new Date(fav.expiresAt) && !fav.isPaid;
-      const daysLeft = fav.expiresAt && !fav.isPaid
+      // A favorite counts as "paid" once the groom has any payment activity —
+      // explicit isPaid flag, a submitted 1st payment, or an active move-to-payment.
+      const isPaid = !!(fav.isPaid || fav.firstPaidAt);
+      const inPaymentFlow = isPaid || (fav.movedToPayment && !lockExpired);
+      const isTrialExpired = !inPaymentFlow && fav.expiresAt && new Date() > new Date(fav.expiresAt);
+      const daysLeft = fav.expiresAt && !inPaymentFlow
         ? Math.max(0, Math.ceil((new Date(fav.expiresAt).getTime() - new Date().getTime()) / (24 * 60 * 60 * 1000)))
         : null;
 
@@ -94,7 +108,7 @@ export async function GET() {
         // Trial expiry info
         addedAt:               fav.addedAt ?? fav.createdAt,
         expiresAt:             fav.expiresAt ?? null,
-        isPaid:                fav.isPaid ?? false,
+        isPaid,
         isTrialExpired,
         daysLeft,
         mdCard:                cardVisible && u && p ? buildMDCard(u, p) : null,

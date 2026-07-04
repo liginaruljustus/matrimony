@@ -194,7 +194,7 @@ const paymentSchema = new Schema(
     // FIRST_PAYMENT = MD→AD, SECOND_PAYMENT = AD→CD
     tier: {
       type: String,
-      enum: ["FIRST_PAYMENT", "SECOND_PAYMENT", "BASIC", "PROFILE_VIEW", "CONTACT_DETAILS"],
+      enum: ["FIRST_PAYMENT", "SECOND_PAYMENT", "BASIC", "PROFILE_VIEW", "CONTACT_DETAILS", "FAVORITE_EXTENSION"],
       required: true,
     },
     status: {
@@ -359,7 +359,7 @@ const notificationSchema = new Schema(
         "PAYMENT_APPROVED", "PAYMENT_REJECTED",
         "PROFILE_APPROVED", "PROFILE_REJECTED",
         "INTEREST_ACCEPTED", "INTEREST_DECLINED",
-        "INTEREST_RECEIVED", "NEW_MESSAGE",
+        "INTEREST_RECEIVED", "NEW_MESSAGE", "NEW_PROPOSAL",
       ],
       required: true,
     },
