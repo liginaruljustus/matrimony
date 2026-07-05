@@ -23,7 +23,7 @@ type RegisterForm = {
 
 type Step = "form" | "otp" | "success";
 
-const RESEND_COOLDOWN = 600; // seconds (10 minutes)
+const RESEND_COOLDOWN = 300; // seconds (5 minutes)
 
 export default function RegisterPage() {
   const router = useRouter();

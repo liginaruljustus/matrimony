@@ -74,22 +74,45 @@ export async function POST(request: Request) {
     const firstName      = (pending.name as string).split(" ")[0];
     const autoPassword   = generatePassword(pending.phone, submissionDate, firstName);
     const passwordHash   = await bcrypt.hash(autoPassword, 10);
-    const profileId      = await generateProfileId(
-      pending.profileType === "BRIDE" ? "FEMALE" : "MALE",
-      pending.religion ?? "OTHER",
-      pending.familyClass,
-    );
 
     // Create user — autoPassword is NOT stored; it is returned once here and emailed.
-    const user = await UserModel.create({
-      name:        pending.name,
-      email:       pending.email,
-      phone:       pending.phone,
-      passwordHash,
-      profileId,
-      profileType: pending.profileType,
-      familyClass: pending.familyClass,
-    });
+    // Multiple accounts per email are allowed (email is a non-unique index).
+    // profileId is unique; on the rare atomic-counter collision, retry with a fresh id.
+    let user: any = null;
+    let profileId = "";
+    for (let attempt = 0; attempt < 3; attempt++) {
+      profileId = await generateProfileId(
+        pending.profileType === "BRIDE" ? "FEMALE" : "MALE",
+        pending.religion ?? "OTHER",
+        pending.familyClass,
+      );
+      try {
+        user = await UserModel.create({
+          name:        pending.name,
+          email:       pending.email,
+          phone:       pending.phone,
+          passwordHash,
+          profileId,
+          profileType: pending.profileType,
+          familyClass: pending.familyClass,
+        });
+        break; // success
+      } catch (createErr: any) {
+        // Duplicate profileId → get a new sequence and retry
+        if (createErr?.code === 11000 && createErr?.keyPattern?.profileId) {
+          console.warn(`[verify-otp] profileId collision (${profileId}), retrying…`);
+          continue;
+        }
+        throw createErr; // any other error bubbles to the outer handler
+      }
+    }
+
+    if (!user) {
+      return Response.json(
+        { message: "Could not generate a unique profile ID. Please try again." },
+        { status: 409 },
+      );
+    }
 
     // Remove the pending record (fire-and-forget; TTL will also clean up)
     PendingRegistrationModel.deleteOne({ email }).catch(() => {});
@@ -112,8 +135,16 @@ export async function POST(request: Request) {
       },
       message: "Registration successful! Save your credentials.",
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("POST /api/register/verify-otp error:", error);
+    // Surface duplicate-key issues clearly instead of a generic 500
+    if (error?.code === 11000) {
+      const field = Object.keys(error?.keyPattern ?? {})[0] ?? "value";
+      return Response.json(
+        { message: `Registration failed — duplicate ${field}. Please try again or contact support.` },
+        { status: 409 },
+      );
+    }
     return Response.json({ message: "Server error. Please try again." }, { status: 500 });
   }
 }
