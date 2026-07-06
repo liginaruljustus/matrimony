@@ -2,16 +2,21 @@
  * POST /api/register/send-otp
  *
  * Step 1 of the registration email-verification flow.
- * Validates form data, checks for duplicate email, generates a 6-digit OTP,
+ * Validates form data, enforces a resend cooldown, generates a 6-digit OTP,
  * stores it (bcrypt-hashed) in PendingRegistration, then emails it to the user.
+ * Note: multiple accounts per email are allowed, so no duplicate-email check here.
  *
- * Rate limit: if a pending record was created < 10 min ago → 429 (resend cooldown).
+ * Rate limit: if a pending record was created < 5 min ago → 429 (resend cooldown).
  */
 import bcrypt from "bcryptjs";
 import { randomInt } from "crypto";
 import { connectToDatabase } from "@/lib/mongodb";
 import { PendingRegistrationModel } from "@/lib/models";
 import { sendOtpSchema } from "@/lib/validators";
+
+// Must match RESEND_COOLDOWN on the client (app/register/page.tsx)
+const RESEND_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+const OTP_TTL_MS         = 10 * 60 * 1000; // OTP stays valid for 10 minutes
 
 export async function POST(request: Request) {
   try {
@@ -29,12 +34,12 @@ export async function POST(request: Request) {
 
     await connectToDatabase();
 
-    // Resend cooldown: if a pending record was created < 10 min ago, don't spam
+    // Resend cooldown: if a pending record was created < 5 min ago, don't spam
     const existingPending = await PendingRegistrationModel.findOne({ email }).lean() as any;
     if (existingPending) {
       const ageMs = Date.now() - new Date(existingPending.createdAt).getTime();
-      if (ageMs < 600_000) {
-        const secondsLeft = Math.ceil((600_000 - ageMs) / 1000);
+      if (ageMs < RESEND_COOLDOWN_MS) {
+        const secondsLeft = Math.ceil((RESEND_COOLDOWN_MS - ageMs) / 1000);
         const mins = Math.floor(secondsLeft / 60);
         const secs = secondsLeft % 60;
         const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
@@ -48,7 +53,7 @@ export async function POST(request: Request) {
     // Generate 6-digit OTP
     const otp      = String(randomInt(100_000, 1_000_000));
     const otpHash  = await bcrypt.hash(otp, 10);
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const expiresAt = new Date(Date.now() + OTP_TTL_MS); // OTP valid for 10 minutes
 
     // Upsert PendingRegistration (replace any previous record for this email)
     await PendingRegistrationModel.findOneAndUpdate(
