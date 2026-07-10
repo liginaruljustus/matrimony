@@ -11,7 +11,7 @@
 import bcrypt from "bcryptjs";
 import { randomInt } from "crypto";
 import { connectToDatabase } from "@/lib/mongodb";
-import { PendingRegistrationModel } from "@/lib/models";
+import { PendingRegistrationModel, UserModel } from "@/lib/models";
 import { sendOtpSchema } from "@/lib/validators";
 
 // Must match RESEND_COOLDOWN on the client (app/register/page.tsx)
@@ -31,8 +31,27 @@ export async function POST(request: Request) {
     }
 
     const { name, email, phone, profileType, familyClass, religion } = parsed.data;
+    // Unknown keys are stripped by Zod — read the confirmation flag from the raw body
+    const confirmDuplicate = body?.confirmDuplicate === true;
 
     await connectToDatabase();
+
+    // Multiple accounts per email are allowed, but it must be an intentional
+    // choice — if the email already has account(s) and the user hasn't
+    // confirmed, ask the frontend to show a confirmation prompt first.
+    if (!confirmDuplicate) {
+      const existingCount = await UserModel.countDocuments({ email });
+      if (existingCount > 0) {
+        return Response.json(
+          {
+            requiresConfirmation: true,
+            existingCount,
+            message: `You already have ${existingCount} profile${existingCount > 1 ? "s" : ""} registered with this email.`,
+          },
+          { status: 409 },
+        );
+      }
+    }
 
     // Resend cooldown: if a pending record was created < 5 min ago, don't spam
     const existingPending = await PendingRegistrationModel.findOne({ email }).lean() as any;

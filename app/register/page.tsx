@@ -49,6 +49,9 @@ export default function RegisterPage() {
   // Persisted form data for the resend flow
   const formDataRef = useRef<RegisterForm | null>(null);
 
+  // Duplicate-email confirmation ("You already have N profiles with this email")
+  const [duplicatePrompt, setDuplicatePrompt] = useState<{ count: number } | null>(null);
+
   // ── Countdown timer for resend cooldown ──────────────────────────────────
   useEffect(() => {
     if (step !== "otp") return;
@@ -64,7 +67,7 @@ export default function RegisterPage() {
   } = useForm<RegisterForm>({ resolver: zodResolver(sendOtpSchema) });
 
   // ── Step 1: Submit form → send OTP ───────────────────────────────────────
-  const onSubmit = async (values: RegisterForm) => {
+  const sendOtp = async (values: RegisterForm, confirmDuplicate: boolean) => {
     setServerError("");
     setLoading(true);
     formDataRef.current = values;
@@ -72,15 +75,19 @@ export default function RegisterPage() {
       const res  = await fetch("/api/register/send-otp", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(values),
+        body:    JSON.stringify({ ...values, confirmDuplicate }),
       });
       const data = await res.json();
       if (res.ok) {
+        setDuplicatePrompt(null);
         setPendingEmail(values.email);
         setResendSeconds(RESEND_COOLDOWN);
         setOtp(["", "", "", "", "", ""]);
         setOtpError("");
         setStep("otp");
+      } else if (res.status === 409 && data.requiresConfirmation) {
+        // Email already has account(s) — ask the user to confirm intentionally
+        setDuplicatePrompt({ count: data.existingCount ?? 1 });
       } else {
         setServerError(data.message ?? "Failed to send OTP. Please try again.");
       }
@@ -90,6 +97,8 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  const onSubmit = (values: RegisterForm) => sendOtp(values, false);
 
   // ── Step 2: Verify OTP → create account ──────────────────────────────────
   const handleVerifyOtp = async () => {
@@ -130,10 +139,11 @@ export default function RegisterPage() {
     setResending(true);
     setOtpError("");
     try {
+      // confirmDuplicate: true — the user already confirmed before reaching the OTP step
       const res  = await fetch("/api/register/send-otp", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(formDataRef.current),
+        body:    JSON.stringify({ ...formDataRef.current, confirmDuplicate: true }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -440,6 +450,49 @@ export default function RegisterPage() {
   // ── Registration Form ─────────────────────────────────────────────────────
   return (
     <div className="flex min-h-screen items-center justify-center p-4 py-10">
+      {/* Duplicate-email confirmation dialog */}
+      {duplicatePrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-neutral-100 p-6 shadow-xl">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                <AlertCircle size={20} className="text-amber-600" />
+              </div>
+              <h2 className="text-base font-bold text-neutral-900">Email Already Registered</h2>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-neutral-600">
+              You already have{" "}
+              <strong>
+                {duplicatePrompt.count} profile{duplicatePrompt.count > 1 ? "s" : ""}
+              </strong>{" "}
+              registered with this email. You can create another profile (for example, for a
+              family member) — each profile gets its own Profile ID and password.
+            </p>
+            <p className="mt-2 text-sm font-semibold text-neutral-800">
+              Do you want to continue?
+            </p>
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={() => formDataRef.current && sendOtp(formDataRef.current, true)}
+                disabled={loading}
+                className="flex-1 rounded-lg bg-[#7a1f2b] py-2.5 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors disabled:opacity-60"
+              >
+                {loading ? "Sending…" : "Yes, Continue"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDuplicatePrompt(null)}
+                disabled={loading}
+                className="flex-1 rounded-lg border border-neutral-200 py-2.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-60"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="mb-8 text-center">
