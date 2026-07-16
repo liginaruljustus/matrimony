@@ -18,7 +18,7 @@ export default function AccountSuspendedPage() {
         </p>
 
         <a
-          href="mailto:support@reginmatrimony.com"
+          href="mailto:support@luramatrimony.com"
           className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#7a1f2b] px-6 py-3 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors"
         >
           <Mail size={15} />

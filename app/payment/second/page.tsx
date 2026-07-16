@@ -20,11 +20,11 @@ type PaymentDetails = {
 };
 
 const DETAIL_DEFAULTS: PaymentDetails = {
-  upiId: "reginmatrimony@upi",
+  upiId: "luramatrimony@upi",
   bankName: "State Bank of India",
   bankAccountNo: "",
   bankIfsc: "",
-  bankAccountHolder: "Regin Matrimony Services",
+  bankAccountHolder: "Lura Matrimony Services",
 };
 
 function SecondPaymentContent() {

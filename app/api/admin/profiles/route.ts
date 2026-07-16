@@ -196,7 +196,7 @@ async function sendFDCardEmail(email: string, name: string, fdCard: any) {
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#faf7f2;">
       <div style="background:#7a1f2b;padding:24px;text-align:center;">
-        <h1 style="color:#d4af37;margin:0;font-size:22px;">Regin Matrimony</h1>
+        <h1 style="color:#d4af37;margin:0;font-size:22px;">Lura Matrimony</h1>
         <p style="color:#fff;margin:8px 0 0;font-size:14px;">Your Full Profile Details</p>
       </div>
       <div style="padding:24px;">
@@ -222,15 +222,15 @@ async function sendFDCardEmail(email: string, name: string, fdCard: any) {
         <p style="color:#6b7280;font-size:12px;">Please keep this email safe. Do not share your login credentials.</p>
       </div>
       <div style="background:#7a1f2b;padding:12px;text-align:center;">
-        <p style="color:#d4af37;margin:0;font-size:12px;">© ${new Date().getFullYear()} Regin Matrimony</p>
+        <p style="color:#d4af37;margin:0;font-size:12px;">© ${new Date().getFullYear()} Lura Matrimony</p>
       </div>
     </div>
   `;
 
   await transporter.sendMail({
-    from:    process.env.SMTP_FROM ?? `"Regin Matrimony" <no-reply@reginmatrimony.com>`,
+    from:    process.env.SMTP_FROM ?? `"Lura Matrimony" <no-reply@luramatrimony.com>`,
     to:      email,
-    subject: "Your Regin Matrimony Profile Has Been Approved — Full Details",
+    subject: "Your Lura Matrimony Profile Has Been Approved — Full Details",
     html,
   });
 

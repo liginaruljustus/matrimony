@@ -17,7 +17,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Regin Matrimony",
+  title: "Lura Matrimony",
   description: "Tamil Nadu's trusted matrimony platform — verified profiles, district-based search.",
 };
 

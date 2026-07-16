@@ -62,7 +62,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <Menu size={20} />
           </button>
           <Heart size={18} className="fill-[#7a1f2b] text-[#7a1f2b]" />
-          <span className="font-bold text-[#7a1f2b]">Regin Admin</span>
+          <span className="font-bold text-[#7a1f2b]">Lura Admin</span>
         </div>
 
         <div className="min-h-full p-4 sm:p-6 lg:p-8">

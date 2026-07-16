@@ -10,11 +10,11 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { SettingsModel } from "@/lib/models";
 
 const DEFAULTS = {
-  upiId:             "reginmatrimony@upi",
+  upiId:             "luramatrimony@upi",
   bankName:          "State Bank of India",
   bankAccountNo:     "",
   bankIfsc:          "",
-  bankAccountHolder: "Regin Matrimony Services",
+  bankAccountHolder: "Lura Matrimony Services",
 };
 
 export async function GET() {

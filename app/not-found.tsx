@@ -7,7 +7,7 @@ export default function NotFound() {
       {/* Logo */}
       <div className="mb-6 flex items-center gap-2">
         <Heart size={28} className="fill-[#7a1f2b] text-[#7a1f2b]" />
-        <span className="text-xl font-bold text-[#7a1f2b]">Regin Matrimony</span>
+        <span className="text-xl font-bold text-[#7a1f2b]">Lura Matrimony</span>
       </div>
 
       {/* 404 */}

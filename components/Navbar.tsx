@@ -203,7 +203,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <Heart size={22} className="fill-current text-[#7a1f2b]" />
-          <span className="text-lg font-bold text-[#7a1f2b]">Regin Matrimony</span>
+          <span className="text-lg font-bold text-[#7a1f2b]">Lura Matrimony</span>
         </Link>
 
         {/* Desktop nav */}

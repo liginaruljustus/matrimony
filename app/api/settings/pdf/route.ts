@@ -3,7 +3,7 @@ import { SettingsModel } from "@/lib/models";
 
 const DEFAULTS = {
   pdfDownloadEnabled: true,
-  pdfCompanyName: "Regin Matrimony",
+  pdfCompanyName: "Lura Matrimony",
   pdfFooterText: "Confidential — For Family Use Only",
   pdfShowContactDetails: true,
   pdfShowAstrology: true,

@@ -500,7 +500,7 @@ export default function RegisterPage() {
             <Heart size={32} className="fill-white text-white" />
           </div>
           <h1 className="mt-4 text-3xl font-bold text-[#7a1f2b]">Create Account</h1>
-          <p className="mt-1 text-sm text-neutral-500">Join thousands of Tamil families on Regin</p>
+          <p className="mt-1 text-sm text-neutral-500">Join thousands of Tamil families on Lura</p>
         </div>
 
         {/* Form */}

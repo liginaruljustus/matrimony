@@ -36,7 +36,7 @@ function HomeNavbar() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <Heart size={22} className="fill-[#d4af37] text-[#d4af37]" />
-          <span className="text-lg font-bold text-white">Regin Matrimony</span>
+          <span className="text-lg font-bold text-white">Lura Matrimony</span>
         </Link>
 
         {/* Desktop nav links */}
@@ -125,7 +125,7 @@ const trustItems = [
 ];
 
 const testimonials = [
-  { name: "Priya & Karthik", district: "Chennai", text: "We found each other through Regin within 3 months. The family-first approach made all the difference.", stars: 5 },
+  { name: "Priya & Karthik", district: "Chennai", text: "We found each other through Lura within 3 months. The family-first approach made all the difference.", stars: 5 },
   { name: "Meena & Suresh",  district: "Madurai", text: "Verified profiles and district filters made it easy to find a compatible match close to home.", stars: 5 },
   { name: "Kavya & Rajan",   district: "Coimbatore", text: "The horoscope matching feature impressed our families. Highly recommended!", stars: 5 },
 ];
@@ -252,7 +252,7 @@ export default function HomePage() {
           <div className="mb-12 text-center">
             <p className="text-xs font-bold uppercase tracking-widest text-[#d4af37]">Success Stories</p>
             <h2 className="mt-2 text-3xl font-bold text-[#7a1f2b] md:text-4xl">Happy Families</h2>
-            <p className="mt-3 text-neutral-500">Real couples who found their match on Regin</p>
+            <p className="mt-3 text-neutral-500">Real couples who found their match on Lura</p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {testimonials.map(({ name, district, text, stars }) => (
@@ -314,7 +314,7 @@ export default function HomePage() {
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
               <Heart size={20} className="fill-[#d4af37] text-[#d4af37]" />
-              <span className="text-base font-bold text-white">Regin Matrimony</span>
+              <span className="text-base font-bold text-white">Lura Matrimony</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/50">
               <Link href="/profiles" className="hover:text-white transition-colors">Profiles</Link>
@@ -322,7 +322,7 @@ export default function HomePage() {
               <Link href="/register" className="hover:text-white transition-colors">Register</Link>
               <Link href="/login"    className="hover:text-white transition-colors">Login</Link>
             </div>
-            <p className="text-xs text-white/30">© 2026 Regin Matrimony. All rights reserved.</p>
+            <p className="text-xs text-white/30">© 2026 Lura Matrimony. All rights reserved.</p>
           </div>
           <p className="mt-6 text-center font-serif text-sm italic text-white/30">
             &ldquo;குடும்பம் பேசும் திருமண மேடை&rdquo;

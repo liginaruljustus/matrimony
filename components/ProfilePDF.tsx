@@ -308,7 +308,7 @@ export type PdfSettings = {
 };
 
 const PDF_DEFAULTS: PdfSettings = {
-  pdfCompanyName: "Regin Matrimony",
+  pdfCompanyName: "Lura Matrimony",
   pdfFooterText: "Confidential — For Family Use Only",
   pdfShowContactDetails: true,
   pdfShowAstrology: true,
@@ -535,7 +535,7 @@ export async function downloadProfilePDF(profile: any, user: any, pdfSettings?: 
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement("a");
   a.href     = url;
-  a.download = `${user?.name ?? "profile"}-regin-matrimony.pdf`;
+  a.download = `${user?.name ?? "profile"}-lura-matrimony.pdf`;
   a.click();
   URL.revokeObjectURL(url);
 }

@@ -266,17 +266,17 @@ const settingsSchema = new Schema(
     contactDetailsGating:     { type: Boolean, default: true },
     paymentRequired:          { type: Boolean, default: true },
     // Payment collection details (shown on payment page)
-    upiId:              { type: String, default: "reginmatrimony@upi" },
+    upiId:              { type: String, default: "luramatrimony@upi" },
     bankName:           { type: String, default: "State Bank of India" },
     bankAccountNo:      { type: String, default: "" },
     bankIfsc:           { type: String, default: "" },
-    bankAccountHolder:  { type: String, default: "Regin Matrimony Services" },
+    bankAccountHolder:  { type: String, default: "Lura Matrimony Services" },
     // Auto-freeze thresholds (days of inactivity)
     groomFreezeDays:    { type: Number, default: 90 },
     brideFreezeDays:    { type: Number, default: 60 },
     // PDF document settings
     pdfDownloadEnabled:    { type: Boolean, default: true },
-    pdfCompanyName:        { type: String,  default: "Regin Matrimony" },
+    pdfCompanyName:        { type: String,  default: "Lura Matrimony" },
     pdfFooterText:         { type: String,  default: "Confidential — For Family Use Only" },
     pdfShowContactDetails: { type: Boolean, default: true },
     pdfShowAstrology:      { type: Boolean, default: true },

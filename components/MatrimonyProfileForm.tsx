@@ -171,7 +171,11 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
         }
       } else {
         let msg = "Upload failed. Please try again.";
-        try { msg = JSON.parse(xhr.responseText).error ?? msg; } catch { /* keep default */ }
+        // /api/photos returns { message }; other routes use { error }
+        try {
+          const body = JSON.parse(xhr.responseText);
+          msg = body.message ?? body.error ?? msg;
+        } catch { /* keep default */ }
         setUploadError(msg);
       }
     };

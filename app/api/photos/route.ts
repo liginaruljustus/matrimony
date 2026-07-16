@@ -18,11 +18,11 @@ export async function POST(req: Request) {
   const userId = toObjectId(session.user.id);
   if (!userId) return NextResponse.json({ message: "Invalid user ID" }, { status: 400 });
 
+  // A profile may not exist yet — the photo step of the registration wizard runs
+  // before the first save. In that case the upload creates a draft profile shell
+  // holding just the photo; the form save then fills in the remaining fields.
   const existing = await ProfileModel.findOne({ userId }).select("photos").lean<{ photos: string[] }>();
-  if (!existing) {
-    return NextResponse.json({ message: "Create your profile before uploading photos" }, { status: 404 });
-  }
-  if ((existing.photos?.length ?? 0) >= MAX_PHOTOS) {
+  if ((existing?.photos?.length ?? 0) >= MAX_PHOTOS) {
     return NextResponse.json({ message: `Maximum ${MAX_PHOTOS} photos allowed` }, { status: 400 });
   }
 
@@ -54,7 +54,13 @@ export async function POST(req: Request) {
     url = body.url;
   }
 
-  await ProfileModel.findOneAndUpdate({ userId }, { $push: { photos: url } });
+  // upsert — creates the draft profile shell on first upload (userId comes from the
+  // filter). The later form save uses $set, so this photo is preserved.
+  await ProfileModel.findOneAndUpdate(
+    { userId },
+    { $push: { photos: url } },
+    { upsert: true },
+  );
   return NextResponse.json({ url });
 }
 

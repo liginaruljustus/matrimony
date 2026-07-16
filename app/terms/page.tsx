@@ -45,7 +45,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-bold text-primary mb-3">1. Introduction</h2>
               <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
-                Welcome to Regin Matrimony (hereinafter &ldquo;the Platform&rdquo;). These Terms &amp; Conditions govern your use of our matrimony service. By registering and using our platform, you agree to comply with these terms.
+                Welcome to Lura Matrimony (hereinafter &ldquo;the Platform&rdquo;). These Terms &amp; Conditions govern your use of our matrimony service. By registering and using our platform, you agree to comply with these terms.
               </p>
             </section>
 

@@ -67,17 +67,17 @@ async function sendCredentialsEmail(
   });
 
   const firstName = name.split(" ")[0];
-  const loginUrl  = `${process.env.NEXTAUTH_URL ?? "https://reginmatrimony.com"}/login`;
+  const loginUrl  = `${process.env.NEXTAUTH_URL ?? "https://luramatrimony.com"}/login`;
 
   await transporter.sendMail({
-    from:    process.env.SMTP_FROM ?? "Regin Matrimony <no-reply@reginmatrimony.com>",
+    from:    process.env.SMTP_FROM ?? "Lura Matrimony <no-reply@luramatrimony.com>",
     to:      email,
-    subject: "Regin Matrimony — Your Login Credentials",
+    subject: "Lura Matrimony — Your Login Credentials",
     html: `
       <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#faf7f2;border-radius:16px;">
         <div style="text-align:center;margin-bottom:24px;">
           <div style="display:inline-block;background:#7a1f2b;border-radius:12px;padding:16px 24px;">
-            <span style="color:#d4af37;font-size:24px;font-weight:bold;letter-spacing:2px;">REGIN</span>
+            <span style="color:#d4af37;font-size:24px;font-weight:bold;letter-spacing:2px;">LURA</span>
           </div>
           <p style="margin-top:8px;color:#7a1f2b;font-size:14px;font-weight:600;">Matrimony Services</p>
         </div>
@@ -105,10 +105,10 @@ async function sendCredentialsEmail(
 
         <hr style="border:none;border-top:1px solid #e5e5e5;margin:24px 0;" />
         <p style="color:#bbb;font-size:11px;text-align:center;">
-          © ${new Date().getFullYear()} Regin Matrimony · குடும்பம் பேசும் திருமண மேடை
+          © ${new Date().getFullYear()} Lura Matrimony · குடும்பம் பேசும் திருமண மேடை
         </p>
       </div>
     `,
-    text: `Hi ${firstName},\n\nYour login credentials:\n\nProfile ID: ${profileId}\nPassword:   ${autoPassword}\n\nSign in at: ${loginUrl}\n\n© ${new Date().getFullYear()} Regin Matrimony`,
+    text: `Hi ${firstName},\n\nYour login credentials:\n\nProfile ID: ${profileId}\nPassword:   ${autoPassword}\n\nSign in at: ${loginUrl}\n\n© ${new Date().getFullYear()} Lura Matrimony`,
   });
 }

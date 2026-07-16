@@ -29,11 +29,11 @@ type LockedFav = {
 };
 
 const DETAIL_DEFAULTS: PaymentDetails = {
-  upiId: "reginmatrimony@upi",
+  upiId: "luramatrimony@upi",
   bankName: "State Bank of India",
   bankAccountNo: "",
   bankIfsc: "",
-  bankAccountHolder: "Regin Matrimony Services",
+  bankAccountHolder: "Lura Matrimony Services",
 };
 
 const PAYMENT_AMT: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };

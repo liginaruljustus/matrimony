@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
 
           <div className="mt-5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-left text-xs text-blue-700">
             <p className="font-semibold">Check your inbox</p>
-            <p className="mt-0.5">Open the email from Regin Matrimony to find your Profile ID and password.</p>
+            <p className="mt-0.5">Open the email from Lura Matrimony to find your Profile ID and password.</p>
           </div>
 
           <Link

@@ -53,7 +53,7 @@ function LoginContent() {
             <Heart size={32} className="text-white fill-white" />
           </div>
           <h1 className="mt-4 text-3xl font-bold text-primary">Welcome Back</h1>
-          <p className="mt-1.5 text-sm text-[#7c6b5e]">Sign in to your Regin Matrimony account</p>
+          <p className="mt-1.5 text-sm text-[#7c6b5e]">Sign in to your Lura Matrimony account</p>
         </div>
 
         {/* Form card */}

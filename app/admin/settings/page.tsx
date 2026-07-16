@@ -338,15 +338,15 @@ export default function AdminSettingsPage() {
         contactDetailsGating: true,
         paymentRequired: true,
         verificationRequired: false,
-        upiId: "reginmatrimony@upi",
+        upiId: "luramatrimony@upi",
         bankName: "State Bank of India",
         bankAccountNo: "",
         bankIfsc: "",
-        bankAccountHolder: "Regin Matrimony Services",
+        bankAccountHolder: "Lura Matrimony Services",
         groomFreezeDays: 90,
         brideFreezeDays: 60,
         pdfDownloadEnabled: true,
-        pdfCompanyName: "Regin Matrimony",
+        pdfCompanyName: "Lura Matrimony",
         pdfFooterText: "Confidential — For Family Use Only",
         pdfShowContactDetails: true,
         pdfShowAstrology: true,
@@ -643,7 +643,7 @@ export default function AdminSettingsPage() {
                 label="Company Name"
                 description="Shown in the PDF header and footer branding"
                 value={settings.pdfCompanyName}
-                placeholder="Regin Matrimony"
+                placeholder="Lura Matrimony"
                 onChange={(v) => set("pdfCompanyName", v)}
               />
               <TextInput

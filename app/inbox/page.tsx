@@ -77,7 +77,7 @@ export default function InboxPage() {
   const [txnId, setTxnId]           = useState("");
   const [paying, setPaying]         = useState(false);
   const [payError, setPayError]     = useState("");
-  const [upiId, setUpiId]           = useState("reginmatrimony@upi");
+  const [upiId, setUpiId]           = useState("luramatrimony@upi");
 
   const load = useCallback(async () => {
     setLoading(true);
