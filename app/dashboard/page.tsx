@@ -535,7 +535,24 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
         {/* ── Profile Completion (First Section) ───────────────────────────────── */}
         {profile && <ProfileCompletionCard profile={profile} onEdit={scrollToForm} />}
 
-        {/* ── Profile Form (collapsible) ────────────────────────────────────── */}
+        {/* ── Profile locked notice (replaces the edit form) ─────────────────── */}
+        {profile?.isLocked ? (
+        <div id="profile-form" className="bg-white dark:bg-neutral-100 rounded-2xl border border-amber-200 overflow-hidden">
+          <div className="flex items-start gap-3 px-6 py-5">
+            <div className="p-2 bg-amber-100 rounded-xl shrink-0">
+              <Lock size={18} className="text-amber-600" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-900 dark:text-neutral-900">Profile Locked</p>
+              <p className="text-sm text-slate-500 dark:text-neutral-700 mt-0.5">
+                Your profile has been submitted and is now locked. To make any changes,
+                please contact the admin.
+              </p>
+            </div>
+          </div>
+        </div>
+        ) : (
+        /* ── Profile Form (collapsible) ────────────────────────────────────── */
         <div id="profile-form" className="bg-white dark:bg-neutral-100 rounded-2xl border border-slate-200 dark:border-neutral-200 overflow-hidden">
           {/* Toggle header */}
           <button
@@ -575,6 +592,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
             </div>
           )}
         </div>
+        )}
 
         {/* ── Row: Welcome + Profile Status (bottom) ────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

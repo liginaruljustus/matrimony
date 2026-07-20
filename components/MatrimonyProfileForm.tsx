@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { SearchDropdown } from "@/components/SearchDropdown";
 import { DatePickerSelect } from "@/components/DatePickerSelect";
@@ -42,15 +42,66 @@ const STEPS = [
 ];
 
 const DISTRICTS = [
-  "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore",
-  "Dharmapuri", "Dindigul", "Erode", "Kallakurichi", "Kanchipuram",
-  "Kanyakumari", "Karur", "Krishnagiri", "Madurai", "Mayiladuthurai",
-  "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai",
-  "Ramanathapuram", "Ranipet", "Salem", "Sivagangai", "Tenkasi",
-  "Thanjavur", "Theni", "Thiruvallur", "Thiruvarur", "Thoothukudi",
-  "Tirunelveli", "Tirupathur", "Tiruppur", "Tiruvallur", "Tiruvannamalai",
-  "Trichy", "Vellore", "Villupuram", "Virudhunagar",
-].sort((a, b) => a.localeCompare(b));
+  // Pinned first
+  "Puducherry",
+  "Karaikal",
+  // Remaining districts, alphabetically sorted
+  ...[
+    "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore",
+    "Dharmapuri", "Dindigul", "Erode", "Kallakurichi", "Kanchipuram",
+    "Kanyakumari", "Karur", "Krishnagiri", "Madurai", "Mayiladuthurai",
+    "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai",
+    "Ramanathapuram", "Ranipet", "Salem", "Sivagangai", "Tenkasi",
+    "Thanjavur", "Theni", "Thiruvallur", "Thiruvarur", "Thoothukudi",
+    "Tirunelveli", "Tirupathur", "Tiruppur", "Tiruvallur", "Tiruvannamalai",
+    "Trichy", "Vellore", "Villupuram", "Virudhunagar",
+  ].sort((a, b) => a.localeCompare(b)),
+];
+
+const RASHI_LIST = [
+  "Aries / மேஷம்",
+  "Taurus / ரிஷபம்",
+  "Gemini / மிதுனம்",
+  "Cancer / கடகம்",
+  "Leo / சிம்மம்",
+  "Virgo / கன்னி",
+  "Libra / துலாம்",
+  "Scorpio / விருச்சிகம்",
+  "Sagittarius / தனுசு",
+  "Capricorn / மகரம்",
+  "Aquarius / கும்பம்",
+  "Pisces / மீனம்",
+] as const;
+
+const NAKSHATRA_LIST = [
+  "Ashvini / அஸ்வினி",
+  "Bharani / பரணி",
+  "Karthikai / கார்த்திகை",
+  "Rohini / ரோகிணி",
+  "Mrigashira / மிருகசீரிடம்",
+  "Thiruvathirai / திருவாதிரை",
+  "Punarpoosam / புனர்பூசம்",
+  "Pusam / பூசம்",
+  "Ayilyam / ஆயிலியம்",
+  "Magam / மகம்",
+  "Puram / பூரம்",
+  "Uthram / உத்தரம்",
+  "Hastham / அஸ்தம்",
+  "Chitrai / சித்திரை",
+  "Swati / சுவாதி",
+  "Visakam / விசாகம்",
+  "Anusham / அனுசம்",
+  "Kettai / கேட்டை",
+  "Moolam / மூலம்",
+  "Pooradam / பூராடம்",
+  "Uttaradam / உத்திராடம்",
+  "Thiruvonam / திருவோணம்",
+  "Avittam / அவிட்டம்",
+  "Sadayam / சதயம்",
+  "Poorattathi / பூரட்டாதி",
+  "Uthirattathi / உத்திரட்டாதி",
+  "Revati / ரேவதி",
+] as const;
 
 function normalizeProfile(profile: any) {
   if (!profile) return { gender: "MALE", religion: "HINDU", maritalStatus: "SINGLE", familyStatus: "MC" };
@@ -82,6 +133,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
 
   const [dropZoneActive, setDropZoneActive] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [confirmFinalize, setConfirmFinalize] = useState(false);
 
   const onInvalid = (errs: Record<string, any>) => {
     const labels = Object.keys(errs).map((k) => FIELD_LABELS[k] ?? k);
@@ -105,16 +157,39 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
   const age = watch("age");
   const dateOfBirth = watch("dateOfBirth");
 
+  // Age is derived automatically from Date of Birth.
+  useEffect(() => {
+    if (!dateOfBirth) return;
+    const dob = new Date(dateOfBirth);
+    if (isNaN(dob.getTime())) return;
+    const today = new Date();
+    let years = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) years--;
+    if (years >= 0 && years !== age) {
+      setValue("age", years, { shouldValidate: true });
+    }
+  }, [dateOfBirth, age, setValue]);
+
+  const pendingData = useRef<FormData | null>(null);
+
   const onSubmit = async (data: FormData) => {
+    // The final submit permanently locks the profile — confirm first.
+    pendingData.current = data;
+    setConfirmFinalize(true);
+  };
+
+  const doFinalize = async () => {
+    const data = pendingData.current;
+    if (!data) return;
+    setConfirmFinalize(false);
     setSaving(true);
     setMessage(null);
-    const result = await updateMatrimonyProfileAction({ ...data, photos });
+    const result = await updateMatrimonyProfileAction({ ...data, photos }, true);
     if (result.ok) {
-      setMessage({ text: "Profile saved successfully! 🎉", ok: true });
+      setMessage({ text: "Profile submitted & locked 🎉 Contact the admin for any changes.", ok: true });
       onSaved?.();
-      if (result.profileId) {
-        setTimeout(() => window.location.reload(), 2000);
-      }
+      setTimeout(() => window.location.reload(), 2000);
     } else {
       setMessage({ text: result.message || "Failed to save profile", ok: false });
     }
@@ -284,7 +359,15 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               </div>
               <div>
                 <label className="label">Age *</label>
-                <input {...register("age", { valueAsNumber: true })} type="number" className="input-field" />
+                <input
+                  {...register("age", { valueAsNumber: true })}
+                  type="number"
+                  readOnly
+                  tabIndex={-1}
+                  placeholder="Auto from Date of Birth"
+                  className="input-field bg-slate-100 dark:bg-neutral-200 cursor-not-allowed"
+                />
+                <p className="mt-1 text-[10px] text-slate-400">Calculated automatically from Date of Birth</p>
                 {errors.age && <p className="text-xs text-red-600 mt-1">{errors.age.message}</p>}
               </div>
             </div>
@@ -372,7 +455,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Sub Caste *</label>
+                <label className="label">Sub Caste</label>
                 <Controller
                   name="subCaste"
                   control={control}
@@ -408,7 +491,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
             </div>
 
             <div>
-              <label className="label">Complexion *</label>
+              <label className="label">Complexion</label>
               <select {...register("complexion")} className="input-field">
                 <option value="">Select</option>
                 <option value="VERY_FAIR">Very Fair</option>
@@ -463,12 +546,34 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="label">Rashi</label>
-                <input {...register("rashi")} className="input-field" placeholder="Zodiac sign" />
+                <Controller
+                  name="rashi"
+                  control={control}
+                  render={({ field }) => (
+                    <SearchDropdown
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      options={RASHI_LIST}
+                      placeholder="Search zodiac sign…"
+                    />
+                  )}
+                />
                 {errors.rashi && <p className="text-xs text-red-600 mt-1">{errors.rashi.message}</p>}
               </div>
               <div>
                 <label className="label">Nakshatra</label>
-                <input {...register("nakshatra")} className="input-field" />
+                <Controller
+                  name="nakshatra"
+                  control={control}
+                  render={({ field }) => (
+                    <SearchDropdown
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      options={NAKSHATRA_LIST}
+                      placeholder="Search star…"
+                    />
+                  )}
+                />
                 {errors.nakshatra && <p className="text-xs text-red-600 mt-1">{errors.nakshatra.message}</p>}
               </div>
               <div>
@@ -552,11 +657,32 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
 
             <div>
               <label className="label">Family Status *</label>
-              <select {...register("familyStatus")} className="input-field">
-                <option value="MC">Middle Class</option>
-                <option value="UC">Upper Class</option>
-                <option value="EC">Elite Class</option>
-              </select>
+              <Controller
+                name="familyStatus"
+                control={control}
+                render={({ field }) => (
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { val: "MC", label: "Middle Class", active: "border-green-500 bg-green-400 text-green-950", idle: "border-green-200 text-green-700 hover:bg-green-50" },
+                      { val: "UC", label: "Upper Class",  active: "border-pink-500 bg-pink-400 text-pink-950",   idle: "border-pink-200 text-pink-700 hover:bg-pink-50" },
+                      { val: "EC", label: "Elite Class",  active: "border-blue-500 bg-blue-400 text-blue-950",   idle: "border-blue-200 text-blue-700 hover:bg-blue-50" },
+                    ].map((opt) => {
+                      const selected = field.value === opt.val;
+                      return (
+                        <button
+                          key={opt.val}
+                          type="button"
+                          onClick={() => field.onChange(opt.val)}
+                          className={`flex flex-col items-center justify-center rounded-xl border-2 px-2 py-3 text-center transition ${selected ? opt.active : opt.idle}`}
+                        >
+                          <span className="text-sm font-bold leading-tight">{opt.label}</span>
+                          <span className="mt-0.5 text-[10px] font-semibold opacity-80">({opt.val})</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              />
               {errors.familyStatus && <p className="text-xs text-red-600 mt-1">{errors.familyStatus.message}</p>}
             </div>
           </div>
@@ -769,15 +895,85 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
         {/* Step 5: Review */}
         {step === 4 && (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-primary">Review Your Profile</h3>
+            <h3 className="text-lg font-semibold text-primary">Preview Your Profile</h3>
+            <p className="-mt-2 text-xs text-slate-500 dark:text-neutral-600">
+              Please review every detail carefully. After you submit, your profile will be
+              <strong> locked</strong> and you will need to contact the admin for any changes.
+            </p>
 
-            <div className="rounded-xl bg-slate-50 dark:bg-neutral-100 p-4 max-h-96 overflow-y-auto space-y-2 text-sm">
-              <p><strong>Name:</strong> {watch("name")}</p>
-              <p><strong>Age:</strong> {watch("age")}</p>
-              <p><strong>Religion:</strong> {watch("religion")}</p>
-              <p><strong>Education:</strong> {watch("education")}</p>
-              <p><strong>Photos:</strong> {photos.length} uploaded</p>
-              <p><strong>Expectations:</strong> {watch("expectations") || "Not specified"}</p>
+            {/* Photo + name header */}
+            <div className="flex items-center gap-4 rounded-xl bg-slate-50 dark:bg-neutral-100 p-4">
+              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-200">
+                {photos[0] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={photos[0]} alt="Profile" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-primary">
+                    {(watch("name") || "?").charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div>
+                <p className="text-lg font-bold text-slate-900 dark:text-neutral-900">{watch("name") || "—"}</p>
+                <p className="text-sm text-slate-500 dark:text-neutral-600">
+                  {watch("age") ? `${watch("age")} yrs` : "—"}
+                  {watch("gender") ? ` · ${watch("gender") === "MALE" ? "Male" : "Female"}` : ""}
+                  {watch("religion") ? ` · ${watch("religion")}` : ""}
+                </p>
+                <p className="text-xs text-slate-400">{photos.length} photo{photos.length !== 1 ? "s" : ""} uploaded</p>
+              </div>
+            </div>
+
+            <div className="max-h-96 space-y-5 overflow-y-auto rounded-xl bg-slate-50 dark:bg-neutral-100 p-4">
+              <PreviewSection title="Personal Details" rows={[
+                ["Full Name", watch("name")],
+                ["Gender", watch("gender") === "MALE" ? "Male" : watch("gender") === "FEMALE" ? "Female" : ""],
+                ["Age", watch("age")],
+                ["Date of Birth", watch("dateOfBirth")],
+                ["Marital Status", watch("maritalStatus")],
+                ["Height", watch("height") ? `${watch("height")} cm` : ""],
+                ["Complexion", watch("complexion")],
+                ["Religion", watch("religion")],
+                ["Caste", watch("caste")],
+                ["Sub-Caste", watch("subCaste")],
+                ["Mother Tongue", watch("motherTongue")],
+                ["Native District", watch("nativeDistrict")],
+                ["Address", watch("address")],
+                ["Education", watch("education")],
+                ["Current Job", watch("currentJob")],
+                ["Monthly Income", watch("monthlyIncome") ? `₹${Number(watch("monthlyIncome")).toLocaleString("en-IN")}` : ""],
+              ]} />
+
+              <PreviewSection title="Astrology" rows={[
+                ["Place of Birth", watch("placeOfBirth")],
+                ["Time of Birth", watch("timeOfBirth")],
+                ["Rashi", watch("rashi")],
+                ["Nakshatra", watch("nakshatra")],
+                ["Lagnam", watch("lagnam")],
+              ]} />
+
+              <PreviewSection title="Family Details" rows={[
+                ["Father's Name", watch("fatherName")],
+                ["Father's Occupation", watch("fatherOccupation")],
+                ["Mother's Name", watch("motherName")],
+                ["Mother's Occupation", watch("motherOccupation")],
+                ["Brothers", watch("totalBrothers") != null ? `${watch("totalBrothers")} (${watch("marriedBrothers") ?? 0} married)` : ""],
+                ["Sisters", watch("totalSisters") != null ? `${watch("totalSisters")} (${watch("marriedSisters") ?? 0} married)` : ""],
+                ["House Details", watch("houseDetails")],
+                ["Family Status", watch("familyStatus")],
+              ]} />
+
+              <PreviewSection title="Contact Details" rows={[
+                ["Contact Person", watch("contactPersonName")],
+                ["Contact Number", watch("contactNumber")],
+                ["WhatsApp", watch("whatsappNo")],
+                ["Email", watch("emailId")],
+              ]} />
+
+              <PreviewSection title="About & Expectations" rows={[
+                ["Bio", watch("bio")],
+                ["Expectations", watch("expectations")],
+              ]} />
             </div>
 
             {message && (
@@ -826,11 +1022,70 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
           )}
           {step === STEPS.length - 1 && (
             <button type="submit" disabled={saving} className="flex-1 btn-primary">
-              {saving ? "Saving..." : "Save Profile"}
+              {saving ? "Submitting..." : "Confirm & Submit"}
             </button>
           )}
         </div>
       </form>
+
+      {/* Finalize confirmation — locking is permanent for the user */}
+      {confirmFinalize && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-neutral-100 p-6 shadow-xl">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                <AlertCircle size={20} className="text-amber-600" />
+              </div>
+              <h2 className="text-base font-bold text-neutral-900">Submit &amp; Lock Profile?</h2>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-neutral-600">
+              Once you submit, your profile will be <strong>locked</strong> and you will
+              <strong> not be able to edit it</strong> yourself. To make any changes afterwards,
+              you will need to <strong>contact the admin</strong>.
+            </p>
+            <p className="mt-2 text-sm font-semibold text-neutral-800">
+              Have you reviewed all your details and want to continue?
+            </p>
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={doFinalize}
+                disabled={saving}
+                className="flex-1 rounded-lg bg-[#7a1f2b] py-2.5 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors disabled:opacity-60"
+              >
+                {saving ? "Submitting…" : "Yes, Submit & Lock"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmFinalize(false)}
+                disabled={saving}
+                className="flex-1 rounded-lg border border-neutral-200 py-2.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-60"
+              >
+                Keep Editing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Preview section (label/value rows; empty values shown as "—") ─────────────
+function PreviewSection({ title, rows }: { title: string; rows: [string, any][] }) {
+  return (
+    <div>
+      <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-primary">{title}</p>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+        {rows.map(([label, value]) => (
+          <div key={label} className="min-w-0">
+            <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
+            <p className="truncate text-sm text-slate-700 dark:text-neutral-800">
+              {value !== null && value !== undefined && value !== "" ? String(value) : "—"}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

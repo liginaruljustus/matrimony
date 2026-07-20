@@ -9,6 +9,7 @@ import {
   MapPin, GraduationCap, Star, RefreshCw, X,
 } from "lucide-react";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { FAMILY_CLASS_COLORS, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 
 type MDProfile = {
   _id: string;
@@ -263,11 +264,7 @@ function MDProfileCard({
   favoriteData?: any;
   onFavorited: () => void;
 }) {
-  const classColors: Record<string, string> = {
-    MC: "bg-blue-50 text-blue-700",
-    UC: "bg-purple-50 text-purple-700",
-    EC: "bg-amber-50 text-amber-700",
-  };
+  const classColors = FAMILY_CLASS_COLORS;
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-neutral-100 dark:border-neutral-200 bg-white dark:bg-neutral-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
@@ -283,7 +280,7 @@ function MDProfileCard({
           </div>
         )}
         {/* Family class badge */}
-        <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold ${classColors[profile.familyClass] ?? "bg-neutral-100 text-neutral-700"}`}>
+        <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold ${classColors[profile.familyClass] ?? FAMILY_CLASS_FALLBACK}`}>
           {profile.familyClass}
         </span>
         {/* Favorite button — icon */}

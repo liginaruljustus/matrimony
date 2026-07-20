@@ -302,9 +302,6 @@ export default function RegisterPage() {
               <p className="font-mono text-2xl font-bold text-purple-900 tracking-[0.3em]">
                 {credentials.autoPassword}
               </p>
-              <p className="mt-2 text-xs text-purple-500">
-                Generated from your phone number, registration date &amp; name
-              </p>
             </div>
 
             {/* Warning */}

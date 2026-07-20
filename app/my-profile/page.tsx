@@ -8,7 +8,7 @@ import { MatrimonyProfileForm } from "@/components/MatrimonyProfileForm";
 import {
   User, MapPin, Briefcase, Users, Star,
   Phone, FileText, Pencil, ArrowLeft, Camera,
-  CheckCircle, Clock, AlertCircle, XCircle, Flag, Download,
+  CheckCircle, Clock, AlertCircle, XCircle, Flag, Download, Lock,
 } from "lucide-react";
 
 // ── Status badge ──────────────────────────────────────────────────────────────
@@ -111,8 +111,10 @@ export default function MyProfilePage() {
     );
   }
 
-  // ── Edit mode ───────────────────────────────────────────────────────────────
-  if (editing) {
+  const isLocked = !!profile?.isLocked;
+
+  // ── Edit mode ─── (blocked when the profile is locked) ───────────────────────
+  if (editing && !isLocked) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8">
         <button
@@ -177,15 +179,33 @@ export default function MyProfilePage() {
               {downloading ? "Generating…" : "Download PDF"}
             </button>
           )}
-          <button
-            onClick={() => setEditing(true)}
-            className="flex items-center gap-2 rounded-xl bg-[#7a1f2b] px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#6b1823] transition-colors"
-          >
-            <Pencil size={14} />
-            Edit Profile
-          </button>
+          {isLocked ? (
+            <span className="flex items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm font-semibold text-neutral-500">
+              <Lock size={14} />
+              Locked
+            </span>
+          ) : (
+            <button
+              onClick={() => setEditing(true)}
+              className="flex items-center gap-2 rounded-xl bg-[#7a1f2b] px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#6b1823] transition-colors"
+            >
+              <Pencil size={14} />
+              Edit Profile
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Locked notice */}
+      {isLocked && (
+        <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <Lock size={16} className="mt-0.5 shrink-0 text-amber-600" />
+          <span>
+            Your profile is <strong>locked</strong> and can no longer be edited. To make any
+            changes, please <strong>contact the admin</strong>.
+          </span>
+        </div>
+      )}
 
       {/* Status badge */}
       <div className={`mb-5 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${statusCfg.color}`}>
@@ -325,13 +345,20 @@ export default function MyProfilePage() {
             {downloading ? "Generating…" : "Download Profile PDF"}
           </button>
         )}
-        <button
-          onClick={() => setEditing(true)}
-          className="flex items-center gap-2 rounded-xl bg-[#7a1f2b] px-6 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#6b1823] transition-colors"
-        >
-          <Pencil size={14} />
-          Edit Profile
-        </button>
+        {isLocked ? (
+          <span className="flex items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-6 py-2.5 text-sm font-semibold text-neutral-500">
+            <Lock size={14} />
+            Locked — contact admin to edit
+          </span>
+        ) : (
+          <button
+            onClick={() => setEditing(true)}
+            className="flex items-center gap-2 rounded-xl bg-[#7a1f2b] px-6 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#6b1823] transition-colors"
+          >
+            <Pencil size={14} />
+            Edit Profile
+          </button>
+        )}
       </div>
 
     </div>

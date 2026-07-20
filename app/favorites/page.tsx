@@ -9,6 +9,7 @@ import {
   Clock, CheckCircle, Lock, AlertCircle, User,
   ShoppingCart, Inbox, ChevronRight,
 } from "lucide-react";
+import { FAMILY_CLASS_COLORS as CLASS_COLOR, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 type FavItem = {
   id: string;
   favoriteUserId: string;
@@ -43,11 +44,6 @@ type FavItem = {
   } | null;
 };
 
-const CLASS_COLOR: Record<string, string> = {
-  MC: "bg-blue-50 text-blue-700",
-  UC: "bg-purple-50 text-purple-700",
-  EC: "bg-amber-50 text-amber-700",
-};
 
 const PAYMENT_AMT: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
@@ -512,7 +508,7 @@ function FavCard({
         )}
         <span
           className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-            CLASS_COLOR[card.familyClass] ?? "bg-neutral-100 text-neutral-700"
+            CLASS_COLOR[card.familyClass] ?? FAMILY_CLASS_FALLBACK
           }`}
         >
           {card.familyClass}

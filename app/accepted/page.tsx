@@ -8,6 +8,7 @@ import {
   Star, MapPin, GraduationCap, CheckCircle, Heart, Users,
   ChevronDown, ChevronUp, Inbox,
 } from "lucide-react";
+import { FAMILY_CLASS_COLORS as CLASS_COLOR, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 
 type AcceptedItem = {
   favoriteId: string;
@@ -52,11 +53,6 @@ type AcceptedItem = {
   } | null;
 };
 
-const CLASS_COLOR: Record<string, string> = {
-  MC: "bg-blue-50 text-blue-700",
-  UC: "bg-purple-50 text-purple-700",
-  EC: "bg-amber-50 text-amber-700",
-};
 
 export default function AcceptedPage() {
   const { data: session, status } = useSession();
@@ -167,7 +163,7 @@ function AcceptedGroomCard({ item }: { item: AcceptedItem }) {
           </div>
         )}
         <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-          CLASS_COLOR[card.familyClass] ?? "bg-neutral-100 text-neutral-700"
+          CLASS_COLOR[card.familyClass] ?? FAMILY_CLASS_FALLBACK
         }`}>
           {card.familyClass}
         </span>

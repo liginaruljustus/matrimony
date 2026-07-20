@@ -9,6 +9,7 @@ import {
   CheckCircle, CreditCard, Users, Briefcase,
   Home, ChevronDown, ChevronUp, AlertCircle, XCircle, Lock,
 } from "lucide-react";
+import { FAMILY_CLASS_COLORS, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 const PAYMENT_AMOUNTS: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
 type InboxItem = {
@@ -55,11 +56,7 @@ type InboxItem = {
   } | null;
 };
 
-const CLASS_COLOR: Record<string, string> = {
-  MC: "bg-blue-50 text-blue-700",
-  UC: "bg-purple-50 text-purple-700",
-  EC: "bg-amber-50 text-amber-700",
-};
+const CLASS_COLOR = FAMILY_CLASS_COLORS;
 
 function daysLeft(iso: string): number {
   return Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000));
@@ -290,7 +287,7 @@ export default function InboxPage() {
                       </div>
                       <span
                         className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                          CLASS_COLOR[card.familyClass] ?? "bg-neutral-100 text-neutral-700"
+                          CLASS_COLOR[card.familyClass] ?? FAMILY_CLASS_FALLBACK
                         }`}
                       >
                         {card.familyClass}

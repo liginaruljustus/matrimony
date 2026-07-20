@@ -200,7 +200,6 @@ async function sendCredentialsEmail(
         <div style="background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:20px;margin-bottom:24px;">
           <p style="margin:0 0 4px;color:#7a1f2b;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Auto-Generated Password</p>
           <p style="margin:0;font-family:monospace;font-size:28px;font-weight:bold;color:#1a1a1a;letter-spacing:6px;">${autoPassword}</p>
-          <p style="margin:8px 0 0;color:#888;font-size:12px;">Generated from your phone number, registration date &amp; name.</p>
         </div>
 
         <div style="background:#fff8e1;border:1px solid #f9c74f;border-radius:10px;padding:14px;margin-bottom:24px;">

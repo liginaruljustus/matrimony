@@ -33,6 +33,13 @@ export async function GET(req: Request) {
       );
     }
 
+    // Religion is stored on the Profile (required field), not the User — use it to
+    // restrict matches to the same religion (e.g. a Christian groom sees only
+    // Christian brides). Fall back to the User field if a profile isn't set yet.
+    const groomProfile = await ProfileModel.findOne({ userId: session.user.id })
+      .select("religion").lean() as any;
+    const groomReligion = groomProfile?.religion ?? groomUser.religion ?? null;
+
     const { searchParams } = new URL(req.url);
     const familyClass     = searchParams.get("familyClass") ?? "";
     const profileIdFilter = searchParams.get("profileId")   ?? "";
@@ -66,9 +73,9 @@ export async function GET(req: Request) {
       { nativeDistrict: new RegExp(district, "i") },
       { location:       new RegExp(district, "i") },
     ];
-    // Auto-restrict by groom's religion — only show profiles matching their religion
-    if (groomUser.religion) {
-      profileQuery.religion = groomUser.religion;
+    // Auto-restrict by groom's religion — only show brides of the same religion
+    if (groomReligion) {
+      profileQuery.religion = groomReligion;
     }
     if (familyClass)     profileQuery.familyClass   = familyClass;
     if (nakshatra)       profileQuery.nakshatra     = new RegExp(nakshatra, "i");

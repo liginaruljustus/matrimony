@@ -91,6 +91,10 @@ const profileSchema = new Schema(
     profileType: { type: String, enum: ["BRIDE", "GROOM"] },
     familyClass: { type: String, enum: ["MC", "UC", "EC"] },
     expectations: { type: String },
+    // Edit lock — once the user finalizes their profile, it becomes read-only for
+    // them. Only an admin can change it afterwards (via /api/admin/profiles/[id]).
+    isLocked: { type: Boolean, default: false, index: true },
+    lockedAt: { type: Date },
     // Admin moderation fields
     profileStatus: { type: String, enum: ["DRAFT", "PENDING_APPROVAL", "APPROVED", "REJECTED", "FLAGGED"], default: "DRAFT", index: true },
     approvedBy: { type: Schema.Types.ObjectId, ref: "User" },

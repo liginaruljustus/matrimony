@@ -76,7 +76,7 @@ export async function deleteProfileAction() {
   return { ok: true, message: "Profile deleted" };
 }
 
-export async function updateMatrimonyProfileAction(payload: any) {
+export async function updateMatrimonyProfileAction(payload: any, finalize = false) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return { ok: false, message: "Unauthorized" };
 
@@ -89,14 +89,28 @@ export async function updateMatrimonyProfileAction(payload: any) {
   const userId = toObjectId(session.user.id);
   if (!userId) return { ok: false, message: "Invalid user ID" };
 
+  // Edit lock — once finalized, the user can no longer change their profile.
+  // Enforced server-side so it can't be bypassed by hiding the UI.
+  const existing = await ProfileModel.findOne({ userId }).select("isLocked").lean<{ isLocked?: boolean }>();
+  if (existing?.isLocked) {
+    return {
+      ok: false,
+      locked: true,
+      message: "Your profile is locked and can no longer be edited. Please contact the admin to make changes.",
+    };
+  }
+
   // Strip photos (managed via /api/photos) and name (lives on UserModel, not ProfileModel)
   const { photos: _photos, name, ...profileFields } = parsed.data as any;
+
+  // On finalize, permanently lock the profile (status is left unchanged).
+  const lockFields = finalize ? { isLocked: true, lockedAt: new Date() } : {};
 
   await Promise.all([
     ProfileModel.findOneAndUpdate(
       { userId },
       {
-        $set: { ...profileFields, userId },
+        $set: { ...profileFields, ...lockFields, userId },
         $setOnInsert: { photos: [] },
       },
       { upsert: true, new: true },
@@ -108,7 +122,10 @@ export async function updateMatrimonyProfileAction(payload: any) {
 
   return {
     ok: true,
-    message: "Profile saved successfully",
+    locked: finalize,
+    message: finalize
+      ? "Profile submitted successfully. It is now locked — contact the admin for any changes."
+      : "Profile saved successfully",
     profileId: user?.profileId,
   };
 }

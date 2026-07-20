@@ -1,35 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { COUNTRY_CODES, CODES_BY_LENGTH } from "@/lib/countryCodes";
 
-const COUNTRY_CODES = [
-  { code: "+91",  label: "🇮🇳 +91  India" },
-  { code: "+1",   label: "🇺🇸 +1   USA / Canada" },
-  { code: "+44",  label: "🇬🇧 +44  UK" },
-  { code: "+971", label: "🇦🇪 +971 UAE" },
-  { code: "+65",  label: "🇸🇬 +65  Singapore" },
-  { code: "+60",  label: "🇲🇾 +60  Malaysia" },
-  { code: "+61",  label: "🇦🇺 +61  Australia" },
-  { code: "+966", label: "🇸🇦 +966 Saudi Arabia" },
-  { code: "+968", label: "🇴🇲 +968 Oman" },
-  { code: "+974", label: "🇶🇦 +974 Qatar" },
-  { code: "+973", label: "🇧🇭 +973 Bahrain" },
-  { code: "+965", label: "🇰🇼 +965 Kuwait" },
-  { code: "+49",  label: "🇩🇪 +49  Germany" },
-  { code: "+33",  label: "🇫🇷 +33  France" },
-  { code: "+81",  label: "🇯🇵 +81  Japan" },
-  { code: "+82",  label: "🇰🇷 +82  South Korea" },
-  { code: "+64",  label: "🇳🇿 +64  New Zealand" },
-  { code: "+94",  label: "🇱🇰 +94  Sri Lanka" },
-];
-
-// Number of digits expected per country code
+// Number of digits expected per country code (used for the live counter)
 const DIGIT_LENGTHS: Record<string, number> = {
   "+91": 10,
   "+1":  10,
   "+44": 10,
 };
-const DEFAULT_MAX = 12;
+const DEFAULT_MAX = 14;
 
 type Props = {
   value: string;       // stored as "+91XXXXXXXXXX" or ""
@@ -39,8 +19,9 @@ type Props = {
 
 function parseValue(value: string): { dialCode: string; number: string } {
   if (!value) return { dialCode: "+91", number: "" };
-  const match = COUNTRY_CODES.find((c) => value.startsWith(c.code));
-  if (match) return { dialCode: match.code, number: value.slice(match.code.length) };
+  // Match the LONGEST dial-code prefix first (e.g. +1868 before +1)
+  const match = CODES_BY_LENGTH.find((code) => value.startsWith(code));
+  if (match) return { dialCode: match, number: value.slice(match.length) };
   return { dialCode: "+91", number: value };
 }
 
@@ -85,7 +66,7 @@ export function PhoneInput({ value, onChange, placeholder }: Props) {
         className="input-field w-40 shrink-0 text-sm"
       >
         {COUNTRY_CODES.map((c) => (
-          <option key={c.code} value={c.code}>{c.label}</option>
+          <option key={c.name} value={c.code}>{c.label}</option>
         ))}
       </select>
 

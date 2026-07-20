@@ -32,10 +32,11 @@ export const matrimonyProfileSchema = z.object({
   maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "SEPARATED", "WIDOWED"]),
   gender: z.enum(["MALE", "FEMALE"]),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  age: z.coerce.number().min(18, "Age must be at least 18").max(80),
+  // Minimum age is enforced per-gender in the superRefine below (Male 21, Female 18).
+  age: z.coerce.number().min(1, "Date of Birth is required").max(80),
   religion: z.enum(["HINDU", "MUSLIM", "CHRISTIAN", "OTHER"]),
   caste: z.string().min(2),
-  subCaste: z.string().min(1, "Sub Caste is required"),
+  subCaste: z.string().optional(),
   placeOfBirth: z.string().optional(),
   timeOfBirth: z.string().optional(),
   rashi: z.string().optional(),
@@ -47,7 +48,7 @@ export const matrimonyProfileSchema = z.object({
   education: z.string().min(2, "Education is required"),
   currentJob: z.string().min(2, "Current Job is required"),
   monthlyIncome: z.coerce.number().min(0, "Enter monthly income"),
-  complexion: z.string().min(1, "Complexion is required"),
+  complexion: z.string().optional(),
   physicallyChallenge: z.preprocess(
     (v) => v === "true" || v === true,
     z.boolean()
