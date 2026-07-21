@@ -663,12 +663,14 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
               )}
             </div>
 
-            <button
-              onClick={scrollToForm}
-              className="mt-4 w-full px-4 py-2.5 bg-[#7a1f2b] text-white text-sm font-semibold rounded-xl hover:bg-[#6a1a24] transition"
-            >
-              {profile ? "Edit Profile" : "Create Profile"}
-            </button>
+            {!profile && (
+              <button
+                onClick={scrollToForm}
+                className="mt-4 w-full px-4 py-2.5 bg-[#7a1f2b] text-white text-sm font-semibold rounded-xl hover:bg-[#6a1a24] transition"
+              >
+                Create Profile
+              </button>
+            )}
           </div>
         </div>
 

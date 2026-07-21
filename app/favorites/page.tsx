@@ -63,6 +63,7 @@ export default function FavoritesPage() {
   const [loading, setLoading]     = useState(true);
   const [selected, setSelected]   = useState<Set<string>>(new Set());
   const [moving, setMoving]       = useState(false);
+  const [payingNowId, setPayingNowId] = useState<string | null>(null);
   const [error, setError]         = useState("");
   // Tick every minute so payment-lock countdown displays update
   const [, setTick] = useState(0);
@@ -150,6 +151,27 @@ export default function FavoritesPage() {
       setError("Network error");
     } finally {
       setMoving(false);
+    }
+  };
+
+  // Single-card "Pay Now" — moves just this one favorite to payment and
+  // jumps straight to the payment page, bypassing the bulk-select flow.
+  const handlePayNow = async (favId: string) => {
+    setPayingNowId(favId);
+    setError("");
+    try {
+      const res = await fetch("/api/favorites/move-to-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ favoriteIds: [favId] }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? "Failed"); return; }
+      router.push(`/payment/first?ids=${favId}&amount=${data.totalAmount}`);
+    } catch {
+      setError("Network error");
+    } finally {
+      setPayingNowId(null);
     }
   };
 
@@ -273,6 +295,7 @@ export default function FavoritesPage() {
               {unpaid.map((fav) => {
                 const isLocked = fav.movedToPayment && !fav.lockExpired;
                 const canSelect = !isLocked;
+                const payingThis = payingNowId === fav.id;
                 return (
                   <FavCard
                     key={fav.id}
@@ -280,6 +303,7 @@ export default function FavoritesPage() {
                     selectable={canSelect}
                     selected={selected.has(fav.id)}
                     onSelect={() => canSelect && toggleSelect(fav.id)}
+                    hideName
                     badge={
                       isLocked ? (
                         <span className="flex items-center gap-1 text-[10px] font-bold text-amber-700">
@@ -287,6 +311,27 @@ export default function FavoritesPage() {
                           {fav.paymentLockExpiresAt ? countdown(fav.paymentLockExpiresAt) : "Locked"}
                         </span>
                       ) : null
+                    }
+                    actionButton={
+                      isLocked ? (
+                        <Link
+                          href="/payment/first"
+                          className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#7a1f2b] py-1.5 text-xs font-bold text-white hover:bg-[#6b1823] transition-colors"
+                        >
+                          <CreditCard size={13} />
+                          Continue Payment
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handlePayNow(fav.id)}
+                          disabled={payingThis}
+                          className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#7a1f2b] py-1.5 text-xs font-bold text-white hover:bg-[#6b1823] transition-colors disabled:opacity-60"
+                        >
+                          <CreditCard size={13} />
+                          {payingThis ? "Processing…" : "Pay Now"}
+                        </button>
+                      )
                     }
                   />
                 );
@@ -459,7 +504,7 @@ function Section({
 }
 
 function FavCard({
-  fav, selectable, selected, onSelect, badge, actionButton, frozen = false,
+  fav, selectable, selected, onSelect, badge, actionButton, frozen = false, hideName = false,
 }: {
   fav: FavItem;
   selectable: boolean;
@@ -468,6 +513,8 @@ function FavCard({
   badge?: React.ReactNode;
   actionButton?: React.ReactNode;
   frozen?: boolean;
+  /** Hide the bride's name until payment — shows her Profile ID in its place. */
+  hideName?: boolean;
 }) {
   const card = fav.mdCard;
   if (!card) return null;
@@ -498,11 +545,11 @@ function FavCard({
       {/* Photo */}
       <div className="relative h-40 bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
         {card.photo ? (
-          <img src={card.photo} alt={card.name} className="h-full w-full object-cover" />
+          <img src={card.photo} alt={hideName ? card.profileId : card.name} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full items-center justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#7a1f2b]/20 text-2xl font-bold text-[#7a1f2b]">
-              {card.name.charAt(0)}
+              {hideName ? <Lock size={22} /> : card.name.charAt(0)}
             </div>
           </div>
         )}
@@ -522,10 +569,19 @@ function FavCard({
 
       {/* Info */}
       <div className="flex flex-1 flex-col p-3">
-        <div className="flex items-start justify-between">
-          <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{card.name}</h3>
-          <span className="ml-1 font-mono text-[10px] text-neutral-400">{card.profileId}</span>
-        </div>
+        {hideName ? (
+          <div className="flex items-center gap-1.5">
+            <Lock size={12} className="text-[#7a1f2b]" />
+            <h3 className="font-mono font-bold tracking-wide text-neutral-900 dark:text-neutral-900">
+              {card.profileId}
+            </h3>
+          </div>
+        ) : (
+          <div className="flex items-start justify-between">
+            <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{card.name}</h3>
+            <span className="ml-1 font-mono text-[10px] text-neutral-400">{card.profileId}</span>
+          </div>
+        )}
         <p className="mt-0.5 text-xs text-neutral-500">
           {card.age} yrs · {card.maritalStatus?.replace("_", " ") ?? "Single"}
         </p>

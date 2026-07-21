@@ -1,12 +1,18 @@
 /**
  * GET /api/inbox
  *
- * Groom's inbox — AD cards of brides for which 1st payment was APPROVED by admin.
+ * Groom's inbox — AD cards of brides for which 1st payment was approved
+ * (manually by admin, or automatically via the SLA fallback — see
+ * lib/paymentApproval.ts).
  *
  * Rules:
  *  - Only favorites where firstPaidAt is set AND payment approvalStatus=APPROVED
  *  - Shows AD card (additional details)
  *  - 30-day inbox freeze period (inboxFrozenUntil) — after that groom can pay 2nd
+ *  - The bride's accept/decline response is likewise held back until the
+ *    freeze period ends (or 2nd payment is made): a decline surfaces early
+ *    (no reason to keep bad news waiting), but an accept is revealed only
+ *    once the AD card itself unlocks.
  *  - Recently paid first (firstPaidAt DESC)
  */
 import { getServerSession } from "next-auth/next";
@@ -14,6 +20,7 @@ import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel, FavoriteModel, PaymentModel } from "@/lib/models";
 import { buildADCard } from "@/lib/cardGenerator";
+import { autoApproveDuePayments } from "@/lib/paymentApproval";
 
 export async function GET() {
   try {
@@ -23,6 +30,13 @@ export async function GET() {
     }
 
     await connectToDatabase();
+
+    // SLA fallback — approve any 1st/2nd payments that have sat unreviewed
+    // past the admin-configured window.
+    await Promise.all([
+      autoApproveDuePayments("FIRST_PAYMENT"),
+      autoApproveDuePayments("SECOND_PAYMENT"),
+    ]);
 
     // Get approved 1st-payment favorites
     const favs = await FavoriteModel.find({
@@ -79,9 +93,12 @@ export async function GET() {
         brideProfileId:   u?.profileId ?? "",
         brideFamilyClass: u?.familyClass ?? p?.familyClass ?? "MC",
         secondPaidAt:     fav.secondPaidAt ?? null,
-        // Bride's response to this groom
-        isAccepted:       fav.isAccepted ?? false,
-        acceptedAt:       fav.acceptedAt ?? null,
+        // Bride's ACCEPTANCE is held back until the AD card itself unlocks —
+        // matches "accept workflow shows to the boy after 30 days or admin
+        // approval". A decline surfaces immediately regardless (no reason to
+        // sit on bad news).
+        isAccepted:       !adLocked && (fav.isAccepted ?? false),
+        acceptedAt:       !adLocked ? (fav.acceptedAt ?? null) : null,
         declinedAt:       fav.declinedAt ?? null,
         // Whether the bride's profile is currently frozen (she may have frozen after groom paid)
         isBrideFrozen,

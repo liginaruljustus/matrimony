@@ -178,10 +178,6 @@ const favoriteSchema = new Schema(
     isAccepted:          { type: Boolean, default: false },
     acceptedAt:          { type: Date },
     declinedAt:          { type: Date },
-    // Favorite trial period
-    addedAt:             { type: Date, default: Date.now, index: true },
-    expiresAt:           { type: Date, index: true }, // addedAt + favoriteTrialDays
-    isPaid:              { type: Boolean, default: false },
   },
   { timestamps: true },
 );
@@ -198,7 +194,7 @@ const paymentSchema = new Schema(
     // FIRST_PAYMENT = MD→AD, SECOND_PAYMENT = AD→CD
     tier: {
       type: String,
-      enum: ["FIRST_PAYMENT", "SECOND_PAYMENT", "BASIC", "PROFILE_VIEW", "CONTACT_DETAILS", "FAVORITE_EXTENSION"],
+      enum: ["FIRST_PAYMENT", "SECOND_PAYMENT", "BASIC", "PROFILE_VIEW", "CONTACT_DETAILS"],
       required: true,
     },
     status: {
@@ -218,6 +214,10 @@ const paymentSchema = new Schema(
     approvedAt:      { type: Date },
     rejectionReason: { type: String },
     reviewedAt:      { type: Date },
+    // true if approved automatically by the SLA fallback (no admin ever
+    // reviewed it) rather than a manual admin decision — surfaced in the
+    // admin payments list so staff can spot unreviewed transactions.
+    autoApproved:    { type: Boolean, default: false },
     // After 1st payment approved — freeze profiles for 30 days
     frozenUntil:     { type: Date },
   },
@@ -284,12 +284,17 @@ const settingsSchema = new Schema(
     pdfFooterText:         { type: String,  default: "Confidential — For Family Use Only" },
     pdfShowContactDetails: { type: Boolean, default: true },
     pdfShowAstrology:      { type: Boolean, default: true },
-    // Favorites trial settings
-    favoriteTrialDays:     { type: Number, default: 7 },
-    // Move-to-payment lock: days a groom has to pay before the favorite is auto-removed
+    // Move-to-payment lock: days a groom has to pay before the lock resets
+    // (the favorite is never deleted — it just becomes re-payable again)
     paymentLockDays:       { type: Number, default: 3 },
-    // Inbox waiting period: days AD details stay locked after 1st payment approval
+    // Inbox waiting period: days AD details (and the bride's accept/decline
+    // response) stay locked after 1st payment approval
     inboxFreezeDays:       { type: Number, default: 30 },
+    // Auto-approval safety nets — if admin hasn't manually reviewed a payment
+    // within this many days, the system approves it automatically so the
+    // process never stalls indefinitely on a slow manual review.
+    firstPaymentAutoApproveDays:  { type: Number, default: 7 },
+    secondPaymentAutoApproveDays: { type: Number, default: 30 },
     updatedAt:          { type: Date, default: Date.now },
     updatedBy:          { type: Schema.Types.ObjectId, ref: "User" },
   },

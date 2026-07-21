@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     if (tab === "approved") query.approvalStatus = "APPROVED";
     if (tab === "rejected") query.approvalStatus = "REJECTED";
 
-    const [payments, total, totalPending] = await Promise.all([
+    const [payments, total, totalPending, revenueAgg] = await Promise.all([
       PaymentModel.find(query)
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
@@ -36,7 +36,23 @@ export async function GET(req: Request) {
         .lean() as Promise<any[]>,
       PaymentModel.countDocuments(query),
       PaymentModel.countDocuments({ approvalStatus: "PENDING_ADMIN_REVIEW" }),
+      // All-time approved revenue — independent of which tab/page is being viewed
+      PaymentModel.aggregate([
+        { $match: { approvalStatus: "APPROVED" } },
+        {
+          $group: {
+            _id: null,
+            totalRevenue:   { $sum: "$amount" },
+            count:          { $sum: 1 },
+            autoApproved:   { $sum: { $cond: ["$autoApproved", 1, 0] } },
+            firstPayment:   { $sum: { $cond: [{ $eq: ["$tier", "FIRST_PAYMENT"] },  "$amount", 0] } },
+            secondPayment:  { $sum: { $cond: [{ $eq: ["$tier", "SECOND_PAYMENT"] }, "$amount", 0] } },
+          },
+        },
+      ]),
     ]);
+
+    const revenue = revenueAgg[0] ?? { totalRevenue: 0, count: 0, autoApproved: 0, firstPayment: 0, secondPayment: 0 };
 
     // Enrich with payer info
     const payerIds    = payments.map((p: any) => p.userId);
@@ -64,6 +80,7 @@ export async function GET(req: Request) {
         status:          p.status,
         createdAt:       p.createdAt,
         approvedAt:      p.approvedAt,
+        autoApproved:    p.autoApproved ?? false,
         rejectionReason: p.rejectionReason,
         payer: payer
           ? { id: String(payer._id), name: payer.name, email: payer.email, profileId: payer.profileId }
@@ -73,7 +90,21 @@ export async function GET(req: Request) {
       };
     });
 
-    return Response.json({ payments: enriched, total, totalPending, page, limit });
+    return Response.json({
+      payments: enriched,
+      total,
+      totalPending,
+      page,
+      limit,
+      revenue: {
+        total:          revenue.totalRevenue,
+        count:          revenue.count,
+        autoApproved:   revenue.autoApproved,
+        manualApproved: revenue.count - revenue.autoApproved,
+        firstPayment:   revenue.firstPayment,
+        secondPayment:  revenue.secondPayment,
+      },
+    });
   } catch (error) {
     console.error("Admin payments GET error:", error);
     return Response.json({ error: "Server error" }, { status: 500 });

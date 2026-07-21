@@ -66,7 +66,6 @@ export default function ProfilesPage() {
   const [classTab, setClassTab]      = useState("ALL");
   const [showFilters, setShowFilters]= useState(false);
   const [favoritedIds, setFavoritedIds] = useState<Set<string>>(new Set());
-  const [favoriteData, setFavoriteData] = useState<Record<string, any>>({}); // Full favorite info with expiry
 
   const [filters, setFilters] = useState({
     profileId:     "",
@@ -105,18 +104,6 @@ export default function ProfilesPage() {
       .then((data) => {
         if (data?.favorites) {
           setFavoritedIds(new Set(data.favorites.map((f: any) => f.favoriteUserId)));
-          // Store full favorite data keyed by favoriteUserId
-          const favDataMap: Record<string, any> = {};
-          data.favorites.forEach((f: any) => {
-            favDataMap[f.favoriteUserId] = {
-              id: f.id,
-              expiresAt: f.expiresAt,
-              isPaid: f.isPaid,
-              daysLeft: f.daysLeft,
-              isTrialExpired: f.isTrialExpired,
-            };
-          });
-          setFavoriteData(favDataMap);
         }
       })
       .catch(() => {});
@@ -239,7 +226,6 @@ export default function ProfilesPage() {
               profile={profile}
               currentUserId={session?.user?.id ?? ""}
               isFavorited={favoritedIds.has(profile.userId)}
-              favoriteData={favoriteData[profile.userId] ?? null}
               onFavorited={() => setFavoritedIds((prev) => new Set([...Array.from(prev), profile.userId]))}
             />
           ))}
@@ -255,13 +241,11 @@ function MDProfileCard({
   profile,
   currentUserId,
   isFavorited,
-  favoriteData,
   onFavorited,
 }: {
   profile: MDProfile;
   currentUserId: string;
   isFavorited: boolean;
-  favoriteData?: any;
   onFavorited: () => void;
 }) {
   const classColors = FAMILY_CLASS_COLORS;
@@ -288,7 +272,6 @@ function MDProfileCard({
           <FavoriteButton
             targetUserId={profile.userId}
             initialIsFavorited={isFavorited}
-            favoriteData={favoriteData}
             onToggle={(v) => { if (v) onFavorited(); }}
           />
         </div>
@@ -337,7 +320,6 @@ function MDProfileCard({
             variant="button"
             label="Add Favourite"
             initialIsFavorited={isFavorited}
-            favoriteData={favoriteData}
             onToggle={(v) => { if (v) onFavorited(); }}
           />
         </div>

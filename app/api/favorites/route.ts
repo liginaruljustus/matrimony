@@ -3,15 +3,19 @@
  * POST /api/favorites  — add a profile to favorites
  *
  * Favorites rules:
- *  - Cannot be removed once added
+ *  - Cannot be removed once added — favorites are permanent.
+ *  - If the payment lock (paymentLockDays) expires without payment, it simply
+ *    reverts to an unpaid/selectable state (see `lockExpired` below) — the
+ *    groom can retry "Move to Payment" any time, with no risk of losing it.
  *  - Status: ACTIVE | PAYMENT_LOCKED | PAID
  *  - Unpaid (ACTIVE) favorites shown first, then by createdAt DESC
  */
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
-import { UserModel, ProfileModel, FavoriteModel, PaymentModel, SettingsModel } from "@/lib/models";
+import { UserModel, ProfileModel, FavoriteModel, PaymentModel } from "@/lib/models";
 import { buildMDCard, isPaymentLockExpired } from "@/lib/cardGenerator";
+import { autoApproveDuePayments } from "@/lib/paymentApproval";
 
 export async function GET() {
   try {
@@ -22,25 +26,13 @@ export async function GET() {
 
     await connectToDatabase();
 
-    // Auto-remove favorites whose payment lock expired without payment —
-    // the bride becomes available again in Browse Profiles.
-    await FavoriteModel.deleteMany({
-      userId: session.user.id,
-      movedToPayment: true,
-      paymentLockExpiresAt: { $lt: new Date() },
-      firstPaidAt: null,
-      isPaid: { $ne: true },
-    });
-
-    // Auto-remove favorites whose free trial expired without any payment
-    // activity (not moved to payment, nothing paid).
-    await FavoriteModel.deleteMany({
-      userId: session.user.id,
-      expiresAt: { $lt: new Date() },
-      isPaid: { $ne: true },
-      firstPaidAt: null,
-      movedToPayment: { $ne: true },
-    });
+    // SLA fallback — approve any 1st/2nd payments that have sat unreviewed
+    // past the admin-configured window, so this page's "awaiting approval"
+    // sections stay in sync with the inbox/contact-details pages.
+    await Promise.all([
+      autoApproveDuePayments("FIRST_PAYMENT"),
+      autoApproveDuePayments("SECOND_PAYMENT"),
+    ]);
 
     const favorites = await FavoriteModel.find({ userId: session.user.id })
       .sort({ firstPaidAt: 1, createdAt: -1 }) // unpaid (no firstPaidAt) first
@@ -79,15 +71,6 @@ export async function GET() {
       // exists in the list so the groom knows they have a favorite there.
       const cardVisible = !isBrideFrozen && !isBrideBanned;
 
-      // A favorite counts as "paid" once the groom has any payment activity —
-      // explicit isPaid flag, a submitted 1st payment, or an active move-to-payment.
-      const isPaid = !!(fav.isPaid || fav.firstPaidAt);
-      const inPaymentFlow = isPaid || (fav.movedToPayment && !lockExpired);
-      const isTrialExpired = !inPaymentFlow && fav.expiresAt && new Date() > new Date(fav.expiresAt);
-      const daysLeft = fav.expiresAt && !inPaymentFlow
-        ? Math.max(0, Math.ceil((new Date(fav.expiresAt).getTime() - new Date().getTime()) / (24 * 60 * 60 * 1000)))
-        : null;
-
       return {
         id:                    String(fav._id),
         favoriteUserId:        uid,
@@ -105,12 +88,6 @@ export async function GET() {
                                  ? approvedPaymentSet.has(String(fav.secondPaymentId))
                                  : false,
         createdAt:             fav.createdAt,
-        // Trial expiry info
-        addedAt:               fav.addedAt ?? fav.createdAt,
-        expiresAt:             fav.expiresAt ?? null,
-        isPaid,
-        isTrialExpired,
-        daysLeft,
         mdCard:                cardVisible && u && p ? buildMDCard(u, p) : null,
         isBrideFrozen,
         isBrideBanned,
@@ -161,22 +138,14 @@ export async function POST(req: Request) {
       return Response.json({ error: "Can only favourite bride profiles" }, { status: 400 });
     }
 
-    // Get favorite trial days from settings
-    const settings = await SettingsModel.findOne().select("favoriteTrialDays").lean() as any;
-    const trialDays = settings?.favoriteTrialDays ?? 7;
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + trialDays * 24 * 60 * 60 * 1000);
-
-    // Upsert — silently succeed if already exists
+    // Upsert — silently succeed if already exists. Favorites are permanent
+    // once added (see docstring at the top of this file).
     await FavoriteModel.findOneAndUpdate(
       { userId: session.user.id, favoriteUserId },
       { $setOnInsert: {
         userId: session.user.id,
         favoriteUserId,
         status: "ACTIVE",
-        addedAt: now,
-        expiresAt,
-        isPaid: false,
       } },
       { upsert: true, new: true },
     );

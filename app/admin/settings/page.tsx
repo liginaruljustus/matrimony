@@ -48,10 +48,10 @@ type Settings = {
   pdfFooterText: string;
   pdfShowContactDetails: boolean;
   pdfShowAstrology: boolean;
-  // Favorites trial settings
-  favoriteTrialDays: number;
   paymentLockDays: number;
   inboxFreezeDays: number;
+  firstPaymentAutoApproveDays: number;
+  secondPaymentAutoApproveDays: number;
 };
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
@@ -350,9 +350,10 @@ export default function AdminSettingsPage() {
         pdfFooterText: "Confidential — For Family Use Only",
         pdfShowContactDetails: true,
         pdfShowAstrology: true,
-        favoriteTrialDays: 7,
         paymentLockDays: 3,
         inboxFreezeDays: 30,
+        firstPaymentAutoApproveDays: 7,
+        secondPaymentAutoApproveDays: 30,
       };
       setSettings(defaults);
       setSaved(defaults);
@@ -671,28 +672,14 @@ export default function AdminSettingsPage() {
           </div>
         </SectionCard>
 
-        {/* ── Favorites Trial Settings ────────────────────────────────────── */}
+        {/* ── Favorites & Payment Timing ─────────────────────────────────── */}
         <SectionCard>
-          <SectionTitle icon={Heart} title="Favorites Trial Settings" />
+          <SectionTitle icon={Heart} title="Favorites & Payment Timing" />
           <p className="text-xs text-slate-500 mb-4 -mt-2">
-            Configure how long users can keep favorites before they need to pay.
+            Favorites are never automatically removed. These settings only control
+            payment windows and inbox timing.
           </p>
           <div className="space-y-5">
-            <div>
-              <label className="mb-2 block text-xs font-semibold text-slate-900">Free Trial Period (Days)</label>
-              <input
-                type="number"
-                min="1"
-                max="365"
-                value={settings.favoriteTrialDays}
-                onChange={(e) => set("favoriteTrialDays", Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
-              />
-              <p className="text-xs text-slate-500 mt-1">
-                Number of days users can keep a favorited profile before payment is required. After this period, the favorite is automatically removed unless paid.
-              </p>
-            </div>
-
             <div>
               <label className="mb-2 block text-xs font-semibold text-slate-900">Payment Lock Period (Days)</label>
               <input
@@ -704,7 +691,7 @@ export default function AdminSettingsPage() {
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
               />
               <p className="text-xs text-slate-500 mt-1">
-                After a groom moves a favorite to payment, he must pay within this many days. If not paid, the favorite is removed and the profile appears again in Browse Profiles.
+                After a groom moves a favorite to payment, this many days is shown as the payment window. If it passes unpaid, the favorite simply becomes payable again — it is never removed.
               </p>
             </div>
 
@@ -719,7 +706,37 @@ export default function AdminSettingsPage() {
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
               />
               <p className="text-xs text-slate-500 mt-1">
-                After the 1st payment is approved, the bride&apos;s additional details stay locked in the groom&apos;s inbox for this many days (only her Profile ID is shown). Details unlock when the period ends.
+                After the 1st payment is approved, the bride&apos;s additional details — and her accept/decline response — stay locked in the groom&apos;s inbox for this many days (only her Profile ID is shown). A decline still shows immediately; only an accept is held back.
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-xs font-semibold text-slate-900">1st Payment Auto-Approval (Days)</label>
+              <input
+                type="number"
+                min="1"
+                max="60"
+                value={settings.firstPaymentAutoApproveDays}
+                onChange={(e) => set("firstPaymentAutoApproveDays", Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Admin should manually verify the transaction and approve the 1st payment. If nobody reviews it within this many days, the system approves it automatically so the proposal isn&apos;t stuck — check the payments list regularly for unreviewed transactions.
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-xs font-semibold text-slate-900">2nd Payment Auto-Approval (Days)</label>
+              <input
+                type="number"
+                min="1"
+                max="90"
+                value={settings.secondPaymentAutoApproveDays}
+                onChange={(e) => set("secondPaymentAutoApproveDays", Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Same safety net for the 2nd payment (contact details). If admin hasn&apos;t reviewed it within this many days, it is approved automatically.
               </p>
             </div>
           </div>

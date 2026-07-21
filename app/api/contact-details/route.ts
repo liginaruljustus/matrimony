@@ -1,7 +1,9 @@
 /**
  * GET /api/contact-details
  *
- * CD cards of brides for which 2nd payment was admin-approved.
+ * CD cards of brides for which 2nd payment was approved — either manually by
+ * admin, or automatically once secondPaymentAutoApproveDays has passed since
+ * payment (SLA fallback, see lib/paymentApproval.ts).
  * Recently paid first (secondPaidAt DESC).
  */
 import { getServerSession } from "next-auth/next";
@@ -9,6 +11,7 @@ import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel, FavoriteModel, PaymentModel } from "@/lib/models";
 import { buildCDCard } from "@/lib/cardGenerator";
+import { autoApproveDuePayments } from "@/lib/paymentApproval";
 
 export async function GET() {
   try {
@@ -18,6 +21,10 @@ export async function GET() {
     }
 
     await connectToDatabase();
+
+    // SLA fallback — approve any 2nd payments that have sat unreviewed past
+    // the admin-configured window.
+    await autoApproveDuePayments("SECOND_PAYMENT");
 
     const favs = await FavoriteModel.find({
       userId:       session.user.id,

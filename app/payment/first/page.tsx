@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   CreditCard, CheckCircle, Copy, AlertCircle,
-  ArrowLeft, Smartphone, Building2, QrCode,
+  ArrowLeft, Smartphone, Building2, QrCode, Lock,
 } from "lucide-react";
 
 type Method = "gpay" | "upi" | "bank";
@@ -225,11 +225,13 @@ function PaymentContent() {
           {lockedFavs.map((f) => (
             <div key={f.id} className="flex items-center justify-between rounded-lg bg-neutral-50 dark:bg-neutral-200 px-3 py-2.5">
               <div>
-                <p className="text-sm font-bold text-neutral-800">{f.name}</p>
-                <p className="text-xs font-mono text-neutral-400">{f.profileId}</p>
+                <div className="flex items-center gap-1.5">
+                  <Lock size={11} className="text-[#7a1f2b]" />
+                  <p className="font-mono text-sm font-bold tracking-wide text-neutral-800">{f.profileId}</p>
+                </div>
                 {f.paymentLockExpiresAt && (
-                  <p className="mt-0.5 text-[10px] text-amber-600">
-                    Pay before {new Date(f.paymentLockExpiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} or it will be removed from favourites
+                  <p className="mt-0.5 text-[10px] text-neutral-400">
+                    Payment window open until {new Date(f.paymentLockExpiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} — you can still pay any time after, no rush
                   </p>
                 )}
               </div>

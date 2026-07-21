@@ -25,9 +25,10 @@ const DEFAULTS = {
   pdfFooterText: "Confidential — For Family Use Only",
   pdfShowContactDetails: true,
   pdfShowAstrology: true,
-  favoriteTrialDays: 7,
   paymentLockDays: 3,
   inboxFreezeDays: 30,
+  firstPaymentAutoApproveDays: 7,
+  secondPaymentAutoApproveDays: 30,
 };
 
 export async function GET() {
@@ -67,9 +68,10 @@ export async function GET() {
       pdfFooterText:         settings.pdfFooterText         ?? DEFAULTS.pdfFooterText,
       pdfShowContactDetails: settings.pdfShowContactDetails ?? true,
       pdfShowAstrology:      settings.pdfShowAstrology      ?? true,
-      favoriteTrialDays:     settings.favoriteTrialDays     ?? 7,
       paymentLockDays:       settings.paymentLockDays       ?? 3,
       inboxFreezeDays:       settings.inboxFreezeDays       ?? 30,
+      firstPaymentAutoApproveDays:  settings.firstPaymentAutoApproveDays  ?? 7,
+      secondPaymentAutoApproveDays: settings.secondPaymentAutoApproveDays ?? 30,
     });
   } catch (error) {
     console.error("GET /api/admin/settings error:", error);
@@ -120,9 +122,10 @@ export async function PUT(request: Request) {
     if ("pdfShowAstrology"      in body) allowed.pdfShowAstrology      = Boolean(body.pdfShowAstrology);
     if ("pdfCompanyName"        in body) allowed.pdfCompanyName        = String(body.pdfCompanyName ?? "").slice(0, 80);
     if ("pdfFooterText"         in body) allowed.pdfFooterText         = String(body.pdfFooterText ?? "").slice(0, 120);
-    if ("favoriteTrialDays"     in body) allowed.favoriteTrialDays     = Math.max(1, Number(body.favoriteTrialDays) || 7);
     if ("paymentLockDays"       in body) allowed.paymentLockDays       = Math.max(1, Number(body.paymentLockDays) || 3);
     if ("inboxFreezeDays"       in body) allowed.inboxFreezeDays       = Math.max(1, Number(body.inboxFreezeDays) || 30);
+    if ("firstPaymentAutoApproveDays"  in body) allowed.firstPaymentAutoApproveDays  = Math.max(1, Number(body.firstPaymentAutoApproveDays) || 7);
+    if ("secondPaymentAutoApproveDays" in body) allowed.secondPaymentAutoApproveDays = Math.max(1, Number(body.secondPaymentAutoApproveDays) || 30);
 
     allowed.updatedAt = new Date();
     allowed.updatedBy = (session.user as any).id;

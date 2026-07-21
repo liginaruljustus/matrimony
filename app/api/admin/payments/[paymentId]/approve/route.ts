@@ -1,17 +1,16 @@
 /**
  * POST /api/admin/payments/[paymentId]/approve
  *
- * Admin approves a payment.
- *
- * Post-approval actions:
- *  FIRST_PAYMENT  → set inboxFrozenUntil = now + 30 days on all matching favorites
- *  SECOND_PAYMENT → no extra action; GET /api/contact-details already filters by approvalStatus
+ * Admin manually approves a payment. If admin never reviews it, the same
+ * approval eventually happens automatically via the SLA fallback in
+ * lib/paymentApproval.ts (autoApproveDuePayments) — both paths share the
+ * same post-approval side effects (see runApprovalSideEffects).
  */
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
-import { PaymentModel, FavoriteModel, NotificationModel, SettingsModel } from "@/lib/models";
-import { addDays } from "@/lib/cardGenerator";
+import { PaymentModel } from "@/lib/models";
+import { runApprovalSideEffects } from "@/lib/paymentApproval";
 
 export async function POST(
   _req: Request,
@@ -50,68 +49,8 @@ export async function POST(
       return Response.json({ error: "Payment already reviewed" }, { status: 400 });
     }
 
-    // ── Post-approval side effects ────────────────────────────────────────
-    if (payment.tier === "FIRST_PAYMENT") {
-      // Set 30-day inbox freeze on all favorites linked to this payment
-      const receiverIds = payment.receiverIds?.length
-        ? payment.receiverIds
-        : payment.receiverId
-        ? [payment.receiverId]
-        : [];
-
-      if (receiverIds.length) {
-        // Waiting period is admin-configurable (Settings → inboxFreezeDays, default 30)
-        const settings = await SettingsModel.findOne().select("inboxFreezeDays").lean() as any;
-        const freezeDays = settings?.inboxFreezeDays ?? 30;
-        const inboxFrozenUntil = addDays(now, freezeDays);
-        await FavoriteModel.updateMany(
-          {
-            userId:         payment.userId,
-            favoriteUserId: { $in: receiverIds },
-            firstPaymentId: payment._id,
-          },
-          {
-            $set: {
-              inboxFrozenUntil,
-              status: "PAID",
-            },
-          },
-        );
-      }
-    }
-    // SECOND_PAYMENT: no side-effects needed — contact-details API reads approvalStatus directly
-
-    // ── Notify the user ───────────────────────────────────────────────────
-    try {
-      const isSecond = payment.tier === "SECOND_PAYMENT";
-      await NotificationModel.create({
-        userId:  payment.userId,
-        type:    "PAYMENT_APPROVED",
-        message: isSecond
-          ? "Your 2nd payment has been approved! Contact details are now unlocked."
-          : "Your payment has been approved! Open your Inbox to view bride details.",
-        link:    isSecond ? "/contact-details" : "/inbox",
-      });
-    } catch { /* non-critical */ }
-
-    // ── Notify each bride of the new proposal (1st payment only) ──────────
-    if (payment.tier === "FIRST_PAYMENT") {
-      const brideIds = payment.receiverIds?.length
-        ? payment.receiverIds
-        : payment.receiverId
-        ? [payment.receiverId]
-        : [];
-      for (const brideId of brideIds) {
-        try {
-          await NotificationModel.create({
-            userId:  brideId,
-            type:    "NEW_PROPOSAL",
-            message: "A groom family has expressed interest in your profile. Open your inbox to accept or decline.",
-            link:    "/bride-inbox",
-          });
-        } catch { /* non-critical */ }
-      }
-    }
+    // ── Post-approval side effects (shared with the auto-approval fallback) ──
+    await runApprovalSideEffects(payment);
 
     return Response.json({ ok: true, message: "Payment approved successfully" });
   } catch (error) {

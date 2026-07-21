@@ -172,8 +172,10 @@ export function Navbar() {
   const groomLinks = [
     { href: "/profiles",         label: "Browse Brides" },
     { href: "/favorites",        label: "Favourites" },
+    { href: "/payment/first",    label: "1st Payment" },
     { href: "/interests",        label: "Interests" },
     { href: "/inbox",            label: "Inbox" },
+    { href: "/payment/second",   label: "2nd Payment" },
     { href: "/contact-details",  label: "Contacts" },
     { href: "/payment/history",  label: "Payments" },
     { href: "/my-profile",       label: "My Profile" },
@@ -199,7 +201,7 @@ export function Navbar() {
 
   return (
     <nav className="sticky top-0 z-40 border-b border-neutral-200 bg-white/95 dark:bg-neutral-100/95 shadow-sm backdrop-blur-sm">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
+      <div className="flex w-full items-center justify-between px-4 py-3">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <Heart size={22} className="fill-current text-[#7a1f2b]" />

@@ -4,10 +4,13 @@
  * For BRIDE users only.
  * Returns grooms who have:
  *  - Favourited this bride
- *  - Had their 1st payment admin-approved (firstPaidAt set + payment APPROVED)
+ *  - Had their 1st payment approved — either by admin manually, or
+ *    automatically once firstPaymentAutoApproveDays has passed since payment
+ *    (SLA fallback, see lib/paymentApproval.ts) so a slow manual review never
+ *    stalls the proposal indefinitely.
  *
  * Returns the groom's AD card (MD + additional details: family, income, horoscope,
- * photos, expectations) — the groom's 1st payment is admin-approved, so the bride
+ * photos, expectations) — the groom's 1st payment is approved, so the bride
  * family gets the fuller picture to evaluate the proposal. Contact details stay hidden.
  * Sorted: accepted first, then by firstPaidAt DESC (most recent first)
  */
@@ -16,6 +19,7 @@ import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel, FavoriteModel, PaymentModel } from "@/lib/models";
 import { buildMDCard, buildADCard } from "@/lib/cardGenerator";
+import { autoApproveDuePayments } from "@/lib/paymentApproval";
 
 export async function GET() {
   try {
@@ -25,6 +29,10 @@ export async function GET() {
     }
 
     await connectToDatabase();
+
+    // SLA fallback — approve any 1st payments that have sat unreviewed past
+    // the admin-configured window, so proposals don't stall on admin.
+    await autoApproveDuePayments("FIRST_PAYMENT");
 
     // Must be a bride
     const brideUser = await UserModel.findById(session.user.id).lean() as any;

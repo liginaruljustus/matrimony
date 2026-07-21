@@ -3,10 +3,6 @@
     {
       "path": "/api/cron/auto-freeze",
       "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/favorites/cleanup",
-      "schedule": "30 2 * * *"
     }
   ]
 }

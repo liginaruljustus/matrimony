@@ -9,7 +9,9 @@
  *  - If paymentLock already active & not expired → 409
  *  - Sets movedToPayment=true, paymentLockExpiresAt = now + paymentLockDays (admin setting, default 3),
  *    status = PAYMENT_LOCKED
- *  - If not paid within the lock window, the favorite is auto-removed (GET /api/favorites + cleanup job)
+ *  - If not paid within the lock window, the favorite is NEVER deleted — it simply
+ *    reverts to an unpaid/selectable state (see GET /api/favorites) so the groom
+ *    can retry "Move to Payment" any time.
  *  - Returns total amount due (based on familyClass of each bride)
  */
 import { getServerSession } from "next-auth/next";

@@ -6,7 +6,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   CheckCircle, XCircle, Clock, CreditCard,
   Users, TrendingUp, AlertCircle, X,
-  Smartphone, Building2, QrCode, ChevronDown, ChevronUp,
+  Smartphone, Building2, QrCode, ChevronDown, ChevronUp, Zap,
 } from "lucide-react";
 
 type Receiver = {
@@ -26,6 +26,7 @@ type Payment = {
   status: string;
   createdAt: string;
   approvedAt?: string;
+  autoApproved?: boolean;
   rejectionReason?: string;
   profileCount: number;
   payer: { id: string; name: string; email: string; profileId: string } | null;
@@ -92,6 +93,9 @@ function PaymentsContent() {
   const [payments, setPayments]   = useState<Payment[]>([]);
   const [loading, setLoading]     = useState(true);
   const [totalPending, setTotalPending] = useState(0);
+  const [revenue, setRevenue] = useState({
+    total: 0, count: 0, autoApproved: 0, manualApproved: 0, firstPayment: 0, secondPayment: 0,
+  });
   const [tab, setTab]             = useState(params.get("tab") ?? "pending");
   const [expanded, setExpanded]   = useState<Set<string>>(new Set());
   const [approvingId, setApprovingId] = useState<string | null>(null);
@@ -105,6 +109,7 @@ function PaymentsContent() {
       const data = await res.json();
       setPayments(data.payments ?? []);
       setTotalPending(data.totalPending ?? 0);
+      if (data.revenue) setRevenue(data.revenue);
     } catch {
       error("Failed to load payments");
     } finally {
@@ -194,6 +199,38 @@ function PaymentsContent() {
               {totalPending} pending
             </span>
           )}
+        </div>
+
+        {/* Revenue Summary — all-time, independent of which tab is selected */}
+        <div className="rounded-2xl border border-[#7a1f2b]/15 bg-gradient-to-br from-[#faf7f2] to-white p-5">
+          <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[#7a1f2b]">
+            Total Revenue (All-Time Approved)
+          </p>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div>
+              <p className="text-2xl font-extrabold text-[#7a1f2b]">{fmt(revenue.total)}</p>
+              <p className="text-xs text-neutral-500">{revenue.count} payment{revenue.count !== 1 ? "s" : ""}</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-neutral-800">{fmt(revenue.firstPayment)}</p>
+              <p className="text-xs text-neutral-500">1st Payments</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-neutral-800">{fmt(revenue.secondPayment)}</p>
+              <p className="text-xs text-neutral-500">2nd Payments</p>
+            </div>
+            <div>
+              <p className="flex items-center gap-1 text-lg font-bold text-neutral-800">
+                {revenue.manualApproved}
+                <span className="text-xs font-normal text-neutral-400">manual</span>
+                <span className="mx-0.5 text-neutral-300">/</span>
+                <Zap size={13} className="text-amber-500" />
+                {revenue.autoApproved}
+                <span className="text-xs font-normal text-neutral-400">auto</span>
+              </p>
+              <p className="text-xs text-neutral-500">Approval Source</p>
+            </div>
+          </div>
         </div>
 
         {/* Stats (pending tab only) */}
@@ -318,8 +355,13 @@ function PaymentsContent() {
                         </p>
                       )}
                       {payment.approvedAt && (
-                        <p className="mt-1 text-xs text-green-600">
+                        <p className="mt-1 flex items-center gap-1.5 text-xs text-green-600">
                           ✓ Approved on {fmtDate(payment.approvedAt)}
+                          {payment.autoApproved && (
+                            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">
+                              AUTO — never reviewed
+                            </span>
+                          )}
                         </p>
                       )}
                     </div>
