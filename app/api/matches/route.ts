@@ -60,7 +60,9 @@ function calculateMatchScore(userProfile: any, candidateProfile: any): number {
   }
 
   // Location proximity (20 points)
-  if (userProfile.location.toLowerCase() === candidateProfile.location.toLowerCase()) {
+  const userLocation = (userProfile.location ?? "").toLowerCase();
+  const candidateLocation = (candidateProfile.location ?? "").toLowerCase();
+  if (userLocation && userLocation === candidateLocation) {
     score += 20; // Same district
   } else {
     // Same state gets 10 points (simplified - assumes location is district)

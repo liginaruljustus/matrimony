@@ -17,6 +17,7 @@ import {
   ChevronRight,
   CreditCard,
   Heart,
+  PencilLine,
 } from "lucide-react";
 
 type Badges = {
@@ -25,6 +26,7 @@ type Badges = {
   pendingVerification: number;
   openReports: number;
   pendingPayments: number;
+  pendingEditRequests: number;
 };
 
 type NavItem = {
@@ -42,6 +44,7 @@ const navItems: NavItem[] = [
   { icon: CheckCircle,     label: "Verification", href: "/admin/verification",  badgeKey: "pendingVerification" },
   { icon: AlertCircle,     label: "Reports",      href: "/admin/reports",       badgeKey: "openReports" },
   { icon: CreditCard,      label: "Payments",     href: "/admin/payments",      badgeKey: "pendingPayments" },
+  { icon: PencilLine,      label: "Edit Requests", href: "/admin/edit-requests", badgeKey: "pendingEditRequests" },
   { icon: Settings,        label: "Settings",     href: "/admin/settings" },
 ];
 
@@ -77,6 +80,7 @@ export function AdminSidebar({
     pendingVerification: 0,
     openReports: 0,
     pendingPayments: 0,
+    pendingEditRequests: 0,
   });
 
   useEffect(() => {

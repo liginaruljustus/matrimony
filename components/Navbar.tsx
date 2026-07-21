@@ -173,7 +173,6 @@ export function Navbar() {
     { href: "/profiles",         label: "Browse Brides" },
     { href: "/favorites",        label: "Favourites" },
     { href: "/payment/first",    label: "1st Payment" },
-    { href: "/interests",        label: "Interests" },
     { href: "/inbox",            label: "Inbox" },
     { href: "/payment/second",   label: "2nd Payment" },
     { href: "/contact-details",  label: "Contacts" },

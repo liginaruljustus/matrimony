@@ -369,6 +369,7 @@ const notificationSchema = new Schema(
         "PROFILE_APPROVED", "PROFILE_REJECTED",
         "INTEREST_ACCEPTED", "INTEREST_DECLINED",
         "INTEREST_RECEIVED", "NEW_MESSAGE", "NEW_PROPOSAL",
+        "EDIT_REQUEST_RESOLVED",
       ],
       required: true,
     },
@@ -382,6 +383,24 @@ notificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
 
 export const NotificationModel =
   (models && models["Notification"]) || model("Notification", notificationSchema);
+
+// ── Profile Edit Request ────────────────────────────────────────────────────
+// Submitted by a user whose profile is locked — asks admin to unlock it so
+// they can edit it themselves again.
+const profileEditRequestSchema = new Schema(
+  {
+    userId:     { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    message:    { type: String, required: true, maxlength: 500 },
+    status:     { type: String, enum: ["PENDING", "RESOLVED"], default: "PENDING", index: true },
+    resolvedBy: { type: Schema.Types.ObjectId, ref: "User" },
+    resolvedAt: { type: Date },
+  },
+  { timestamps: true },
+);
+profileEditRequestSchema.index({ userId: 1, status: 1 });
+
+export const ProfileEditRequestModel =
+  (models && models["ProfileEditRequest"]) || model("ProfileEditRequest", profileEditRequestSchema);
 
 // ── Counter — atomic sequence generator (prevents profile ID race conditions) ─
 const counterSchema = new Schema({

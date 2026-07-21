@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MatrimonyProfileForm } from "@/components/MatrimonyProfileForm";
+import { RequestEditButton } from "@/components/RequestEditButton";
 import {
   User, MapPin, Briefcase, Users, Star,
   Phone, FileText, Pencil, ArrowLeft, Camera,
@@ -198,12 +199,15 @@ export default function MyProfilePage() {
 
       {/* Locked notice */}
       {isLocked && (
-        <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          <Lock size={16} className="mt-0.5 shrink-0 text-amber-600" />
-          <span>
-            Your profile is <strong>locked</strong> and can no longer be edited. To make any
-            changes, please <strong>contact the admin</strong>.
-          </span>
+        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <div className="flex items-start gap-2.5">
+            <Lock size={16} className="mt-0.5 shrink-0 text-amber-600" />
+            <span>
+              Your profile is <strong>locked</strong> and can no longer be edited. Send a request
+              below to ask the admin to unlock it.
+            </span>
+          </div>
+          <RequestEditButton />
         </div>
       )}
 

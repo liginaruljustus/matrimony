@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle } from "lucide-react";
 import { ProfileCard } from "@/components/ProfileCard";
 
 type Match = {
@@ -32,7 +31,6 @@ export default function MatchesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [minScore, setMinScore] = useState(50);
-  const [interestSentFor, setInterestSentFor] = useState<string | null>(null);
 
   // Auth guard + bride guard
   useEffect(() => {
@@ -63,18 +61,6 @@ export default function MatchesPage() {
 
   const filteredMatches = matches.filter((m) => m.matchScore >= minScore);
 
-  const sendInterest = async (receiverId: string) => {
-    const res = await fetch("/api/interests", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ receiverId }),
-    });
-    if (res.ok) {
-      setInterestSentFor(receiverId);
-      setTimeout(() => setInterestSentFor(null), 3000);
-    }
-  };
-
   const getScoreBg = (score: number) => {
     if (score >= 90) return "from-green-400 to-emerald-500 text-white";
     if (score >= 80) return "from-blue-400 to-cyan-500 text-white";
@@ -95,14 +81,6 @@ export default function MatchesPage() {
 
   return (
     <div className="bg-[#faf7f2] min-h-screen">
-      {/* Interest sent toast */}
-      {interestSentFor && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow-lg">
-          <CheckCircle size={16} />
-          Interest sent!
-        </div>
-      )}
-
       <div className="mx-auto max-w-7xl px-4 py-8">
         <section className="space-y-8">
           {/* Hero Header */}
@@ -210,7 +188,6 @@ export default function MatchesPage() {
                         bio={match.bio}
                         photos={match.photos}
                         matchScore={match.matchScore}
-                        onSendInterest={sendInterest}
                       />
                     </div>
                   ))}

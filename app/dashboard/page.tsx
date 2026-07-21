@@ -7,6 +7,7 @@ import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { MatrimonyProfileForm } from "@/components/MatrimonyProfileForm";
+import { RequestEditButton } from "@/components/RequestEditButton";
 import {
   Users, UserCheck, User, Heart, CreditCard, BarChart3,
   CheckCircle, Eye, EyeOff, AlertCircle, Database, Lock,
@@ -545,9 +546,10 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
             <div>
               <p className="font-bold text-slate-900 dark:text-neutral-900">Profile Locked</p>
               <p className="text-sm text-slate-500 dark:text-neutral-700 mt-0.5">
-                Your profile has been submitted and is now locked. To make any changes,
-                please contact the admin.
+                Your profile has been submitted and is now locked. Send a request to ask
+                the admin to unlock it.
               </p>
+              <RequestEditButton />
             </div>
           </div>
         </div>

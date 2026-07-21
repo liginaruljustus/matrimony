@@ -14,7 +14,6 @@ type ProfileCardProps = {
   bio?: string | null;
   photos?: string[];
   matchScore?: number;
-  onSendInterest?: (userId: string) => void;
 };
 
 export function ProfileCard(props: ProfileCardProps) {
@@ -98,21 +97,13 @@ export function ProfileCard(props: ProfileCardProps) {
         </div>
 
         {/* Action buttons */}
-        <div className="pt-1 grid grid-cols-2 gap-2">
+        <div className="pt-1">
           <Link
             href={`/profiles/${props.id}`}
-            className="rounded-lg bg-neutral-100 px-3 py-2.5 text-center text-xs font-semibold text-primary transition-fast hover:bg-neutral-200 active:scale-95"
+            className="block rounded-lg bg-neutral-100 px-3 py-2.5 text-center text-xs font-semibold text-primary transition-fast hover:bg-neutral-200 active:scale-95"
           >
             View Profile
           </Link>
-          {props.onSendInterest ? (
-            <button
-              className="rounded-lg bg-accent px-3 py-2.5 text-xs font-bold text-[#502514] shadow-base transition-fast hover:shadow-md hover:scale-105 active:scale-95"
-              onClick={() => props.onSendInterest?.(props.id)}
-            >
-              Interested
-            </button>
-          ) : null}
         </div>
       </div>
     </div>
