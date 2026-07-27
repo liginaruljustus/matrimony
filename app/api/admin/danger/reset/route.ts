@@ -135,7 +135,8 @@ export async function POST(request: Request) {
       {},
       {
         $set: {
-          paymentAmounts:          { MC: 500, UC: 2500, EC: 5000 },
+          firstPaymentAmounts:     { MC: 500, UC: 2500, EC: 5000 },
+          secondPaymentAmounts:    { MC: 500, UC: 2500, EC: 5000 },
           maintenanceMode:         false,
           maintenanceMessage:      "",
           registrationOpen:        true,

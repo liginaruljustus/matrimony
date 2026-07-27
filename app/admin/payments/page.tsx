@@ -132,7 +132,12 @@ function PaymentsContent() {
     try {
       const res = await fetch(`/api/admin/payments/${paymentId}/approve`, { method: "POST" });
       if (!res.ok) throw new Error();
-      success("Payment approved — AD cards unlocked");
+      const tier = payments.find((p) => p.id === paymentId)?.tier;
+      success(
+        tier === "SECOND_PAYMENT"
+          ? "Payment approved — CD cards unlocked"
+          : "Payment approved — AD cards unlocked",
+      );
       setPayments((p) => p.filter((x) => x.id !== paymentId));
       setTotalPending((n) => Math.max(0, n - 1));
     } catch {

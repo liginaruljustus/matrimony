@@ -60,7 +60,7 @@ function LoginContent() {
         <div className="card p-6">
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <label className="label">Profile ID or Email</label>
+              <label className="label">Profile ID</label>
               <input
                 type="text"
                 value={profileId}
@@ -68,11 +68,12 @@ function LoginContent() {
                   const v = e.target.value;
                   setProfileId(v.includes("@") ? v : v.toUpperCase());
                 }}
-                placeholder="e.g. M0626H00042MC or admin@test.com"
+                placeholder="e.g. M0626H00042MC"
                 required
                 autoComplete="username"
                 className="input-field font-mono tracking-wider"
               />
+              <p className="mt-1.5 text-xs text-[#7c6b5e]">Admins sign in with their email instead.</p>
             </div>
 
             <div>

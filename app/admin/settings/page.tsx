@@ -24,7 +24,8 @@ import { AdminHeader } from "@/components/admin/AdminHeader";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Settings = {
-  paymentAmounts: { MC: number; UC: number; EC: number };
+  firstPaymentAmounts: { MC: number; UC: number; EC: number };
+  secondPaymentAmounts: { MC: number; UC: number; EC: number };
   maintenanceMode: boolean;
   maintenanceMessage: string;
   registrationOpen: boolean;
@@ -329,7 +330,8 @@ export default function AdminSettingsPage() {
       console.error(err);
       toast.error("Could not load settings — showing defaults");
       const defaults: Settings = {
-        paymentAmounts: { MC: 500, UC: 2500, EC: 5000 },
+        firstPaymentAmounts: { MC: 500, UC: 2500, EC: 5000 },
+        secondPaymentAmounts: { MC: 500, UC: 2500, EC: 5000 },
         maintenanceMode: false,
         maintenanceMessage: "",
         registrationOpen: true,
@@ -394,9 +396,14 @@ export default function AdminSettingsPage() {
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) =>
     setSettings((s) => s ? { ...s, [key]: value } : s);
 
-  const setAmt = (cls: "MC" | "UC" | "EC", v: number) =>
+  const setFirstAmt = (cls: "MC" | "UC" | "EC", v: number) =>
     setSettings((s) =>
-      s ? { ...s, paymentAmounts: { ...s.paymentAmounts, [cls]: v } } : s
+      s ? { ...s, firstPaymentAmounts: { ...s.firstPaymentAmounts, [cls]: v } } : s
+    );
+
+  const setSecondAmt = (cls: "MC" | "UC" | "EC", v: number) =>
+    setSettings((s) =>
+      s ? { ...s, secondPaymentAmounts: { ...s.secondPaymentAmounts, [cls]: v } } : s
     );
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -447,30 +454,64 @@ export default function AdminSettingsPage() {
 
       <div className="space-y-6 max-w-4xl">
 
-        {/* ── Payment Amounts ────────────────────────────────────────────── */}
+        {/* ── 1st Payment Amounts ────────────────────────────────────────── */}
         <SectionCard>
-          <SectionTitle icon={CreditCard} title="Payment Amounts" />
+          <SectionTitle icon={CreditCard} title="1st Payment Amounts" />
+          <p className="text-xs text-slate-500 mb-4 -mt-2">
+            Charged when a groom moves a bride to payment (unlocks Additional Details).
+          </p>
           <div className="grid grid-cols-3 gap-4">
             <NumberInput
               label="MC Family"
-              value={settings.paymentAmounts.MC}
+              value={settings.firstPaymentAmounts.MC}
               prefix="₹"
               min={0}
-              onChange={(v) => setAmt("MC", v)}
+              onChange={(v) => setFirstAmt("MC", v)}
             />
             <NumberInput
               label="UC Family"
-              value={settings.paymentAmounts.UC}
+              value={settings.firstPaymentAmounts.UC}
               prefix="₹"
               min={0}
-              onChange={(v) => setAmt("UC", v)}
+              onChange={(v) => setFirstAmt("UC", v)}
             />
             <NumberInput
               label="EC Family"
-              value={settings.paymentAmounts.EC}
+              value={settings.firstPaymentAmounts.EC}
               prefix="₹"
               min={0}
-              onChange={(v) => setAmt("EC", v)}
+              onChange={(v) => setFirstAmt("EC", v)}
+            />
+          </div>
+        </SectionCard>
+
+        {/* ── 2nd Payment Amounts ────────────────────────────────────────── */}
+        <SectionCard>
+          <SectionTitle icon={CreditCard} title="2nd Payment Amounts" />
+          <p className="text-xs text-slate-500 mb-4 -mt-2">
+            Charged to unlock Contact Details, after the inbox freeze period ends.
+          </p>
+          <div className="grid grid-cols-3 gap-4">
+            <NumberInput
+              label="MC Family"
+              value={settings.secondPaymentAmounts.MC}
+              prefix="₹"
+              min={0}
+              onChange={(v) => setSecondAmt("MC", v)}
+            />
+            <NumberInput
+              label="UC Family"
+              value={settings.secondPaymentAmounts.UC}
+              prefix="₹"
+              min={0}
+              onChange={(v) => setSecondAmt("UC", v)}
+            />
+            <NumberInput
+              label="EC Family"
+              value={settings.secondPaymentAmounts.EC}
+              prefix="₹"
+              min={0}
+              onChange={(v) => setSecondAmt("EC", v)}
             />
           </div>
         </SectionCard>

@@ -406,20 +406,13 @@ const COMPLETION_FIELDS: { key: string; label: string }[] = [
 
 function ProfileCompletionCard({
   profile,
-  onEdit,
 }: {
   profile: UserProfile;
-  onEdit: () => void;
 }) {
   const filled = COMPLETION_FIELDS.filter(({ key }) => {
     const val = profile[key];
     if (Array.isArray(val)) return val.length > 0;
     return val !== undefined && val !== null && val !== "";
-  });
-  const missing = COMPLETION_FIELDS.filter(({ key }) => {
-    const val = profile[key];
-    if (Array.isArray(val)) return val.length === 0;
-    return val === undefined || val === null || val === "";
   });
   const pct = Math.round((filled.length / COMPLETION_FIELDS.length) * 100);
   const isComplete = pct === 100;
@@ -445,32 +438,10 @@ function ProfileCompletionCard({
         />
       </div>
 
-      {isComplete ? (
+      {isComplete && (
         <p className="mt-2 text-xs text-green-700 font-semibold flex items-center gap-1">
           <CheckCircle size={12} /> Your profile is fully complete!
         </p>
-      ) : (
-        <div className="mt-3">
-          <p className="text-xs font-semibold text-slate-600 dark:text-neutral-700 mb-1.5">
-            Missing ({missing.length}):
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {missing.map(({ label }) => (
-              <span
-                key={label}
-                className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700"
-              >
-                {label}
-              </span>
-            ))}
-          </div>
-          <button
-            onClick={onEdit}
-            className="mt-3 text-xs font-semibold text-[#7a1f2b] underline hover:no-underline"
-          >
-            Fill in missing details →
-          </button>
-        </div>
       )}
     </div>
   );
@@ -534,7 +505,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
         )}
 
         {/* ── Profile Completion (First Section) ───────────────────────────────── */}
-        {profile && <ProfileCompletionCard profile={profile} onEdit={scrollToForm} />}
+        {profile && <ProfileCompletionCard profile={profile} />}
 
         {/* ── Profile locked notice (replaces the edit form) ─────────────────── */}
         {profile?.isLocked ? (

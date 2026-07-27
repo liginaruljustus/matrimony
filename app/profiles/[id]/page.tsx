@@ -235,12 +235,12 @@ export default function ProfileDetailPage() {
           <div className="space-y-2">
             <TierRow
               step="1st Payment"
-              desc="Unlock family, income, horoscope & more photos"
+              desc="Unlock family, income, horoscope & more photos — visible on both sides"
               color="text-blue-700"
             />
             <TierRow
               step="2nd Payment"
-              desc="Unlock phone number, WhatsApp & contact person"
+              desc="Unlock phone number, WhatsApp & contact person — visible on both sides"
               color="text-green-700"
             />
           </div>

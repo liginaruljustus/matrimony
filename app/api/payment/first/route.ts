@@ -20,7 +20,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel, FavoriteModel, PaymentModel } from "@/lib/models";
-import { PAYMENT_AMOUNTS } from "@/lib/cardGenerator";
+import { getPaymentAmounts } from "@/lib/paymentSettings";
+import { notifyAdmins } from "@/lib/adminNotify";
 
 export async function POST(req: Request) {
   try {
@@ -77,11 +78,12 @@ export async function POST(req: Request) {
       );
     }
 
+    const firstPaymentAmounts = await getPaymentAmounts("FIRST_PAYMENT");
     let calculatedTotal = 0;
     for (const fav of activeFavs) {
       const u = userMap[String(fav.favoriteUserId)];
       const fc = u?.familyClass ?? "MC";
-      calculatedTotal += PAYMENT_AMOUNTS[fc as keyof typeof PAYMENT_AMOUNTS] ?? 500;
+      calculatedTotal += firstPaymentAmounts[fc] ?? 500;
     }
 
     // Create payment record
@@ -101,6 +103,12 @@ export async function POST(req: Request) {
     await FavoriteModel.updateMany(
       { _id: { $in: activeFavs.map((f: any) => f._id) } },
       { $set: { firstPaymentId: payment._id, firstPaidAt: now } },
+    );
+
+    void notifyAdmins(
+      "PAYMENT_SUBMITTED",
+      `${groomUser.name} (${groomUser.profileId}) submitted a 1st payment of ₹${calculatedTotal} for review.`,
+      "/admin/payments",
     );
 
     return Response.json({

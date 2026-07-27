@@ -18,7 +18,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel, FavoriteModel, SettingsModel } from "@/lib/models";
-import { PAYMENT_AMOUNTS, addDays } from "@/lib/cardGenerator";
+import { addDays } from "@/lib/cardGenerator";
+import { getPaymentAmounts } from "@/lib/paymentSettings";
 
 export async function POST(req: Request) {
   try {
@@ -112,12 +113,13 @@ export async function POST(req: Request) {
     );
 
     // Calculate total due
+    const firstPaymentAmounts = await getPaymentAmounts("FIRST_PAYMENT");
     let totalAmount = 0;
     const breakdown: { profileId: string; name: string; familyClass: string; amount: number }[] = [];
     for (const { fav, familyClass } of toProcess) {
       const uid = String(fav.favoriteUserId);
       const u = userMap[uid];
-      const amount = PAYMENT_AMOUNTS[familyClass as keyof typeof PAYMENT_AMOUNTS] ?? 500;
+      const amount = firstPaymentAmounts[familyClass] ?? 500;
       totalAmount += amount;
       breakdown.push({
         profileId: u?.profileId ?? uid,

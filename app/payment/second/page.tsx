@@ -35,7 +35,7 @@ const DETAIL_DEFAULTS: PaymentDetails = {
   bankAccountHolder: "Lura Matrimony Services",
 };
 
-const PAYMENT_AMT: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
+const DEFAULT_PAYMENT_AMT: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
 function SecondPaymentContent() {
   const router     = useRouter();
@@ -51,6 +51,7 @@ function SecondPaymentContent() {
   const [error, setError]           = useState("");
   const [copied, setCopied]         = useState("");
   const [details, setDetails]       = useState<PaymentDetails>(DETAIL_DEFAULTS);
+  const [paymentAmt, setPaymentAmt] = useState<Record<string, number>>(DEFAULT_PAYMENT_AMT);
 
   const [eligible, setEligible]         = useState<EligibleFav[]>([]);
   const [loadingFavs, setLoadingFavs]   = useState(true);
@@ -68,6 +69,7 @@ function SecondPaymentContent() {
             bankIfsc:          d.bankIfsc          ?? DETAIL_DEFAULTS.bankIfsc,
             bankAccountHolder: d.bankAccountHolder ?? DETAIL_DEFAULTS.bankAccountHolder,
           });
+          setPaymentAmt(d.secondPaymentAmounts ?? DEFAULT_PAYMENT_AMT);
         }
       })
       .catch(() => {});
@@ -95,7 +97,7 @@ function SecondPaymentContent() {
             name:        item.adCard?.name ?? "Profile",
             profileId:   item.adCard?.profileId ?? "—",
             familyClass: fc,
-            amount:      PAYMENT_AMT[fc] ?? 500,
+            amount:      paymentAmt[fc] ?? 500,
           };
         });
         setEligible(mapped);
@@ -106,7 +108,7 @@ function SecondPaymentContent() {
       })
       .catch(() => {})
       .finally(() => setLoadingFavs(false));
-  }, [status, urlId]);
+  }, [status, urlId, paymentAmt]);
 
   const selected = eligible.find((f) => f.id === selectedId) ?? null;
 

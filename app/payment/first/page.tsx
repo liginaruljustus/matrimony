@@ -36,7 +36,7 @@ const DETAIL_DEFAULTS: PaymentDetails = {
   bankAccountHolder: "Lura Matrimony Services",
 };
 
-const PAYMENT_AMT: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
+const DEFAULT_PAYMENT_AMT: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
 function PaymentContent() {
   const router    = useRouter();
@@ -52,6 +52,7 @@ function PaymentContent() {
   const [error, setError]           = useState("");
   const [copied, setCopied]         = useState("");
   const [details, setDetails]       = useState<PaymentDetails>(DETAIL_DEFAULTS);
+  const [paymentAmt, setPaymentAmt] = useState<Record<string, number>>(DEFAULT_PAYMENT_AMT);
   const [lockedFavs, setLockedFavs] = useState<LockedFav[]>([]);
   const [loadingFavs, setLoadingFavs] = useState(true);
 
@@ -67,6 +68,7 @@ function PaymentContent() {
             bankIfsc:         d.bankIfsc         ?? DETAIL_DEFAULTS.bankIfsc,
             bankAccountHolder:d.bankAccountHolder?? DETAIL_DEFAULTS.bankAccountHolder,
           });
+          setPaymentAmt(d.firstPaymentAmounts ?? DEFAULT_PAYMENT_AMT);
         }
       })
       .catch(() => {}); // keep defaults on error
@@ -100,14 +102,14 @@ function PaymentContent() {
             name:                 f.mdCard?.name ?? "Profile",
             profileId:            f.mdCard?.profileId ?? "—",
             familyClass:          fc,
-            amount:               PAYMENT_AMT[fc] ?? 500,
+            amount:               paymentAmt[fc] ?? 500,
             paymentLockExpiresAt: f.paymentLockExpiresAt ?? null,
           };
         }));
       })
       .catch(() => {})
       .finally(() => setLoadingFavs(false));
-  }, [status, rawIds]);
+  }, [status, rawIds, paymentAmt]);
 
   const favoriteIds = lockedFavs.map((f) => f.id);
   const totalAmount = lockedFavs.reduce((acc, f) => acc + f.amount, 0);

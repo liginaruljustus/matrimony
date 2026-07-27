@@ -21,6 +21,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel, FavoriteModel, PaymentModel } from "@/lib/models";
 import { buildADCard } from "@/lib/cardGenerator";
 import { autoApproveDuePayments } from "@/lib/paymentApproval";
+import { getPaymentAmounts } from "@/lib/paymentSettings";
 
 export async function GET() {
   try {
@@ -107,9 +108,12 @@ export async function GET() {
       };
     });
 
+    const secondPaymentAmounts = await getPaymentAmounts("SECOND_PAYMENT");
+
     return Response.json({
       inbox,
       pendingApproval: favs.length - approvedFavs.length,
+      secondPaymentAmounts,
     });
   } catch (error) {
     console.error("GET /api/inbox error:", error);

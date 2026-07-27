@@ -10,7 +10,7 @@ import {
   Home, ChevronDown, ChevronUp, AlertCircle, XCircle, Lock,
 } from "lucide-react";
 import { FAMILY_CLASS_COLORS, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
-const PAYMENT_AMOUNTS: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
+const DEFAULT_PAYMENT_AMOUNTS: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
 type InboxItem = {
   favoriteId: string;
@@ -75,6 +75,7 @@ export default function InboxPage() {
   const [paying, setPaying]         = useState(false);
   const [payError, setPayError]     = useState("");
   const [upiId, setUpiId]           = useState("luramatrimony@upi");
+  const [paymentAmounts, setPaymentAmounts] = useState<Record<string, number>>(DEFAULT_PAYMENT_AMOUNTS);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -83,6 +84,7 @@ export default function InboxPage() {
       const data = await res.json();
       setInbox(data.inbox ?? []);
       setPending(data.pendingApproval ?? 0);
+      setPaymentAmounts(data.secondPaymentAmounts ?? DEFAULT_PAYMENT_AMOUNTS);
     } catch {
       setInbox([]);
     } finally {
@@ -408,7 +410,7 @@ export default function InboxPage() {
                         className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#7a1f2b] py-3 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors"
                       >
                         <CreditCard size={15} />
-                        Pay for Contact Details — ₹{(PAYMENT_AMOUNTS[card.familyClass] ?? 500).toLocaleString("en-IN")}
+                        Pay for Contact Details — ₹{(paymentAmounts[card.familyClass] ?? 500).toLocaleString("en-IN")}
                       </button>
                     )}
 
@@ -419,7 +421,7 @@ export default function InboxPage() {
                         <div className="mb-3 rounded-lg bg-[#faf7f2] dark:bg-neutral-200 px-3 py-2">
                           <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">Amount Due</p>
                           <p className="text-lg font-extrabold text-[#7a1f2b]">
-                            ₹{(PAYMENT_AMOUNTS[card.familyClass] ?? 500).toLocaleString("en-IN")}
+                            ₹{(paymentAmounts[card.familyClass] ?? 500).toLocaleString("en-IN")}
                           </p>
                         </div>
                         <p className="mb-3 text-xs text-neutral-500">

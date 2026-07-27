@@ -20,7 +20,9 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel, FavoriteModel, PaymentModel } from "@/lib/models";
-import { PAYMENT_AMOUNTS, addDays } from "@/lib/cardGenerator";
+import { addDays } from "@/lib/cardGenerator";
+import { getPaymentAmounts } from "@/lib/paymentSettings";
+import { notifyAdmins } from "@/lib/adminNotify";
 
 export async function POST(req: Request) {
   try {
@@ -36,7 +38,7 @@ export async function POST(req: Request) {
     await connectToDatabase();
 
     // Block suspended / banned accounts
-    const groomUser = await UserModel.findById(session.user.id).select("status").lean() as any;
+    const groomUser = await UserModel.findById(session.user.id).select("status name profileId").lean() as any;
     if (!groomUser || groomUser.status !== "ACTIVE") {
       return Response.json(
         { error: "Your account is not active. Contact support for assistance." },
@@ -80,7 +82,8 @@ export async function POST(req: Request) {
     if (!targetUser) return Response.json({ error: "Bride profile not found" }, { status: 404 });
 
     const familyClass = targetUser.familyClass ?? "MC";
-    const amount = PAYMENT_AMOUNTS[familyClass as keyof typeof PAYMENT_AMOUNTS] ?? 500;
+    const secondPaymentAmounts = await getPaymentAmounts("SECOND_PAYMENT");
+    const amount = secondPaymentAmounts[familyClass] ?? 500;
 
     const now = new Date();
     const payment = await PaymentModel.create({
@@ -104,6 +107,12 @@ export async function POST(req: Request) {
         movedToSecondPaymentAt: now,
       },
     });
+
+    void notifyAdmins(
+      "PAYMENT_SUBMITTED",
+      `${groomUser.name} (${groomUser.profileId}) submitted a 2nd payment of ₹${amount} for review.`,
+      "/admin/payments",
+    );
 
     return Response.json({
       ok:       true,

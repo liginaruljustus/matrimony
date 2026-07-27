@@ -95,6 +95,7 @@ export async function POST(request: Request) {
           profileId,
           profileType: pending.profileType,
           familyClass: pending.familyClass,
+          religion:    pending.religion,
         });
         break; // success
       } catch (createErr: any) {

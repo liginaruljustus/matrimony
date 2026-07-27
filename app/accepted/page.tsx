@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Star, MapPin, GraduationCap, CheckCircle, Heart, Users,
-  ChevronDown, ChevronUp, Inbox,
+  ChevronDown, ChevronUp, Inbox, Phone, MessageCircle, User,
 } from "lucide-react";
 import { FAMILY_CLASS_COLORS as CLASS_COLOR, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 
@@ -50,6 +50,13 @@ type AcceptedItem = {
     lagnam?: string;
     photos?: string[];
     expectations?: string;
+  } | null;
+  secondPaidAt: string | null;
+  cdCard: {
+    contactPersonName?: string;
+    contactNumber?: string;
+    whatsappNo?: string;
+    email?: string;
   } | null;
 };
 
@@ -266,6 +273,40 @@ function AcceptedGroomCard({ item }: { item: AcceptedItem }) {
               </div>
             )}
           </div>
+        )}
+
+        {/* Contact Details (CD) — unlocked once groom's 2nd payment is admin-approved */}
+        {item.cdCard ? (
+          <div className="mt-3 rounded-lg border border-green-200 bg-green-50 p-3">
+            <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold text-green-700">
+              <Phone size={12} />
+              Contact Details Unlocked
+            </p>
+            <div className="space-y-1">
+              {item.cdCard.contactPersonName && (
+                <p className="flex items-center gap-1.5 text-[11px] text-neutral-700">
+                  <User size={11} className="text-green-700" />
+                  {item.cdCard.contactPersonName}
+                </p>
+              )}
+              {item.cdCard.contactNumber && (
+                <p className="flex items-center gap-1.5 text-[11px] text-neutral-700">
+                  <Phone size={11} className="text-green-700" />
+                  {item.cdCard.contactNumber}
+                </p>
+              )}
+              {item.cdCard.whatsappNo && (
+                <p className="flex items-center gap-1.5 text-[11px] text-neutral-700">
+                  <MessageCircle size={11} className="text-green-700" />
+                  {item.cdCard.whatsappNo}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="mt-3 text-[10px] text-neutral-400">
+            Contact details will appear here once the groom completes the 2nd payment.
+          </p>
         )}
 
         {/* Dates */}

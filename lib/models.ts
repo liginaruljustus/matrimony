@@ -12,6 +12,7 @@ const userSchema = new Schema(
     // autoPassword intentionally removed — derived on-demand from phone/createdAt/name.
     profileType: { type: String, enum: ["BRIDE", "GROOM"] },
     familyClass: { type: String, enum: ["MC", "UC", "EC"] },
+    religion:    { type: String, enum: ["HINDU", "MUSLIM", "CHRISTIAN", "OTHER"] },
     termsAcceptedAt: { type: Date },
     // Freeze system (on user level too)
     isFrozen:     { type: Boolean, default: false, index: true },
@@ -45,9 +46,9 @@ const profileSchema = new Schema(
     age: { type: Number, required: true },
     religion: { type: String, required: true },
     caste: { type: String, required: true },
-    location: { type: String, required: true },
+    location: { type: String },
     education: { type: String, required: true },
-    income: { type: Number, required: true },
+    income: { type: Number },
     bio: { type: String },
     photos: [{ type: String }],
     // Matrimony Profile Fields
@@ -256,7 +257,12 @@ const reportSchema = new Schema(
 
 const settingsSchema = new Schema(
   {
-    paymentAmounts: {
+    firstPaymentAmounts: {
+      MC: { type: Number, default: 500 },
+      UC: { type: Number, default: 2500 },
+      EC: { type: Number, default: 5000 },
+    },
+    secondPaymentAmounts: {
       MC: { type: Number, default: 500 },
       UC: { type: Number, default: 2500 },
       EC: { type: Number, default: 5000 },
@@ -327,7 +333,7 @@ const passwordOtpSchema = new Schema({
 });
 
 // ── PendingRegistration — temporary store during email OTP verification ──────
-// TTL index on expiresAt auto-deletes unverified records after 10 minutes.
+// TTL index on expiresAt auto-deletes unverified records after 5 minutes.
 const pendingRegistrationSchema = new Schema({
   email:       { type: String, required: true, unique: true, index: true },
   name:        { type: String, required: true },
@@ -365,7 +371,7 @@ const notificationSchema = new Schema(
     type: {
       type: String,
       enum: [
-        "PAYMENT_APPROVED", "PAYMENT_REJECTED",
+        "PAYMENT_APPROVED", "PAYMENT_REJECTED", "PAYMENT_SUBMITTED",
         "PROFILE_APPROVED", "PROFILE_REJECTED",
         "INTEREST_ACCEPTED", "INTEREST_DECLINED",
         "INTEREST_RECEIVED", "NEW_MESSAGE", "NEW_PROPOSAL",

@@ -45,7 +45,7 @@ type FavItem = {
 };
 
 
-const PAYMENT_AMT: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
+const DEFAULT_PAYMENT_AMT: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
 function countdown(expires: string): string {
   const diff = new Date(expires).getTime() - Date.now();
@@ -65,6 +65,7 @@ export default function FavoritesPage() {
   const [moving, setMoving]       = useState(false);
   const [payingNowId, setPayingNowId] = useState<string | null>(null);
   const [error, setError]         = useState("");
+  const [paymentAmt, setPaymentAmt] = useState<Record<string, number>>(DEFAULT_PAYMENT_AMT);
   // Tick every minute so payment-lock countdown displays update
   const [, setTick] = useState(0);
 
@@ -85,6 +86,13 @@ export default function FavoritesPage() {
     if (status === "unauthenticated") { router.push("/login"); return; }
     if (status === "authenticated") loadFavorites();
   }, [status, loadFavorites, router]);
+
+  useEffect(() => {
+    fetch("/api/settings/payment")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.firstPaymentAmounts) setPaymentAmt(d.firstPaymentAmounts); })
+      .catch(() => {});
+  }, []);
 
   // Refresh countdown display every 60 seconds
   useEffect(() => {
@@ -127,7 +135,7 @@ export default function FavoritesPage() {
   const selectedTotal = Array.from(selected).reduce((acc, id) => {
     const fav = favorites.find((f) => f.id === id);
     const fc = fav?.mdCard?.familyClass ?? "MC";
-    return acc + (PAYMENT_AMT[fc] ?? 500);
+    return acc + (paymentAmt[fc] ?? 500);
   }, 0);
 
   const handleMoveToPayment = async () => {
@@ -303,6 +311,7 @@ export default function FavoritesPage() {
                     selectable={canSelect}
                     selected={selected.has(fav.id)}
                     onSelect={() => canSelect && toggleSelect(fav.id)}
+                    paymentAmt={paymentAmt}
                     hideName
                     badge={
                       isLocked ? (
@@ -505,6 +514,7 @@ function Section({
 
 function FavCard({
   fav, selectable, selected, onSelect, badge, actionButton, frozen = false, hideName = false,
+  paymentAmt = DEFAULT_PAYMENT_AMT,
 }: {
   fav: FavItem;
   selectable: boolean;
@@ -515,6 +525,7 @@ function FavCard({
   frozen?: boolean;
   /** Hide the bride's name until payment — shows her Profile ID in its place. */
   hideName?: boolean;
+  paymentAmt?: Record<string, number>;
 }) {
   const card = fav.mdCard;
   if (!card) return null;
@@ -604,7 +615,7 @@ function FavCard({
         {/* Payment amount hint */}
         {selectable && (
           <p className="mt-2 text-[10px] font-semibold text-[#7a1f2b]">
-            Payment: ₹{(PAYMENT_AMT[card.familyClass] ?? 500).toLocaleString("en-IN")}
+            Payment: ₹{(paymentAmt[card.familyClass] ?? 500).toLocaleString("en-IN")}
           </p>
         )}
 

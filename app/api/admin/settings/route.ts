@@ -4,7 +4,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { SettingsModel } from "@/lib/models";
 
 const DEFAULTS = {
-  paymentAmounts: { MC: 500, UC: 2500, EC: 5000 },
+  firstPaymentAmounts: { MC: 500, UC: 2500, EC: 5000 },
+  secondPaymentAmounts: { MC: 500, UC: 2500, EC: 5000 },
   maintenanceMode: false,
   maintenanceMessage: "",
   registrationOpen: true,
@@ -47,7 +48,8 @@ export async function GET() {
     }
 
     return Response.json({
-      paymentAmounts:        settings.paymentAmounts        ?? DEFAULTS.paymentAmounts,
+      firstPaymentAmounts:   settings.firstPaymentAmounts   ?? DEFAULTS.firstPaymentAmounts,
+      secondPaymentAmounts:  settings.secondPaymentAmounts  ?? DEFAULTS.secondPaymentAmounts,
       maintenanceMode:       settings.maintenanceMode       ?? false,
       maintenanceMessage:    settings.maintenanceMessage    ?? "",
       registrationOpen:      settings.registrationOpen      ?? true,
@@ -90,11 +92,18 @@ export async function PUT(request: Request) {
 
     // Whitelist fields — never allow arbitrary keys
     const allowed: Record<string, unknown> = {};
-    if (body.paymentAmounts) {
-      allowed.paymentAmounts = {
-        MC: Number(body.paymentAmounts.MC) || 500,
-        UC: Number(body.paymentAmounts.UC) || 2500,
-        EC: Number(body.paymentAmounts.EC) || 5000,
+    if (body.firstPaymentAmounts) {
+      allowed.firstPaymentAmounts = {
+        MC: Number(body.firstPaymentAmounts.MC) || 500,
+        UC: Number(body.firstPaymentAmounts.UC) || 2500,
+        EC: Number(body.firstPaymentAmounts.EC) || 5000,
+      };
+    }
+    if (body.secondPaymentAmounts) {
+      allowed.secondPaymentAmounts = {
+        MC: Number(body.secondPaymentAmounts.MC) || 500,
+        UC: Number(body.secondPaymentAmounts.UC) || 2500,
+        EC: Number(body.secondPaymentAmounts.EC) || 5000,
       };
     }
     const boolFields = [

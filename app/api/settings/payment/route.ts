@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { SettingsModel } from "@/lib/models";
+import { DEFAULT_FIRST_PAYMENT_AMOUNTS, DEFAULT_SECOND_PAYMENT_AMOUNTS } from "@/lib/paymentSettings";
 
 const DEFAULTS = {
   upiId:             "luramatrimony@upi",
@@ -15,6 +16,8 @@ const DEFAULTS = {
   bankAccountNo:     "",
   bankIfsc:          "",
   bankAccountHolder: "Lura Matrimony Services",
+  firstPaymentAmounts:  DEFAULT_FIRST_PAYMENT_AMOUNTS,
+  secondPaymentAmounts: DEFAULT_SECOND_PAYMENT_AMOUNTS,
 };
 
 export async function GET() {
@@ -27,7 +30,7 @@ export async function GET() {
     await connectToDatabase();
 
     const settings = await SettingsModel.findOne()
-      .select("upiId bankName bankAccountNo bankIfsc bankAccountHolder")
+      .select("upiId bankName bankAccountNo bankIfsc bankAccountHolder firstPaymentAmounts secondPaymentAmounts")
       .lean<any>();
 
     return Response.json({
@@ -36,6 +39,8 @@ export async function GET() {
       bankAccountNo:     settings?.bankAccountNo     ?? DEFAULTS.bankAccountNo,
       bankIfsc:          settings?.bankIfsc          ?? DEFAULTS.bankIfsc,
       bankAccountHolder: settings?.bankAccountHolder ?? DEFAULTS.bankAccountHolder,
+      firstPaymentAmounts:  settings?.firstPaymentAmounts  ?? DEFAULTS.firstPaymentAmounts,
+      secondPaymentAmounts: settings?.secondPaymentAmounts ?? DEFAULTS.secondPaymentAmounts,
     });
   } catch (err) {
     console.error("GET /api/settings/payment error:", err);

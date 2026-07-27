@@ -11,14 +11,18 @@
  *
  * Returns the groom's AD card (MD + additional details: family, income, horoscope,
  * photos, expectations) — the groom's 1st payment is approved, so the bride
- * family gets the fuller picture to evaluate the proposal. Contact details stay hidden.
+ * family gets the fuller picture to evaluate the proposal.
+ *
+ * If the groom's 2nd payment is also admin-approved, the groom's CD card
+ * (phone, WhatsApp, contact person) is included too — payment unlocks details
+ * on both sides, mirroring what the groom sees of the bride.
  * Sorted: accepted first, then by firstPaidAt DESC (most recent first)
  */
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel, FavoriteModel, PaymentModel } from "@/lib/models";
-import { buildMDCard, buildADCard } from "@/lib/cardGenerator";
+import { buildMDCard, buildADCard, buildCDCard } from "@/lib/cardGenerator";
 import { autoApproveDuePayments } from "@/lib/paymentApproval";
 
 export async function GET() {
@@ -30,9 +34,12 @@ export async function GET() {
 
     await connectToDatabase();
 
-    // SLA fallback — approve any 1st payments that have sat unreviewed past
+    // SLA fallback — approve any 1st/2nd payments that have sat unreviewed past
     // the admin-configured window, so proposals don't stall on admin.
-    await autoApproveDuePayments("FIRST_PAYMENT");
+    await Promise.all([
+      autoApproveDuePayments("FIRST_PAYMENT"),
+      autoApproveDuePayments("SECOND_PAYMENT"),
+    ]);
 
     // Must be a bride
     const brideUser = await UserModel.findById(session.user.id).lean() as any;
@@ -72,20 +79,36 @@ export async function GET() {
     const userMap    = Object.fromEntries(groomUsers.map((u: any) => [String(u._id), u]));
     const profileMap = Object.fromEntries(groomProfiles.map((p: any) => [String(p.userId), p]));
 
+    // Which of these grooms also have an admin-approved 2nd payment — their
+    // contact details (CD) unlock for the bride too, same as the groom's own
+    // 2nd payment unlocks the bride's contact details for him.
+    const secondPaymentIds = approvedFavs.map((f: any) => f.secondPaymentId).filter(Boolean);
+    const approvedSecondPayments = secondPaymentIds.length
+      ? await PaymentModel.find({
+          _id: { $in: secondPaymentIds },
+          approvalStatus: "APPROVED",
+        }).lean() as any[]
+      : [];
+    const approvedSecondSet = new Set(approvedSecondPayments.map((p: any) => String(p._id)));
+
     const inbox = approvedFavs.map((fav: any) => {
       const uid = String(fav.userId);
       const u   = userMap[uid];
       const p   = profileMap[uid];
-      // Merge MD (public) + AD (additional) — never CD (contact) fields
+      // Merge MD (public) + AD (additional) — CD (contact) only once 2nd payment is approved
       const card = u && p ? { ...buildMDCard(u, p), ...buildADCard(u, p) } : null;
+      const secondPaymentApproved = !!(fav.secondPaymentId && approvedSecondSet.has(String(fav.secondPaymentId)));
+      const cdCard = secondPaymentApproved && u && p ? buildCDCard(u, p) : null;
       return {
         favoriteId:     String(fav._id),
         groomUserId:    uid,
         firstPaidAt:    fav.firstPaidAt,
+        secondPaidAt:   fav.secondPaidAt ?? null,
         isAccepted:     fav.isAccepted ?? false,
         acceptedAt:     fav.acceptedAt  ?? null,
         declinedAt:     fav.declinedAt  ?? null,
         mdCard:         card,
+        cdCard,
       };
     });
 

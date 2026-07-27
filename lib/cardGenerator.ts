@@ -166,13 +166,6 @@ export function buildFDCard(user: any, profile: any): FDCard {
   };
 }
 
-/** Payment amounts by family class */
-export const PAYMENT_AMOUNTS: Record<string, number> = {
-  MC: 500,
-  UC: 2500,
-  EC: 5000,
-};
-
 /** Check if a favorite's Move-to-Payment lock has expired (3 days) */
 export function isPaymentLockExpired(fav: any): boolean {
   if (!fav?.paymentLockExpiresAt) return false;

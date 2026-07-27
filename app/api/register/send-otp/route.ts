@@ -16,7 +16,7 @@ import { sendOtpSchema } from "@/lib/validators";
 
 // Must match RESEND_COOLDOWN on the client (app/register/page.tsx)
 const RESEND_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
-const OTP_TTL_MS         = 10 * 60 * 1000; // OTP stays valid for 10 minutes
+const OTP_TTL_MS         = 5 * 60 * 1000; // OTP stays valid for 5 minutes
 
 export async function POST(request: Request) {
   try {
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     // Generate 6-digit OTP
     const otp      = String(randomInt(100_000, 1_000_000));
     const otpHash  = await bcrypt.hash(otp, 10);
-    const expiresAt = new Date(Date.now() + OTP_TTL_MS); // OTP valid for 10 minutes
+    const expiresAt = new Date(Date.now() + OTP_TTL_MS); // OTP valid for 5 minutes
 
     // Upsert PendingRegistration (replace any previous record for this email)
     await PendingRegistrationModel.findOneAndUpdate(
@@ -139,7 +139,7 @@ async function sendOtpEmail(email: string, name: string, otp: string) {
           <p style="font-size:40px;font-weight:bold;letter-spacing:12px;color:#1a1a1a;margin:0;font-family:monospace;">
             ${otp}
           </p>
-          <p style="color:#999;font-size:12px;margin:12px 0 0;">Valid for 10 minutes</p>
+          <p style="color:#999;font-size:12px;margin:12px 0 0;">Valid for 5 minutes</p>
         </div>
 
         <p style="color:#888;font-size:12px;line-height:1.6;">
@@ -153,6 +153,6 @@ async function sendOtpEmail(email: string, name: string, otp: string) {
         </p>
       </div>
     `,
-    text: `Hi ${firstName},\n\nYour Lura Matrimony verification code is: ${otp}\n\nThis code is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.`,
+    text: `Hi ${firstName},\n\nYour Lura Matrimony verification code is: ${otp}\n\nThis code is valid for 5 minutes.\n\nIf you did not request this, please ignore this email.`,
   });
 }

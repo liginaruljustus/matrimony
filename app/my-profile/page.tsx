@@ -22,11 +22,13 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
 };
 
 // ── Field row ─────────────────────────────────────────────────────────────────
+// Empty/unfilled fields are hidden entirely rather than shown with a "—"
+// placeholder. Booleans are never "empty" — false is a real answer ("No").
 function Field({ label, value }: { label: string; value?: string | number | boolean | null }) {
-  let display: string;
-  if (value === null || value === undefined || value === "") display = "—";
-  else if (typeof value === "boolean") display = value ? "Yes" : "No";
-  else display = String(value);
+  if (typeof value !== "boolean" && (value === null || value === undefined || value === "")) {
+    return null;
+  }
+  const display = typeof value === "boolean" ? (value ? "Yes" : "No") : String(value);
 
   return (
     <div className="flex items-start gap-2 py-2 border-b border-neutral-100 dark:border-neutral-200 last:border-0">
@@ -319,17 +321,24 @@ export default function MyProfilePage() {
           <Field label="WhatsApp"        value={fmt(p.whatsappNo)} />
         </Section>
 
-        {/* Bio & Expectations */}
-        <Section icon={<FileText size={15} />} title="Bio & Expectations">
-          <div className="mb-3">
-            <p className="mb-1 text-xs text-neutral-400 dark:text-neutral-600">Bio</p>
-            <p className="text-sm text-neutral-800 dark:text-neutral-900 whitespace-pre-wrap">{p.bio || "—"}</p>
-          </div>
-          <div>
-            <p className="mb-1 text-xs text-neutral-400 dark:text-neutral-600">Expectations</p>
-            <p className="text-sm text-neutral-800 dark:text-neutral-900 whitespace-pre-wrap">{p.expectations || "—"}</p>
-          </div>
-        </Section>
+        {/* Bio & Expectations — both optional, hide anything unfilled;
+            skip the whole section if neither was provided */}
+        {(p.bio || p.expectations) && (
+          <Section icon={<FileText size={15} />} title="Bio & Expectations">
+            {p.bio && (
+              <div className="mb-3">
+                <p className="mb-1 text-xs text-neutral-400 dark:text-neutral-600">Bio</p>
+                <p className="text-sm text-neutral-800 dark:text-neutral-900 whitespace-pre-wrap">{p.bio}</p>
+              </div>
+            )}
+            {p.expectations && (
+              <div>
+                <p className="mb-1 text-xs text-neutral-400 dark:text-neutral-600">Expectations</p>
+                <p className="text-sm text-neutral-800 dark:text-neutral-900 whitespace-pre-wrap">{p.expectations}</p>
+              </div>
+            )}
+          </Section>
+        )}
 
       </div>
 

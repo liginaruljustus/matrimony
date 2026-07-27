@@ -103,8 +103,14 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
   // Strip photos (managed via /api/photos) and name (lives on UserModel, not ProfileModel)
   const { photos: _photos, name, ...profileFields } = parsed.data as any;
 
-  // On finalize, permanently lock the profile (status is left unchanged).
-  const lockFields = finalize ? { isLocked: true, lockedAt: new Date() } : {};
+  // On finalize: permanently lock the profile AND send it into the admin
+  // review queue (PENDING_APPROVAL) so it actually gets reviewed and can
+  // become APPROVED ("Active"/"Live"). Applies whether this is the first
+  // submission (was DRAFT) or a re-submission after an admin-granted edit
+  // (was APPROVED/REJECTED) — any content change should be re-vetted.
+  const lockFields = finalize
+    ? { isLocked: true, lockedAt: new Date(), profileStatus: "PENDING_APPROVAL" }
+    : {};
 
   await Promise.all([
     ProfileModel.findOneAndUpdate(

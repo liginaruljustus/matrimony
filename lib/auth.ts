@@ -33,6 +33,9 @@ export const authOptions: NextAuthOptions = {
         ).lean<any>();
         if (!user) return null;
 
+        // Email sign-in is reserved for admins — everyone else must use their Profile ID.
+        if (isEmail && user.role !== "ADMIN") return null;
+
         // Block suspended / banned accounts before password check
         if (user.status && user.status !== "ACTIVE") {
           // Throw so NextAuth surfaces a specific error the login page can read

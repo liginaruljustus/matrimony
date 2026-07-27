@@ -69,7 +69,7 @@ function NotificationBell() {
   };
 
   const TYPE_ICON: Record<string, string> = {
-    PAYMENT_APPROVED: "💰", PAYMENT_REJECTED: "❌",
+    PAYMENT_APPROVED: "💰", PAYMENT_REJECTED: "❌", PAYMENT_SUBMITTED: "💳",
     PROFILE_APPROVED: "✅", PROFILE_REJECTED: "🚫",
     INTEREST_ACCEPTED: "💚", INTEREST_DECLINED: "💔",
     INTEREST_RECEIVED: "💌", NEW_MESSAGE: "💬",
