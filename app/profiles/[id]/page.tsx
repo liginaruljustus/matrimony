@@ -5,16 +5,17 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import {
-  User, Star, MapPin, GraduationCap, Heart,
   CheckCircle, Lock, ArrowLeft,
 } from "lucide-react";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { ProfileDetailsList } from "@/components/ProfileDetailsList";
 
 type PublicProfile = {
   profileId: string;
   userId: string;
   name: string;
   age: number;
+  gender?: string;
   religion: string;
   caste: string;
   subCaste?: string;
@@ -26,12 +27,15 @@ type PublicProfile = {
   maritalStatus?: string;
   photos: string[];
   familyClass: string;
+  familyStatus?: string;
   nakshatra?: string;
   rashi?: string;
   bio?: string;
   profileType: string;
   isFrozen: boolean;
   isAutoFrozen: boolean;
+  physicallyChallenge?: boolean | null;
+  monthlyIncome?: number | null;
 };
 
 const CLASS_COLOR: Record<string, string> = {
@@ -69,6 +73,7 @@ export default function ProfileDetailPage() {
         userId:       resolvedUserId,
         name:         p.userName  ?? p.name ?? "Unknown",
         age:          p.age ?? 0,
+        gender:       p.gender,
         religion:     p.religion ?? "",
         caste:        p.caste ?? "",
         subCaste:     p.subCaste,
@@ -80,12 +85,15 @@ export default function ProfileDetailPage() {
         maritalStatus:p.maritalStatus,
         photos:       p.photos ?? [],
         familyClass:  p.familyClass ?? "",
+        familyStatus: p.familyStatus ?? p.familyClass ?? "",
         nakshatra:    p.nakshatra,
         rashi:        p.rashi,
         bio:          p.bio,
         profileType:  p.profileType ?? "",
         isFrozen:     !!(p.isFrozen),
         isAutoFrozen: !!(p.isAutoFrozen),
+        physicallyChallenge: p.physicallyChallenge,
+        monthlyIncome:       p.monthlyIncome,
       });
       setLoading(false);
       // Pre-fetch favorite status so the heart button shows the correct state
@@ -200,25 +208,21 @@ export default function ProfileDetailPage() {
         )}
       </div>
 
-      {/* Key details grid */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {[
-          { label: "Religion",   value: `${profile.religion}${profile.caste ? ` · ${profile.caste}` : ""}` },
-          { label: "Education",  value: profile.education },
-          { label: "District",   value: profile.district },
-          profile.currentJob  ? { label: "Occupation", value: profile.currentJob }  : null,
-          profile.height      ? { label: "Height",     value: `${profile.height} cm` } : null,
-          profile.complexion  ? { label: "Complexion", value: profile.complexion }  : null,
-          profile.nakshatra   ? { label: "Nakshatra",  value: profile.nakshatra }   : null,
-          profile.rashi       ? { label: "Rashi",      value: profile.rashi }       : null,
-          profile.subCaste    ? { label: "Sub-caste",  value: profile.subCaste }    : null,
-        ].filter(Boolean).map(({ label, value }: any) => (
-          <div key={label} className="rounded-xl bg-white dark:bg-neutral-100 p-3 shadow-sm ring-1 ring-neutral-100 dark:ring-neutral-200">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[#d4af37]">{label}</p>
-            <p className="mt-0.5 text-sm font-semibold text-neutral-800 dark:text-neutral-900">{value}</p>
-          </div>
-        ))}
-      </div>
+      {/* Profile Details — numbered summary list */}
+      <ProfileDetailsList
+        profile={{
+          district:             profile.district,
+          maritalStatus:        profile.maritalStatus,
+          gender:               profile.gender,
+          age:                  profile.age,
+          religion:             profile.religion,
+          caste:                profile.caste,
+          education:            profile.education,
+          monthlyIncome:        profile.monthlyIncome,
+          physicallyChallenged: profile.physicallyChallenge,
+          familyStatus:         profile.familyStatus,
+        }}
+      />
 
       {/* Bio */}
       {profile.bio && (
@@ -235,7 +239,7 @@ export default function ProfileDetailPage() {
           <div className="space-y-2">
             <TierRow
               step="1st Payment"
-              desc="Unlock family, income, horoscope & more photos — visible on both sides"
+              desc="Unlock family details, horoscope & more photos — visible on both sides"
               color="text-blue-700"
             />
             <TierRow

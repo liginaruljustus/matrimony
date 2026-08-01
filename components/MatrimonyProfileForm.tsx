@@ -6,6 +6,7 @@ import { SearchDropdown } from "@/components/SearchDropdown";
 import { DatePickerSelect } from "@/components/DatePickerSelect";
 import { PhoneInput } from "@/components/PhoneInput";
 import { CASTE_LIST, SUBCASTE_LIST } from "@/lib/casteData";
+import { DISTRICTS } from "@/lib/districts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { matrimonyProfileSchema } from "@/lib/validators";
 import { z } from "zod";
@@ -39,23 +40,6 @@ const STEPS = [
   "Contact Details",
   "Photos & Expectations",
   "Review",
-];
-
-const DISTRICTS = [
-  // Pinned first
-  "Puducherry",
-  "Karaikal",
-  // Remaining districts, alphabetically sorted
-  ...[
-    "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore",
-    "Dharmapuri", "Dindigul", "Erode", "Kallakurichi", "Kanchipuram",
-    "Kanyakumari", "Karur", "Krishnagiri", "Madurai", "Mayiladuthurai",
-    "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai",
-    "Ramanathapuram", "Ranipet", "Salem", "Sivagangai", "Tenkasi",
-    "Thanjavur", "Theni", "Thiruvallur", "Thiruvarur", "Thoothukudi",
-    "Tirunelveli", "Tirupathur", "Tiruppur", "Tiruvallur", "Tiruvannamalai",
-    "Trichy", "Vellore", "Villupuram", "Virudhunagar",
-  ].sort((a, b) => a.localeCompare(b)),
 ];
 
 const RASHI_LIST = [

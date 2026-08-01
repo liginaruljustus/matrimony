@@ -60,14 +60,17 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       profileType:  profile.profileType ?? profile.userId?.profileType ?? null,
       profileStatus:profile.profileStatus,
       familyClass:  profile.familyClass ?? profile.userId?.familyClass ?? "MC",
+      familyStatus: profile.familyStatus ?? profile.familyClass ?? profile.userId?.familyClass ?? "MC",
       // Personal
       age:          profile.age,
+      gender:       profile.gender ?? null,
       religion:     profile.religion,
       caste:        profile.caste,
       subCaste:     profile.subCaste ?? null,
       maritalStatus:profile.maritalStatus ?? null,
       height:       profile.height ?? null,
       complexion:   profile.complexion ?? null,
+      physicallyChallenge: profile.physicallyChallenge ?? null,
       // Location
       location:     profile.location ?? null,
       nativeDistrict: profile.nativeDistrict ?? null,
@@ -77,6 +80,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       // Education & career
       education:    profile.education,
       currentJob:   profile.currentJob ?? null,
+      monthlyIncome: profile.monthlyIncome ?? profile.income ?? null,
       // Content
       bio:          profile.bio ?? null,
       photos:       profile.photos ?? [],

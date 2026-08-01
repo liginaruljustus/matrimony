@@ -48,8 +48,14 @@ export async function GET(request: Request) {
       },
     ]);
 
-    // Gender Distribution
-    const genderDistribution = await ProfileModel.aggregate([
+    // Gender Distribution — sourced from User, not Profile: profileType is set on
+    // every real user at registration, but Profile documents don't always carry it
+    // (e.g. drafts saved before the field was copied over), which previously caused
+    // a stray "Groom" bucket for profiles with a null profileType.
+    const genderDistribution = await UserModel.aggregate([
+      {
+        $match: { role: "USER", profileType: { $in: ["BRIDE", "GROOM"] } },
+      },
       {
         $group: {
           _id: "$profileType",

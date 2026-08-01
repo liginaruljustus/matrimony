@@ -9,7 +9,10 @@ import {
   MapPin, GraduationCap, Star, RefreshCw, X,
 } from "lucide-react";
 import { FavoriteButton } from "@/components/FavoriteButton";
-import { FAMILY_CLASS_COLORS, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
+import { SearchDropdown } from "@/components/SearchDropdown";
+import { CASTE_LIST } from "@/lib/casteData";
+import { DISTRICTS } from "@/lib/districts";
+import { FAMILY_CLASS_CARD_STYLE, FAMILY_CLASS_CARD_FALLBACK, FAMILY_CLASS_PLACEHOLDER_BG, FAMILY_CLASS_PLACEHOLDER_FALLBACK } from "@/lib/familyClass";
 
 type MDProfile = {
   _id: string;
@@ -119,9 +122,11 @@ export default function ProfilesPage() {
     }
   }, [status, session, loadProfiles, router]);
 
+  const [filterResetKey, setFilterResetKey] = useState(0);
   const resetFilters = () => {
     setFilters({ profileId: "", minAge: "", maxAge: "", caste: "", district: "" });
     setClassTab("ALL");
+    setFilterResetKey((k) => k + 1); // remount SearchDropdowns so their internal text clears too
   };
 
   if (status === "loading") {
@@ -180,8 +185,28 @@ export default function ProfilesPage() {
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             <FilterInput label="Profile ID"   value={filters.profileId}   onChange={(v) => setFilters({ ...filters, profileId: v })}   placeholder="e.g. F0326H00001MC" />
-            <FilterInput label="Caste"        value={filters.caste}       onChange={(v) => setFilters({ ...filters, caste: v })}       placeholder="e.g. Mudaliar" />
-            <FilterInput label="District"     value={filters.district}    onChange={(v) => setFilters({ ...filters, district: v })}    placeholder="e.g. Chennai" />
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-neutral-600">Caste</label>
+              <SearchDropdown
+                key={`caste-${filterResetKey}`}
+                value={filters.caste}
+                onChange={(v) => setFilters({ ...filters, caste: v })}
+                options={CASTE_LIST}
+                placeholder="e.g. Mudaliar"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-neutral-600">District</label>
+              <SearchDropdown
+                key={`district-${filterResetKey}`}
+                value={filters.district}
+                onChange={(v) => setFilters({ ...filters, district: v })}
+                options={DISTRICTS}
+                placeholder="e.g. Chennai"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
+              />
+            </div>
             <FilterInput label="Min Age"      value={filters.minAge}      onChange={(v) => setFilters({ ...filters, minAge: v })}      placeholder="18" type="number" />
             <FilterInput label="Max Age"      value={filters.maxAge}      onChange={(v) => setFilters({ ...filters, maxAge: v })}      placeholder="40" type="number" />
           </div>
@@ -248,26 +273,36 @@ function MDProfileCard({
   isFavorited: boolean;
   onFavorited: () => void;
 }) {
-  const classColors = FAMILY_CLASS_COLORS;
+  const cardStyle = FAMILY_CLASS_CARD_STYLE[profile.familyClass] ?? FAMILY_CLASS_CARD_FALLBACK;
+  const classDot: Record<string, string> = { MC: "bg-green-500", UC: "bg-pink-500", EC: "bg-blue-500" };
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-neutral-100 dark:border-neutral-200 bg-white dark:bg-neutral-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+    <div className={`group relative flex flex-col overflow-hidden rounded-3xl border-2 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ${cardStyle}`}>
       {/* Photo */}
-      <div className="relative h-48 bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
+      <div className={`relative h-52 overflow-hidden ${FAMILY_CLASS_PLACEHOLDER_BG[profile.familyClass] ?? FAMILY_CLASS_PLACEHOLDER_FALLBACK}`}>
         {profile.photo ? (
-          <img src={profile.photo} alt={profile.profileId} className="h-full w-full object-cover" />
+          <img
+            src={profile.photo}
+            alt={profile.profileId}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#7a1f2b]/20 text-3xl font-bold text-[#7a1f2b]">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/70 dark:bg-neutral-100/70 text-3xl font-bold text-[#7a1f2b] ring-4 ring-[#d4af37]/40 shadow-md">
               {profile.profileId.charAt(0)}
             </div>
           </div>
         )}
-        {/* Family class badge */}
-        <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold ${classColors[profile.familyClass] ?? FAMILY_CLASS_FALLBACK}`}>
+        {/* Bottom fade for legibility */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/25 to-transparent" />
+
+        {/* Family class badge — frosted pill */}
+        <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/85 dark:bg-neutral-100/85 px-3 py-1 text-xs font-bold text-neutral-800 backdrop-blur-sm shadow-sm">
+          <span className={`h-1.5 w-1.5 rounded-full ${classDot[profile.familyClass] ?? "bg-neutral-400"}`} />
           {profile.familyClass}
         </span>
-        {/* Favorite button — icon */}
+
+        {/* Favorite button */}
         <div className="absolute right-3 top-3">
           <FavoriteButton
             targetUserId={profile.userId}
@@ -275,34 +310,44 @@ function MDProfileCard({
             onToggle={(v) => { if (v) onFavorited(); }}
           />
         </div>
+
+        {/* Profile ID overlaid on photo — highlighted */}
+        <div className="absolute inset-x-0 bottom-0 px-3 pb-3">
+          <div className="inline-block rounded-xl bg-[#7a1f2b]/85 px-3 py-1.5 backdrop-blur-sm shadow-md">
+            <h3 className="font-mono text-base font-extrabold text-white truncate">{profile.profileId}</h3>
+            <p className="text-xs font-semibold text-[#f5d98a]">
+              {profile.age} yrs • {profile.maritalStatus?.replace("_", " ") ?? "Single"}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Info */}
       <div className="flex flex-1 flex-col p-4">
-        <div className="mb-1">
-          <h3 className="font-bold font-mono text-neutral-900 dark:text-neutral-900 truncate">{profile.profileId}</h3>
-        </div>
-
-        <p className="text-sm text-neutral-600">
-          {profile.age} yrs • {profile.maritalStatus?.replace("_", " ") ?? "Single"}
-        </p>
-
-        <div className="mt-3 space-y-1.5">
-          <p className="flex items-center gap-1.5 text-xs text-neutral-500">
-            <Star size={12} className="text-[#d4af37]" />
-            {profile.religion} • {profile.caste}
-            {profile.subCaste ? ` (${profile.subCaste})` : ""}
-          </p>
-          <p className="flex items-center gap-1.5 text-xs text-neutral-500">
-            <MapPin size={12} className="text-[#7a1f2b]" />
-            {profile.district}
-          </p>
-          <p className="flex items-center gap-1.5 text-xs text-neutral-500">
-            <GraduationCap size={12} className="text-[#7a1f2b]" />
-            {profile.education}
-          </p>
+        <div className="space-y-2">
+          <div className="flex items-start gap-2 text-xs text-neutral-600 dark:text-neutral-700">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#d4af37]/15">
+              <Star size={11} className="text-[#d4af37]" />
+            </span>
+            <span className="pt-0.5">
+              {profile.religion} • {profile.caste}
+              {profile.subCaste ? ` (${profile.subCaste})` : ""}
+            </span>
+          </div>
+          <div className="flex items-start gap-2 text-xs text-neutral-600 dark:text-neutral-700">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#7a1f2b]/10">
+              <MapPin size={11} className="text-[#7a1f2b]" />
+            </span>
+            <span className="pt-0.5">{profile.district}</span>
+          </div>
+          <div className="flex items-start gap-2 text-xs text-neutral-600 dark:text-neutral-700">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#7a1f2b]/10">
+              <GraduationCap size={11} className="text-[#7a1f2b]" />
+            </span>
+            <span className="pt-0.5">{profile.education}</span>
+          </div>
           {profile.nakshatra && (
-            <p className="text-xs text-neutral-400">
+            <p className="pl-7 text-[11px] text-neutral-400">
               ★ {profile.nakshatra} • {profile.rashi}
             </p>
           )}
@@ -311,7 +356,7 @@ function MDProfileCard({
         <div className="mt-4 flex gap-2">
           <Link
             href={`/profiles/${profile.userId}`}
-            className="flex-1 rounded-lg bg-[#7a1f2b] py-2 text-center text-xs font-semibold text-white hover:bg-[#6b1823] transition-colors"
+            className="flex-1 rounded-full bg-gradient-to-r from-[#7a1f2b] to-[#8f2635] py-2.5 text-center text-xs font-bold text-white shadow-sm hover:shadow-md hover:from-[#6b1823] hover:to-[#7a1f2b] transition-all"
           >
             View Profile
           </Link>

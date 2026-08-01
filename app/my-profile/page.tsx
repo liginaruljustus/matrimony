@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MatrimonyProfileForm } from "@/components/MatrimonyProfileForm";
 import { RequestEditButton } from "@/components/RequestEditButton";
+import { ProfileDetailsList } from "@/components/ProfileDetailsList";
 import {
   User, MapPin, Briefcase, Users, Star,
   Phone, FileText, Pencil, ArrowLeft, Camera,
@@ -260,6 +261,22 @@ export default function MyProfilePage() {
       )}
 
       <div className="space-y-4">
+
+        {/* Profile Details — numbered summary list */}
+        <ProfileDetailsList
+          profile={{
+            district:             p.nativeDistrict ?? p.location,
+            maritalStatus:        p.maritalStatus,
+            gender:               p.gender,
+            age:                  p.age,
+            religion:             p.religion,
+            caste:                p.caste,
+            education:            p.education,
+            monthlyIncome:        p.monthlyIncome ?? p.income,
+            physicallyChallenged: p.physicallyChallenge,
+            familyStatus:         p.familyStatus,
+          }}
+        />
 
         {/* Personal Details */}
         <Section icon={<User size={15} />} title="Personal Details">

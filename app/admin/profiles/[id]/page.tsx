@@ -7,6 +7,7 @@ import { Users } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { ProfileDetailsList } from "@/components/ProfileDetailsList";
 
 type ProfileDetail = {
   id: string;
@@ -26,6 +27,12 @@ type ProfileDetail = {
   education: string;
   income: number;
   bio: string;
+  nativeDistrict?: string;
+  maritalStatus?: string;
+  gender?: string;
+  monthlyIncome?: number;
+  physicallyChallenge?: boolean;
+  familyStatus?: string;
   // Other fields
   rejectionReason?: string;
   flaggedReason?: string;
@@ -192,6 +199,22 @@ export default function AdminProfileDetailPage() {
               </div>
             )}
           </div>
+
+          {/* Profile Details — numbered summary list */}
+          <ProfileDetailsList
+            profile={{
+              district:             profile.nativeDistrict ?? profile.location,
+              maritalStatus:        profile.maritalStatus,
+              gender:               profile.gender,
+              age:                  profile.age,
+              religion:             profile.religion,
+              caste:                profile.caste,
+              education:            profile.education,
+              monthlyIncome:        profile.monthlyIncome ?? profile.income,
+              physicallyChallenged: profile.physicallyChallenge,
+              familyStatus:         profile.familyStatus,
+            }}
+          />
 
           {/* User Link */}
           <Link

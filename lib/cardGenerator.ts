@@ -29,6 +29,8 @@ export interface MDCard {
   profileType: string;
   nakshatra?: string;
   rashi?: string;
+  monthlyIncome?: number;
+  physicallyChallenge?: boolean;
 }
 
 export interface ADCard {
@@ -100,6 +102,8 @@ export function buildMDCard(user: any, profile: any): MDCard {
     profileType:  user.profileType ?? profile.profileType ?? "",
     nakshatra:    profile.nakshatra,
     rashi:        profile.rashi,
+    monthlyIncome:       profile.monthlyIncome ?? profile.income,
+    physicallyChallenge: profile.physicallyChallenge,
   };
 }
 
