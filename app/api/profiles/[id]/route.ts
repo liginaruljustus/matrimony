@@ -14,6 +14,7 @@ import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ProfileModel, UserModel } from "@/lib/models";
 import { toObjectId } from "@/lib/mongoUtils";
+import { calculateAge } from "@/lib/age";
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -62,7 +63,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       familyClass:  profile.familyClass ?? profile.userId?.familyClass ?? "MC",
       familyStatus: profile.familyStatus ?? profile.familyClass ?? profile.userId?.familyClass ?? "MC",
       // Personal
-      age:          profile.age,
+      age:          calculateAge(profile.dateOfBirth) ?? profile.age,
       gender:       profile.gender ?? null,
       religion:     profile.religion,
       caste:        profile.caste,

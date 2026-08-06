@@ -10,6 +10,7 @@ import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel } from "@/lib/models";
 import { generatePassword } from "@/lib/profileIdGenerator";
+import { calculateAge } from "@/lib/age";
 
 export async function GET(request: Request) {
   try {
@@ -28,6 +29,10 @@ export async function GET(request: Request) {
     const profile = await ProfileModel.findOne({ userId: session.user.id }).lean();
 
     const u = user as any;
+    const p = profile as any;
+    if (p) {
+      p.age = calculateAge(p.dateOfBirth) ?? p.age;
+    }
 
     const { searchParams } = new URL(request.url);
     const includeCredentials = searchParams.get("credentials") === "1";

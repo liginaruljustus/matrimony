@@ -8,6 +8,8 @@
  *  FD — Full Details       : complete profile, sent to user email on registration
  */
 
+import { calculateAge } from "@/lib/age";
+
 export type CardType = "MD" | "AD" | "CD" | "FD";
 
 export interface MDCard {
@@ -87,7 +89,7 @@ export function buildMDCard(user: any, profile: any): MDCard {
     cardType:     "MD",
     profileId:    user.profileId ?? "",
     name:         user.name ?? "",
-    age:          profile.age ?? 0,
+    age:          calculateAge(profile.dateOfBirth) ?? profile.age ?? 0,
     religion:     profile.religion ?? "",
     caste:        profile.caste ?? "",
     subCaste:     profile.subCaste,
@@ -113,7 +115,7 @@ export function buildADCard(user: any, profile: any): ADCard {
     cardType:        "AD",
     profileId:       user.profileId ?? "",
     name:            user.name ?? "",
-    age:             profile.age ?? 0,
+    age:             calculateAge(profile.dateOfBirth) ?? profile.age ?? 0,
     religion:        profile.religion ?? "",
     caste:           profile.caste ?? "",
     district:        profile.nativeDistrict ?? profile.location ?? "",

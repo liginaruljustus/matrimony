@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel, AuditLogModel } from "@/lib/models";
 import { authOptions } from "@/lib/auth";
+import { calculateAge } from "@/lib/age";
 // ProfileModel is already imported — used in DELETE to hide the profile
 
 export async function GET(
@@ -72,7 +73,7 @@ export async function GET(
             profileType: profile.profileType ?? null,
             familyClass: profile.familyClass ?? null,
             // Personal
-            age: profile.age ?? null,
+            age: calculateAge(profile.dateOfBirth) ?? profile.age ?? null,
             gender: profile.gender ?? null,
             dateOfBirth: profile.dateOfBirth ?? null,
             religion: profile.religion ?? null,

@@ -147,7 +147,7 @@ export default function HomePage() {
           <div className="mb-6 inline-flex max-w-full items-center gap-2 rounded-full border border-[#d4af37]/40 bg-[#d4af37]/10 px-4 py-1.5">
             <Heart size={14} className="shrink-0 fill-[#d4af37] text-[#d4af37]" />
             <span className="text-xs font-semibold uppercase tracking-widest text-[#d4af37] break-words">
-              தமிழ்நாடு குடும்பங்களுக்கான நம்பகமான தேர்வு
+              இந்தியாவைச் சார்ந்த  தமிழர்களுக்கான திருமண தகவல் மையம்
             </span>
           </div>
 

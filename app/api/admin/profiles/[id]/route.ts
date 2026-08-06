@@ -5,6 +5,7 @@ import { ProfileModel, UserModel, AuditLogModel, NotificationModel } from "@/lib
 import { authOptions } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { buildMDCard, buildADCard, buildCDCard, buildFDCard } from "@/lib/cardGenerator";
+import { calculateAge } from "@/lib/age";
 
 export async function GET(
   request: Request,
@@ -37,7 +38,7 @@ export async function GET(
         userName: (profile.userId as any)?.name,
         userEmail: (profile.userId as any)?.email,
         userProfileId: (profile.userId as any)?.profileId,
-        age: profile.age,
+        age: calculateAge(profile.dateOfBirth) ?? profile.age,
         religion: profile.religion,
         caste: profile.caste,
         subCaste: profile.subCaste,

@@ -12,7 +12,7 @@ export function MobileHeroSection() {
       {/* Content wrapper */}
       <div className="relative z-10 max-w-2xl text-center space-y-6">
         <p className="text-sm md:text-base font-semibold uppercase tracking-widest text-accent animate-pulse">
-          தமிழ்நாடு குடும்பங்களுக்கான நம்பகமான தேர்வு
+          இந்தியாவைச் சார்ந்த  தமிழர்களுக்கான திருமண தகவல் மையம்
         </p>
 
         <h1 className="text-5xl md:text-7xl font-extrabold leading-tight text-white">
