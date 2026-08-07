@@ -23,6 +23,14 @@ export async function connectToDatabase() {
       bufferCommands: false,
     });
   }
-  cached.conn = await cached.promise;
+  try {
+    cached.conn = await cached.promise;
+  } catch (err) {
+    // A failed connection attempt must not poison the cache — otherwise every
+    // later call on this warm serverless instance replays the same rejected
+    // promise forever instead of retrying. Reset so the next call tries fresh.
+    cached.promise = null;
+    throw err;
+  }
   return cached.conn;
 }
