@@ -42,10 +42,18 @@ export async function POST(request: Request) {
     if (!confirmDuplicate) {
       const existingCount = await UserModel.countDocuments({ email });
       if (existingCount > 0) {
+        // An account with no profileId yet means its profile was never
+        // finished and saved — surface that specifically so the user can
+        // choose to go finish it (log in with email) instead of starting over.
+        const incompleteCount = await UserModel.countDocuments({
+          email,
+          profileId: { $exists: false },
+        });
         return Response.json(
           {
             requiresConfirmation: true,
             existingCount,
+            incompleteCount,
             message: `You already have ${existingCount} profile${existingCount > 1 ? "s" : ""} registered with this email.`,
           },
           { status: 409 },

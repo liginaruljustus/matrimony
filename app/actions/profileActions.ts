@@ -6,6 +6,10 @@ import { profileSchema, matrimonyProfileSchema } from "@/lib/validators";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ProfileModel, UserModel } from "@/lib/models";
 import { toObjectId } from "@/lib/mongoUtils";
+import { generatePassword, generateProfileId } from "@/lib/profileIdGenerator";
+import { sendCredentialsEmail } from "@/lib/sendCredentialsEmail";
+import { buildFDCard } from "@/lib/cardGenerator";
+import { sendFDCardEmail } from "@/lib/sendFDCardEmail";
 
 type ProfileInput = {
   age: number;
@@ -103,28 +107,85 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
   // Strip photos (managed via /api/photos) and name (lives on UserModel, not ProfileModel)
   const { photos: _photos, name, ...profileFields } = parsed.data as any;
 
-  // On finalize: permanently lock the profile AND send it into the admin
-  // review queue (PENDING_APPROVAL) so it actually gets reviewed and can
-  // become APPROVED ("Active"/"Live"). Applies whether this is the first
-  // submission (was DRAFT) or a re-submission after an admin-granted edit
-  // (was APPROVED/REJECTED) — any content change should be re-vetted.
+  // On finalize: permanently lock the profile and it goes live immediately
+  // (APPROVED) — no manual admin approval step. Admin can still review and
+  // flag/reject afterward via the admin panel if needed.
   const lockFields = finalize
-    ? { isLocked: true, lockedAt: new Date(), profileStatus: "PENDING_APPROVAL" }
+    ? {
+        isLocked: true,
+        lockedAt: new Date(),
+        profileStatus: "APPROVED",
+        approvalDate: new Date(),
+        generatedCards: { MD: true, AD: true, CD: true, FD: true },
+        cardsGeneratedAt: new Date(),
+      }
     : {};
 
-  await Promise.all([
-    ProfileModel.findOneAndUpdate(
-      { userId },
-      {
-        $set: { ...profileFields, ...lockFields, userId },
-        $setOnInsert: { photos: [] },
-      },
-      { upsert: true, new: true },
-    ),
-    name ? UserModel.findByIdAndUpdate(userId, { $set: { name } }) : Promise.resolve(),
-  ]);
+  const updatedProfile = await ProfileModel.findOneAndUpdate(
+    { userId },
+    {
+      $set: { ...profileFields, ...lockFields, userId },
+      $setOnInsert: { photos: [] },
+    },
+    { upsert: true, new: true },
+  ).lean<any>();
 
-  const user = await UserModel.findById(userId).select("profileId autoPassword").lean() as { profileId?: string; autoPassword?: string } | null;
+  if (name) await UserModel.findByIdAndUpdate(userId, { $set: { name } });
+
+  const user = await UserModel.findById(userId)
+    .select("profileId name email phone createdAt profileType familyClass religion")
+    .lean() as {
+      profileId?: string; name?: string; email?: string; phone?: string; createdAt?: Date;
+      profileType?: "GROOM" | "BRIDE"; familyClass?: "MC" | "UC" | "EC"; religion?: string;
+    } | null;
+
+  let profileId = user?.profileId;
+
+  // On finalize, a real sequential Profile ID is assigned for the first time
+  // (registration no longer generates one — see /api/register/verify-otp).
+  if (finalize && user && !profileId && user.profileType && user.familyClass) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const candidate = await generateProfileId(
+        user.profileType === "BRIDE" ? "FEMALE" : "MALE",
+        user.religion ?? "OTHER",
+        user.familyClass,
+      );
+      try {
+        await UserModel.findByIdAndUpdate(userId, { $set: { profileId: candidate } });
+        profileId = candidate;
+        break;
+      } catch (updateErr: any) {
+        if (updateErr?.code === 11000 && updateErr?.keyPattern?.profileId) {
+          console.warn(`[finalize] profileId collision (${candidate}), retrying…`);
+          continue;
+        }
+        throw updateErr;
+      }
+    }
+  }
+
+  // Credentials email is sent here — once the user has actually saved their
+  // profile — rather than at bare registration, per the client's requested flow.
+  if (finalize && user?.email && user?.phone && user?.createdAt && profileId) {
+    const firstName = (user.name ?? "").split(" ")[0];
+    const autoPassword = generatePassword(user.phone, new Date(user.createdAt), firstName);
+    sendCredentialsEmail(user.email, user.name ?? "", profileId, autoPassword).catch((err) => {
+      console.error("[Credentials Email] Failed to send:", err);
+    });
+  }
+
+  // Profile goes live immediately on finalize — send the FD (full details) card,
+  // same content the admin's manual approval used to send.
+  if (finalize && user?.email && updatedProfile && profileId) {
+    try {
+      const fd = buildFDCard({ ...user, profileId }, updatedProfile);
+      sendFDCardEmail(user.email, user.name ?? "", fd).catch((err) => {
+        console.error("[FD Card Email] Failed to send:", err);
+      });
+    } catch (e) {
+      console.error("FD card build error:", e);
+    }
+  }
 
   return {
     ok: true,
@@ -132,6 +193,6 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
     message: finalize
       ? "Profile submitted successfully. It is now locked — contact the admin for any changes."
       : "Profile saved successfully",
-    profileId: user?.profileId,
+    profileId,
   };
 }

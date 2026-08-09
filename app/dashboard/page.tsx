@@ -485,7 +485,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
   ];
   const brideSteps = [
     "Complete your profile with details & photos",
-    "Wait for approval from our team",
+    "Your profile goes live instantly",
     "Review proposals from groom families",
     "Connect with approved matches",
   ];
@@ -586,7 +586,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
             </div>
 
             <div>
-              <h1 className="text-2xl font-bold mb-1">Welcome, {userData.name}!</h1>
+              <h1 className="text-2xl font-bold mb-1 text-white">Welcome, {userData.name}!</h1>
               <p className="text-white/80 text-sm leading-relaxed">
                 {isGroom
                   ? "Browse bride profiles, send interests, and find your perfect match."

@@ -42,7 +42,7 @@ export default function RegisterPage() {
   const otpRefs                     = useRef<(HTMLInputElement | null)[]>([]);
 
   // Credentials step state
-  const [credentials, setCredentials] = useState<{ profileId: string; autoPassword: string } | null>(null);
+  const [credentials, setCredentials] = useState<{ email: string; autoPassword: string; profileId?: string } | null>(null);
   const [copied, setCopied]         = useState(false);
   const [autoLoggingIn, setAutoLoggingIn] = useState(false);
 
@@ -50,7 +50,7 @@ export default function RegisterPage() {
   const formDataRef = useRef<RegisterForm | null>(null);
 
   // Duplicate-email confirmation ("You already have N profiles with this email")
-  const [duplicatePrompt, setDuplicatePrompt] = useState<{ count: number } | null>(null);
+  const [duplicatePrompt, setDuplicatePrompt] = useState<{ count: number; incompleteCount: number } | null>(null);
 
   // ── Countdown timer for resend cooldown ──────────────────────────────────
   useEffect(() => {
@@ -87,7 +87,7 @@ export default function RegisterPage() {
         setStep("otp");
       } else if (res.status === 409 && data.requiresConfirmation) {
         // Email already has account(s) — ask the user to confirm intentionally
-        setDuplicatePrompt({ count: data.existingCount ?? 1 });
+        setDuplicatePrompt({ count: data.existingCount ?? 1, incompleteCount: data.incompleteCount ?? 0 });
       } else {
         setServerError(data.message ?? "Failed to send OTP. Please try again.");
       }
@@ -116,8 +116,8 @@ export default function RegisterPage() {
         body:    JSON.stringify({ email: pendingEmail, otp: otpStr }),
       });
       const data = await res.json();
-      if (res.ok && data.user?.profileId && data.user?.autoPassword) {
-        setCredentials({ profileId: data.user.profileId, autoPassword: data.user.autoPassword });
+      if (res.ok && data.user?.email && data.user?.autoPassword) {
+        setCredentials({ email: data.user.email, autoPassword: data.user.autoPassword });
         setStep("success");
       } else {
         setOtpError(data.message ?? "Incorrect OTP. Please try again.");
@@ -206,8 +206,8 @@ export default function RegisterPage() {
         body:    JSON.stringify({ email: pendingEmail, otp: otpStr }),
       });
       const data = await res.json();
-      if (res.ok && data.user?.profileId && data.user?.autoPassword) {
-        setCredentials({ profileId: data.user.profileId, autoPassword: data.user.autoPassword });
+      if (res.ok && data.user?.email && data.user?.autoPassword) {
+        setCredentials({ email: data.user.email, autoPassword: data.user.autoPassword });
         setStep("success");
       } else {
         setOtpError(data.message ?? "Incorrect OTP. Please try again.");
@@ -227,7 +227,7 @@ export default function RegisterPage() {
     setAutoLoggingIn(true);
     try {
       const res = await signIn("credentials", {
-        profileId: credentials.profileId,
+        profileId: credentials.profileId ?? credentials.email,
         password: credentials.autoPassword,
         redirect: false,
       });
@@ -244,8 +244,11 @@ export default function RegisterPage() {
 
   const handleCopy = () => {
     if (!credentials) return;
+    const identifierLine = credentials.profileId
+      ? `Profile ID: ${credentials.profileId}`
+      : `Login Email: ${credentials.email}`;
     navigator.clipboard.writeText(
-      `Profile ID: ${credentials.profileId}\nPassword: ${credentials.autoPassword}`,
+      `${identifierLine}\nPassword: ${credentials.autoPassword}`,
     );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -274,22 +277,25 @@ export default function RegisterPage() {
           </div>
 
           <div className="rounded-2xl bg-white dark:bg-neutral-100 shadow-md ring-1 ring-neutral-200 dark:ring-neutral-200 p-6 space-y-4">
-            {/* Email sent notice */}
-            <div className="flex items-center gap-2 rounded-xl bg-green-50 px-3 py-2.5 ring-1 ring-green-200">
-              <Mail size={15} className="shrink-0 text-green-600" />
-              <p className="text-xs font-medium text-green-700">
-                Credentials also sent to <span className="font-bold">{pendingEmail}</span>
+            {/* Email notice */}
+            <div className="flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2.5 ring-1 ring-blue-200">
+              <Mail size={15} className="shrink-0 text-blue-600" />
+              <p className="text-xs font-medium text-blue-700">
+                A Profile ID and these credentials will be emailed to <span className="font-bold">{pendingEmail}</span> once you complete and save your profile.
               </p>
             </div>
 
-            {/* Profile ID */}
+            {/* Login identifier — email until the profile is finalized */}
             <div className="rounded-xl bg-blue-50 p-4 ring-1 ring-blue-200">
               <div className="flex items-center gap-2 mb-1">
                 <FileText size={15} className="text-blue-600" />
-                <p className="text-xs font-semibold text-blue-600">Your Profile ID</p>
+                <p className="text-xs font-semibold text-blue-600">Your Login Email</p>
               </div>
-              <p className="font-mono text-lg font-bold text-blue-900 tracking-wider">
-                {credentials.profileId}
+              <p className="font-mono text-base font-bold text-blue-900 break-all">
+                {credentials.email}
+              </p>
+              <p className="mt-1 text-[11px] text-blue-600/80">
+                Use this to log in until your profile is complete — a permanent Profile ID will be issued then.
               </p>
             </div>
 
@@ -455,36 +461,65 @@ export default function RegisterPage() {
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
                 <AlertCircle size={20} className="text-amber-600" />
               </div>
-              <h2 className="text-base font-bold text-neutral-900">Email Already Registered</h2>
+              <h2 className="text-base font-bold text-neutral-900">
+                {duplicatePrompt.incompleteCount > 0 ? "Unfinished Profile Found" : "Email Already Registered"}
+              </h2>
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-neutral-600">
-              You already have{" "}
-              <strong>
-                {duplicatePrompt.count} profile{duplicatePrompt.count > 1 ? "s" : ""}
-              </strong>{" "}
-              registered with this email. You can create another profile (for example, for a
-              family member) — each profile gets its own Profile ID and password.
-            </p>
-            <p className="mt-2 text-sm font-semibold text-neutral-800">
-              Do you want to continue?
-            </p>
-            <div className="mt-5 flex gap-3">
-              <button
-                type="button"
-                onClick={() => formDataRef.current && sendOtp(formDataRef.current, true)}
-                disabled={loading}
-                className="flex-1 rounded-lg bg-[#7a1f2b] py-2.5 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors disabled:opacity-60"
-              >
-                {loading ? "Sending…" : "Yes, Continue"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setDuplicatePrompt(null)}
-                disabled={loading}
-                className="flex-1 rounded-lg border border-neutral-200 py-2.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-60"
-              >
-                Cancel
-              </button>
+
+            {duplicatePrompt.incompleteCount > 0 ? (
+              <p className="mt-3 text-sm leading-relaxed text-neutral-600">
+                You already started <strong>{duplicatePrompt.incompleteCount} profile{duplicatePrompt.incompleteCount > 1 ? "s" : ""}</strong>{" "}
+                with this email but never completed and saved it. Would you like to finish that
+                one, or continue registering a brand-new profile?
+              </p>
+            ) : (
+              <p className="mt-3 text-sm leading-relaxed text-neutral-600">
+                You already have{" "}
+                <strong>
+                  {duplicatePrompt.count} profile{duplicatePrompt.count > 1 ? "s" : ""}
+                </strong>{" "}
+                registered with this email. You can create another profile (for example, for a
+                family member) — each profile gets its own Profile ID and password.
+              </p>
+            )}
+
+            {duplicatePrompt.incompleteCount === 0 && (
+              <p className="mt-2 text-sm font-semibold text-neutral-800">
+                Do you want to continue?
+              </p>
+            )}
+
+            <div className="mt-5 flex flex-col gap-2">
+              {duplicatePrompt.incompleteCount > 0 && (
+                <Link
+                  href="/login"
+                  className="flex-1 rounded-lg bg-[#7a1f2b] py-2.5 text-center text-sm font-bold text-white hover:bg-[#6b1823] transition-colors"
+                >
+                  Complete My Profile — Log In
+                </Link>
+              )}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => formDataRef.current && sendOtp(formDataRef.current, true)}
+                  disabled={loading}
+                  className={
+                    duplicatePrompt.incompleteCount > 0
+                      ? "flex-1 rounded-lg border border-neutral-200 py-2.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-60"
+                      : "flex-1 rounded-lg bg-[#7a1f2b] py-2.5 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors disabled:opacity-60"
+                  }
+                >
+                  {loading ? "Sending…" : duplicatePrompt.incompleteCount > 0 ? "Start a New Profile Instead" : "Yes, Continue"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDuplicatePrompt(null)}
+                  disabled={loading}
+                  className="flex-1 rounded-lg border border-neutral-200 py-2.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>
