@@ -26,7 +26,7 @@ export async function generateProfileId(
     { $inc: { seq: 1 } },
     { upsert: true, new: true },
   ).lean() as any;
-  const sequence = String(counter.seq).padStart(5, "0");
+  const sequence = String(counter.seq).padStart(6, "0");
 
   return `${genderCode}${monthYear}${religionCode}${sequence}${familyClass}`;
 }

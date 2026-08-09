@@ -68,7 +68,7 @@ function LoginContent() {
                   const v = e.target.value;
                   setProfileId(v.includes("@") ? v : v.toUpperCase());
                 }}
-                placeholder="e.g. M0626H00042MC"
+                placeholder="e.g. M0626H000042MC"
                 required
                 autoComplete="username"
                 className="input-field font-mono tracking-wider"

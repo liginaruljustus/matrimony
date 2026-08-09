@@ -90,7 +90,7 @@ export default function ForgotPasswordPage() {
                   type="text"
                   value={profileId}
                   onChange={(e) => setProfileId(e.target.value.toUpperCase())}
-                  placeholder="e.g. M0626H00042MC"
+                  placeholder="e.g. M0626H000042MC"
                   required
                   autoComplete="username"
                   className="w-full rounded-lg border border-neutral-300 py-2.5 pl-9 pr-3 text-sm font-mono tracking-wider outline-none focus:border-[#7a1f2b] focus:ring-2 focus:ring-[#7a1f2b]/20"
