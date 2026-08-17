@@ -36,21 +36,23 @@ export function generatePassword(
   submissionDate: Date,
   firstName: string
 ): string {
-  // Extract digits from phone (last 10 digits)
-  const phone = phoneNumber.slice(-10);
+  // Extract digits only from phone (last 10 digits)
+  const digits = (phoneNumber || "").replace(/\D/g, "");
+  const phone = digits.slice(-10).padStart(10, "0");
   const lastDigit = phone[9];
   const secondLastDigit = phone[8];
   const thirdLastDigit = phone[7];
 
-  // Get day and month initials
-  const dayOfWeek = submissionDate.getDay();
+  // Get day and month initials safely
+  const date = submissionDate instanceof Date && !isNaN(submissionDate.getTime()) ? submissionDate : new Date();
+  const dayOfWeek = date.getDay();
   const dayInitial = DAY_INITIALS[dayOfWeek];
 
-  const monthIndex = submissionDate.getMonth();
+  const monthIndex = date.getMonth();
   const monthInitial = MONTH_INITIALS[monthIndex];
 
-  // Get first letter of name
-  const nameInitial = firstName.charAt(0).toUpperCase();
+  // Get first letter of name safely
+  const nameInitial = ((firstName || "U").trim().charAt(0) || "U").toUpperCase();
 
   // Format: lastDigit + dayInitial + secondLastDigit + monthInitial + thirdLastDigit + nameInitial
   return `${lastDigit}${dayInitial}${secondLastDigit}${monthInitial}${thirdLastDigit}${nameInitial}`;

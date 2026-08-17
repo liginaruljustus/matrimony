@@ -11,7 +11,8 @@ export async function sendCredentialsEmail(
   }
 
   const nodemailer = await import("nodemailer");
-  const transporter = nodemailer.default.createTransport({
+  const createTransport = nodemailer.createTransport || (nodemailer as any).default?.createTransport;
+  const transporter = createTransport({
     service: "gmail",
     auth: {
       user: process.env.SMTP_USER,
@@ -19,11 +20,11 @@ export async function sendCredentialsEmail(
     },
   });
 
-  const firstName  = name.split(" ")[0];
+  const firstName  = (name || "").split(" ")[0] || "Member";
   const loginUrl   = `${process.env.NEXTAUTH_URL ?? "https://luramatrimony.com"}/login`;
 
   await transporter.sendMail({
-    from:    process.env.SMTP_FROM ?? "Lura Matrimony <no-reply@luramatrimony.com>",
+    from:    process.env.SMTP_FROM ?? `"Lura Matrimony" <${process.env.SMTP_USER}>`,
     to:      email,
     subject: "Welcome to Lura Matrimony — Your Login Credentials",
     html: `

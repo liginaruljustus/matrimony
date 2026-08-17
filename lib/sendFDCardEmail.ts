@@ -6,7 +6,8 @@ export async function sendFDCardEmail(email: string, name: string, fdCard: any) 
   }
 
   const nodemailer = await import("nodemailer");
-  const transporter = nodemailer.default.createTransport({
+  const createTransport = nodemailer.createTransport || (nodemailer as any).default?.createTransport;
+  const transporter = createTransport({
     service: "gmail",
     auth: {
       user: process.env.SMTP_USER,

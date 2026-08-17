@@ -10,6 +10,7 @@ import { generatePassword, generateProfileId } from "@/lib/profileIdGenerator";
 import { sendCredentialsEmail } from "@/lib/sendCredentialsEmail";
 import { buildFDCard } from "@/lib/cardGenerator";
 import { sendFDCardEmail } from "@/lib/sendFDCardEmail";
+import bcrypt from "bcryptjs";
 
 type ProfileInput = {
   age: number;
@@ -130,8 +131,6 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
     { upsert: true, new: true },
   ).lean<any>();
 
-  if (name) await UserModel.findByIdAndUpdate(userId, { $set: { name } });
-
   const user = await UserModel.findById(userId)
     .select("profileId name email phone createdAt profileType familyClass religion")
     .lean() as {
@@ -139,16 +138,35 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
       profileType?: "GROOM" | "BRIDE"; familyClass?: "MC" | "UC" | "EC"; religion?: string;
     } | null;
 
+  // Derive all classification fields from either UserModel or the submitted profile form data
+  const derivedProfileType = user?.profileType || (parsed.data.gender === "FEMALE" ? "BRIDE" : "GROOM");
+  const derivedFamilyClass = (user?.familyClass || parsed.data.familyStatus || "MC") as "MC" | "UC" | "EC";
+  const derivedReligion = user?.religion || parsed.data.religion || "OTHER";
+  const derivedPhone = user?.phone || parsed.data.contactNumber || "";
+  const derivedEmail = user?.email || parsed.data.emailId || "";
+  const userName = name || user?.name || "Member";
+
+  // Sync classification fields back to UserModel
+  await UserModel.findByIdAndUpdate(userId, {
+    $set: {
+      name: userName,
+      profileType: derivedProfileType,
+      familyClass: derivedFamilyClass,
+      religion: derivedReligion,
+      ...(derivedPhone ? { phone: derivedPhone } : {}),
+      ...(derivedEmail ? { email: derivedEmail } : {}),
+    },
+  });
+
   let profileId = user?.profileId;
 
-  // On finalize, a real sequential Profile ID is assigned for the first time
-  // (registration no longer generates one — see /api/register/verify-otp).
-  if (finalize && user && !profileId && user.profileType && user.familyClass) {
+  // On finalize, assign sequential Profile ID if not already assigned
+  if (finalize && !profileId) {
     for (let attempt = 0; attempt < 3; attempt++) {
       const candidate = await generateProfileId(
-        user.profileType === "BRIDE" ? "FEMALE" : "MALE",
-        user.religion ?? "OTHER",
-        user.familyClass,
+        derivedProfileType === "BRIDE" ? "FEMALE" : "MALE",
+        derivedReligion,
+        derivedFamilyClass,
       );
       try {
         await UserModel.findByIdAndUpdate(userId, { $set: { profileId: candidate } });
@@ -165,23 +183,34 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
   }
 
   // Credentials email is sent here — once the user has actually saved their
-  // profile — rather than at bare registration, per the client's requested flow.
-  if (finalize && user?.email && user?.phone && user?.createdAt && profileId) {
-    const firstName = (user.name ?? "").split(" ")[0];
-    const autoPassword = generatePassword(user.phone, new Date(user.createdAt), firstName);
-    sendCredentialsEmail(user.email, user.name ?? "", profileId, autoPassword).catch((err) => {
+  // profile — with derived password and updated passwordHash in database.
+  if (finalize && derivedEmail && derivedPhone && profileId) {
+    const createdAt = user?.createdAt ? new Date(user.createdAt) : new Date();
+    const firstName = userName.split(" ")[0] || "Member";
+    const autoPassword = generatePassword(derivedPhone, createdAt, firstName);
+
+    // Synchronize passwordHash in DB so login with this password is guaranteed
+    try {
+      const passwordHash = await bcrypt.hash(autoPassword, 10);
+      await UserModel.findByIdAndUpdate(userId, { $set: { passwordHash } });
+    } catch (hashErr) {
+      console.error("[finalize] Failed to update passwordHash:", hashErr);
+    }
+
+    try {
+      await sendCredentialsEmail(derivedEmail, userName, profileId, autoPassword);
+      console.log(`[Credentials Email] Sent to ${derivedEmail} for profile ${profileId}`);
+    } catch (err) {
       console.error("[Credentials Email] Failed to send:", err);
-    });
+    }
   }
 
-  // Profile goes live immediately on finalize — send the FD (full details) card,
-  // same content the admin's manual approval used to send.
-  if (finalize && user?.email && updatedProfile && profileId) {
+  // Profile goes live immediately on finalize — send the FD (full details) card
+  if (finalize && derivedEmail && updatedProfile && profileId) {
     try {
-      const fd = buildFDCard({ ...user, profileId }, updatedProfile);
-      sendFDCardEmail(user.email, user.name ?? "", fd).catch((err) => {
-        console.error("[FD Card Email] Failed to send:", err);
-      });
+      const fd = buildFDCard({ ...(user ?? {}), name: userName, email: derivedEmail, profileId }, updatedProfile);
+      await sendFDCardEmail(derivedEmail, userName, fd);
+      console.log(`[FD Card Email] Sent to ${derivedEmail}`);
     } catch (e) {
       console.error("FD card build error:", e);
     }
