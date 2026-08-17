@@ -131,9 +131,9 @@ export default function MyProfilePage() {
         <MatrimonyProfileForm
           defaultProfile={
             profile
-              ? { ...profile, name: profile.name ?? userData?.name ?? (session?.user as any)?.name ?? "" }
-              : userData?.name
-                ? { name: userData.name }
+              ? { ...userData, ...profile, name: profile.name ?? userData?.name ?? (session?.user as any)?.name ?? "" }
+              : userData
+                ? { ...userData }
                 : null
           }
           onSaved={handleSaved}

@@ -26,17 +26,34 @@ export const authOptions: NextAuthOptions = {
 
         const identifier = credentials.profileId.trim();
         const isEmail = identifier.includes("@");
-        const user = await UserModel.findOne(
-          isEmail
-            ? { email: identifier.toLowerCase() }
-            : { profileId: identifier.toUpperCase() },
-        ).lean<any>();
-        if (!user) return null;
+        let user: any = null;
 
-        // Email sign-in is reserved for admins, plus regular users who haven't
-        // finished their profile yet (no Profile ID assigned). Once a user has
-        // a Profile ID, they must use it — email sign-in is blocked for them.
-        if (isEmail && user.role !== "ADMIN" && user.profileId) return null;
+        if (isEmail) {
+          // When signing in with email, find matching accounts (admin or incomplete accounts without a profileId)
+          const candidates = await UserModel.find({ email: identifier.toLowerCase() })
+            .sort({ createdAt: -1 })
+            .lean<any[]>();
+
+          for (const cand of candidates) {
+            // Email login allowed for ADMIN or users who haven't finalized their profile yet
+            if (cand.role === "ADMIN" || !cand.profileId) {
+              const matches = await bcrypt.compare(credentials.password, cand.passwordHash);
+              if (matches) {
+                user = cand;
+                break;
+              }
+            }
+          }
+
+          if (!user && candidates.length > 0 && candidates.every(c => c.profileId && c.role !== "ADMIN")) {
+            // All accounts for this email already have a Profile ID
+            throw new Error("PLEASE_USE_PROFILE_ID");
+          }
+        } else {
+          user = await UserModel.findOne({ profileId: identifier.toUpperCase() }).lean<any>();
+        }
+
+        if (!user) return null;
 
         // Block suspended / banned accounts before password check
         if (user.status && user.status !== "ACTIVE") {

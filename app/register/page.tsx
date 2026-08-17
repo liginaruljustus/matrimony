@@ -223,7 +223,7 @@ export default function RegisterPage() {
   };
 
   const handleContinue = async () => {
-    if (!credentials) { router.push("/login"); return; }
+    if (!credentials) { window.location.href = "/login"; return; }
     setAutoLoggingIn(true);
     try {
       const res = await signIn("credentials", {
@@ -232,13 +232,13 @@ export default function RegisterPage() {
         redirect: false,
       });
       if (!res?.error) {
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       } else {
         // Fallback: manual login if auto-sign-in fails
-        router.push("/login");
+        window.location.href = "/login";
       }
     } catch {
-      router.push("/login");
+      window.location.href = "/login";
     }
   };
 

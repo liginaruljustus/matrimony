@@ -9,7 +9,7 @@ const DIGIT_LENGTHS: Record<string, number> = {
   "+1":  10,
   "+44": 10,
 };
-const DEFAULT_MAX = 14;
+const DEFAULT_MAX = 10;
 
 type Props = {
   value: string;       // stored as "+91XXXXXXXXXX" or ""

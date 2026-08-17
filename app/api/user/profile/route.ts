@@ -47,6 +47,9 @@ export async function GET(request: Request) {
     return Response.json({
       user: {
         name:         u.name,
+        email:        u.email,
+        phone:        u.phone,
+        religion:     u.religion,
         profileId:    u.profileId,
         profileType:  u.profileType,
         familyClass:  u.familyClass,

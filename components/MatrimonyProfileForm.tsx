@@ -97,6 +97,13 @@ function normalizeProfile(profile: any) {
   }
 
   return {
+    gender: profile.gender ?? (profile.profileType === "BRIDE" ? "FEMALE" : "MALE"),
+    religion: profile.religion ?? "HINDU",
+    maritalStatus: profile.maritalStatus ?? "SINGLE",
+    familyStatus: profile.familyStatus ?? profile.familyClass ?? "MC",
+    contactNumber: profile.contactNumber ?? profile.phone ?? "",
+    whatsappNo: profile.whatsappNo ?? profile.phone ?? "",
+    emailId: profile.emailId ?? profile.email ?? "",
     ...profile,
     dateOfBirth,
     monthlyIncome: profile.monthlyIncome ?? profile.income,
@@ -132,11 +139,23 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
     setValue,
     trigger,
     control,
+    reset,
   } = useForm<FormData>({
     // cast required: @hookform/resolvers bundles its own react-hook-form types causing TS2719
     resolver: zodResolver(matrimonyProfileSchema) as any, // eslint-disable-line
     defaultValues: normalizeProfile(defaultProfile),
+    shouldUnregister: false,
   });
+
+  // Re-populate form whenever defaultProfile updates from server fetch
+  useEffect(() => {
+    if (defaultProfile) {
+      reset(normalizeProfile(defaultProfile));
+      if (defaultProfile.photos && Array.isArray(defaultProfile.photos)) {
+        setPhotos(defaultProfile.photos);
+      }
+    }
+  }, [defaultProfile, reset]);
 
   const age = watch("age");
   const dateOfBirth = watch("dateOfBirth");
@@ -331,9 +350,8 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="card p-6 space-y-4">
         {/* Step 1: Personal Details */}
-        {step === 0 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-primary">Personal Details</h3>
+        <div className={step === 0 ? "space-y-4" : "hidden"}>
+          <h3 className="text-lg font-semibold text-primary">Personal Details</h3>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -439,7 +457,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Sub Caste</label>
+                <label className="label">Sub Caste *</label>
                 <Controller
                   name="subCaste"
                   control={control}
@@ -572,12 +590,10 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               <textarea {...register("otherDetails")} className="input-field" rows={3} />
             </div>
           </div>
-        )}
 
         {/* Step 2: Family Details */}
-        {step === 1 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-primary">Family Details</h3>
+        <div className={step === 1 ? "space-y-4" : "hidden"}>
+          <h3 className="text-lg font-semibold text-primary">Family Details</h3>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -670,12 +686,10 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               {errors.familyStatus && <p className="text-xs text-red-600 mt-1">{errors.familyStatus.message}</p>}
             </div>
           </div>
-        )}
 
         {/* Step 3: Contact Details */}
-        {step === 2 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-primary">Contact Details</h3>
+        <div className={step === 2 ? "space-y-4" : "hidden"}>
+          <h3 className="text-lg font-semibold text-primary">Contact Details</h3>
 
             <div>
               <label className="label">Contact Person Name *</label>
@@ -723,12 +737,10 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               <p>Other users can only view your contact details after payment verification.</p>
             </div>
           </div>
-        )}
 
         {/* Step 4: Photos & Expectations */}
-        {step === 3 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-primary">Photo & Expectations</h3>
+        <div className={step === 3 ? "space-y-4" : "hidden"}>
+          <h3 className="text-lg font-semibold text-primary">Photo & Expectations</h3>
 
             {/* Upload error banner */}
             {uploadError && (
@@ -874,12 +886,10 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               />
             </div>
           </div>
-        )}
 
         {/* Step 5: Review */}
-        {step === 4 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-primary">Preview Your Profile</h3>
+        <div className={step === 4 ? "space-y-4" : "hidden"}>
+          <h3 className="text-lg font-semibold text-primary">Preview Your Profile</h3>
             <p className="-mt-2 text-xs text-slate-500 dark:text-neutral-600">
               Please review every detail carefully. After you submit, your profile will be
               <strong> locked</strong> and you will need to contact the admin for any changes.
@@ -912,9 +922,9 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               <PreviewSection title="Personal Details" rows={[
                 ["Full Name", watch("name")],
                 ["Gender", watch("gender") === "MALE" ? "Male" : watch("gender") === "FEMALE" ? "Female" : ""],
-                ["Age", watch("age")],
+                ["Age", watch("age") ? `${watch("age")} yrs` : ""],
                 ["Date of Birth", watch("dateOfBirth")],
-                ["Marital Status", watch("maritalStatus")],
+                ["Marital Status", watch("maritalStatus") ? (watch("maritalStatus") === "SINGLE" ? "Single" : watch("maritalStatus") === "MARRIED" ? "Married" : watch("maritalStatus") === "DIVORCED" ? "Divorced" : watch("maritalStatus") === "SEPARATED" ? "Separated" : watch("maritalStatus") === "WIDOWED" ? "Widowed" : watch("maritalStatus")) : ""],
                 ["Height", watch("height") ? `${watch("height")} cm` : ""],
                 ["Complexion", watch("complexion")],
                 ["Religion", watch("religion")],
@@ -941,10 +951,10 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                 ["Father's Occupation", watch("fatherOccupation")],
                 ["Mother's Name", watch("motherName")],
                 ["Mother's Occupation", watch("motherOccupation")],
-                ["Brothers", watch("totalBrothers") != null ? `${watch("totalBrothers")} (${watch("marriedBrothers") ?? 0} married)` : ""],
-                ["Sisters", watch("totalSisters") != null ? `${watch("totalSisters")} (${watch("marriedSisters") ?? 0} married)` : ""],
-                ["House Details", watch("houseDetails")],
-                ["Family Status", watch("familyStatus")],
+                ["Brothers", watch("totalBrothers") !== undefined && watch("totalBrothers") !== null && !isNaN(Number(watch("totalBrothers"))) ? `${watch("totalBrothers")} (${watch("marriedBrothers") ?? 0} married)` : ""],
+                ["Sisters", watch("totalSisters") !== undefined && watch("totalSisters") !== null && !isNaN(Number(watch("totalSisters"))) ? `${watch("totalSisters")} (${watch("marriedSisters") ?? 0} married)` : ""],
+                ["House Details", watch("houseDetails") === "OWN" ? "Own House" : watch("houseDetails") === "FAMILY" ? "Family House" : watch("houseDetails") === "RENTED" ? "Rented" : watch("houseDetails")],
+                ["Family Status", watch("familyStatus") === "MC" ? "Middle Class (MC)" : watch("familyStatus") === "UC" ? "Upper Class (UC)" : watch("familyStatus") === "EC" ? "Elite Class (EC)" : watch("familyStatus")],
               ]} />
 
               <PreviewSection title="Contact Details" rows={[
@@ -966,7 +976,6 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               </div>
             )}
           </div>
-        )}
 
         {/* Buttons */}
         <div className="flex gap-3 pt-4 border-t">

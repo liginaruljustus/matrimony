@@ -1,4 +1,13 @@
 import { z } from "zod";
+import { CODES_BY_LENGTH } from "./countryCodes";
+
+function validate10DigitPhone(v: string): boolean {
+  if (!v || typeof v !== "string") return false;
+  const match = CODES_BY_LENGTH.find((code) => v.startsWith(code));
+  const numberPart = match ? v.slice(match.length) : v.replace(/^\+\d{1,4}/, "");
+  const digits = numberPart.replace(/\D/g, "");
+  return digits.length === 10;
+}
 
 export const registerSchema = z.object({
   name: z.string().min(2, "Name must have at least 2 characters"),
@@ -35,8 +44,8 @@ export const matrimonyProfileSchema = z.object({
   // Minimum age is enforced per-gender in the superRefine below (Male 21, Female 18).
   age: z.coerce.number().min(1, "Date of Birth is required").max(80),
   religion: z.enum(["HINDU", "MUSLIM", "CHRISTIAN", "OTHER"]),
-  caste: z.string().min(2),
-  subCaste: z.string().optional(),
+  caste: z.string().min(2, "Caste is required"),
+  subCaste: z.string().min(1, "Sub Caste is required"),
   placeOfBirth: z.string().optional(),
   timeOfBirth: z.string().optional(),
   rashi: z.string().optional(),
@@ -70,12 +79,12 @@ export const matrimonyProfileSchema = z.object({
   // Contact Details
   contactPersonName: z.string().min(2, "Contact Person Name is required"),
   contactNumber: z.string().min(1, "Contact number is required").refine(
-    (v) => /^\+\d{7,15}$/.test(v),
-    { message: "Enter a valid contact number with country code" },
+    validate10DigitPhone,
+    { message: "Contact number must be exactly 10 digits" },
   ),
   whatsappNo: z.string().min(1, "WhatsApp number is required").refine(
-    (v) => /^\+\d{7,15}$/.test(v),
-    { message: "Enter a valid WhatsApp number with country code" },
+    validate10DigitPhone,
+    { message: "WhatsApp number must be exactly 10 digits" },
   ),
   emailId: z.string().email("Email ID must be a valid email address"),
 

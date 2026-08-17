@@ -27,48 +27,10 @@ const styles = StyleSheet.create({
     backgroundColor: MAROON,
     marginHorizontal: -32,
     marginTop: -20,
-    padding: "22 32 18 32",
+    padding: "20 32 18 32",
     flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 18,
-  },
-  // Wrapper clips the image to borderRadius (react-pdf Image ignores borderRadius alone)
-  headerPhotoWrapper: {
-    width: 96,
-    height: 96,
-    borderRadius: 8,
-    border: `2 solid ${GOLD}`,
-    overflow: "hidden",
-    backgroundColor: "#5c1520",
     alignItems: "center",
-    justifyContent: "center",
-  },
-  headerPhoto: {
-    width: 92,
-    height: 92,
-    // "contain" shows the FULL image (no cropping) — letterboxed on maroon background
-    objectFit: "contain",
-    objectPosition: "center center",
-  },
-  headerPhotoPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    border: `2 solid ${GOLD}`,
-    backgroundColor: "#5c1520",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerPhotoInitial: {
-    fontSize: 32,
-    color: GOLD,
-    fontFamily: "Helvetica-Bold",
-  },
-  photoHint: {
-    fontSize: 6.5,
-    color: GOLD,
-    marginTop: 4,
-    textAlign: "center",
+    justifyContent: "space-between",
   },
   headerInfo: {
     flex: 1,
@@ -330,33 +292,21 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
     <Document title={`${name} — ${cfg.pdfCompanyName} Profile`} author={cfg.pdfCompanyName}>
       <Page size="A4" style={styles.page}>
 
-        {/* ── Header ──────────────────────────────────────────────────── */}
+        {/* ── Header (Page 1: Personal Details & Biodata) ─────────────── */}
         <View style={styles.header}>
-          {mainPhoto ? (
-            <View style={{ alignItems: "center" }}>
-              <View style={styles.headerPhotoWrapper}>
-                {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                <Image src={mainPhoto} style={styles.headerPhoto} />
-              </View>
-              <Text style={styles.photoHint}>Full photo on last page »</Text>
-            </View>
-          ) : (
-            <View style={styles.headerPhotoPlaceholder}>
-              <Text style={styles.headerPhotoInitial}>{initial}</Text>
-            </View>
-          )}
           <View style={styles.headerInfo}>
             <Text style={styles.headerName}>{name}</Text>
-            <Text style={styles.headerSub}>Profile ID: {profileId}</Text>
             <Text style={styles.headerSub}>
-              {p.age ? `${p.age} yrs  ·  ` : ""}
-              {p.religion ?? ""}
+              Profile ID: {profileId}
+              {p.age ? `  ·  ${p.age} yrs` : ""}
+              {p.gender ? `  ·  ${p.gender === "MALE" ? "Groom" : "Bride"}` : ""}
+              {p.religion ? `  ·  ${p.religion}` : ""}
               {p.caste ? `  ·  ${p.caste}` : ""}
+              {p.subCaste ? ` (${p.subCaste})` : ""}
             </Text>
-            {p.location && <Text style={styles.headerSub}>{p.location}</Text>}
-            <View style={styles.headerBadge}>
-              <Text style={styles.headerBadgeText}>{status.toUpperCase()}</Text>
-            </View>
+          </View>
+          <View style={styles.headerBadge}>
+            <Text style={styles.headerBadgeText}>{status.toUpperCase()}</Text>
           </View>
         </View>
         <View style={styles.goldBar} />
@@ -388,7 +338,6 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
             <Text style={styles.sectionTitle}>Location</Text>
             <View style={styles.grid}>
               <Field label="Native District"   value={fmt(p.nativeDistrict)} />
-              <Field label="Current Location"  value={fmt(p.location)} />
               <Field label="Place of Birth"    value={fmt(p.placeOfBirth)} />
               <Field label="Time of Birth"     value={fmt(p.timeOfBirth)} />
             </View>

@@ -391,62 +391,6 @@ function AdminDashboard({ stats, charts }: { stats: DashboardStats; charts: Char
   );
 }
 
-// ─── Profile Completion Card ──────────────────────────────────────────────────
-
-const COMPLETION_FIELDS: { key: string; label: string }[] = [
-  { key: "photos",      label: "At least one photo" },
-  { key: "bio",         label: "Bio / about section" },
-  { key: "height",      label: "Height" },
-  { key: "complexion",  label: "Complexion" },
-  { key: "currentJob",  label: "Occupation / job" },
-  { key: "nakshatra",   label: "Nakshatra" },
-  { key: "rashi",       label: "Rashi" },
-  { key: "expectations",label: "Expectations" },
-];
-
-function ProfileCompletionCard({
-  profile,
-}: {
-  profile: UserProfile;
-}) {
-  const filled = COMPLETION_FIELDS.filter(({ key }) => {
-    const val = profile[key];
-    if (Array.isArray(val)) return val.length > 0;
-    return val !== undefined && val !== null && val !== "";
-  });
-  const pct = Math.round((filled.length / COMPLETION_FIELDS.length) * 100);
-  const isComplete = pct === 100;
-
-  return (
-    <div className="rounded-2xl border border-slate-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-5">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] font-bold text-slate-400 dark:text-neutral-600 uppercase tracking-widest">
-          Profile Completion
-        </p>
-        <span className={`text-sm font-extrabold ${isComplete ? "text-green-700" : "text-[#7a1f2b]"}`}>
-          {pct}%
-        </span>
-      </div>
-
-      {/* Progress bar */}
-      <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-neutral-200 overflow-hidden">
-        <div
-          className={`h-2 rounded-full transition-all duration-500 ${
-            isComplete ? "bg-green-500" : pct >= 60 ? "bg-[#d4af37]" : "bg-[#7a1f2b]"
-          }`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-
-      {isComplete && (
-        <p className="mt-2 text-xs text-green-700 font-semibold flex items-center gap-1">
-          <CheckCircle size={12} /> Your profile is fully complete!
-        </p>
-      )}
-    </div>
-  );
-}
-
 // ─── User Dashboard ───────────────────────────────────────────────────────────
 
 const PROFILE_STATUS: Record<string, { label: string; color: string; bg: string; desc: string }> = {
@@ -504,9 +448,6 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
           </div>
         )}
 
-        {/* ── Profile Completion (First Section) ───────────────────────────────── */}
-        {profile && <ProfileCompletionCard profile={profile} />}
-
         {/* ── Profile locked notice (replaces the edit form) ─────────────────── */}
         {profile?.isLocked ? (
         <div id="profile-form" className="bg-white dark:bg-neutral-100 rounded-2xl border border-amber-200 overflow-hidden">
@@ -560,9 +501,15 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
 
           {/* Form body */}
           {formOpen && (
-            <div className="border-t border-slate-100 dark:border-neutral-200 px-6 py-6">
-              <MatrimonyProfileForm defaultProfile={profile ? { ...profile, name: userData.name } : null} />
-            </div>
+              <MatrimonyProfileForm
+                defaultProfile={
+                  profile
+                    ? { ...userData, ...profile, name: profile.name ?? userData?.name }
+                    : userData
+                    ? { ...userData }
+                    : null
+                }
+              />
           )}
         </div>
         )}
