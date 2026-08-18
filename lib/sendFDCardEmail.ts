@@ -1,20 +1,7 @@
+import { sendMailWithRetry } from "./mailer";
+
 /** Emails a user's full profile details (FD card) once their profile is approved/live. */
 export async function sendFDCardEmail(email: string, name: string, fdCard: any) {
-  if (!process.env.SMTP_USER) {
-    console.log(`[FD Email] Gmail not configured — skipping email to ${email}`);
-    return;
-  }
-
-  const nodemailer = await import("nodemailer");
-  const createTransport = nodemailer.createTransport || (nodemailer as any).default?.createTransport;
-  const transporter = createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-
   const fieldRow = (label: string, value: any) =>
     value ? `<tr><td style="padding:4px 12px;color:#6b7280;font-size:13px;">${label}</td><td style="padding:4px 12px;font-weight:600;font-size:13px;">${value}</td></tr>` : "";
 
@@ -52,12 +39,10 @@ export async function sendFDCardEmail(email: string, name: string, fdCard: any) 
     </div>
   `;
 
-  await transporter.sendMail({
-    from:    process.env.SMTP_FROM ?? `"Lura Matrimony" <no-reply@luramatrimony.com>`,
+  await sendMailWithRetry({
+    from:    process.env.SMTP_FROM ?? `"Lura Matrimony" <${process.env.SMTP_USER}>`,
     to:      email,
     subject: "Your Lura Matrimony Profile Is Live — Full Details",
     html,
-  });
-
-  console.log(`[FD Email] Sent to ${email}`);
+  }, "FD Card Email");
 }

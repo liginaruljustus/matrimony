@@ -12,6 +12,7 @@ import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel } from "@/lib/models";
 import { generatePassword } from "@/lib/profileIdGenerator";
+import { sendMailWithRetry } from "@/lib/mailer";
 
 export async function POST(request: Request) {
   try {
@@ -37,10 +38,13 @@ export async function POST(request: Request) {
 
     await UserModel.findByIdAndUpdate(user._id, { $set: { passwordHash } });
 
-    // Fire-and-forget — don't block the response on email delivery.
-    sendCredentialsEmail(user.email, user.name, user.profileId, autoPassword).catch((err) => {
+    // Awaited (not fire-and-forget) — a detached promise can be killed before
+    // it completes once this serverless function's response is returned.
+    try {
+      await sendCredentialsEmail(user.email, user.name, user.profileId, autoPassword);
+    } catch (err) {
       console.error("[Resend Credentials] Email failed:", err);
-    });
+    }
 
     return Response.json({ ok: true });
   } catch (error) {
@@ -55,22 +59,11 @@ async function sendCredentialsEmail(
   profileId: string,
   autoPassword: string,
 ) {
-  if (!process.env.SMTP_USER) {
-    console.log(`[Resend Credentials] Gmail not configured — would send to ${email}: ${profileId} / ${autoPassword}`);
-    return;
-  }
-
-  const nodemailer  = await import("nodemailer");
-  const transporter = nodemailer.default.createTransport({
-    service: "gmail",
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  });
-
   const firstName = name.split(" ")[0];
   const loginUrl  = `${process.env.NEXTAUTH_URL ?? "https://luramatrimony.com"}/login`;
 
-  await transporter.sendMail({
-    from:    process.env.SMTP_FROM ?? "Lura Matrimony <no-reply@luramatrimony.com>",
+  await sendMailWithRetry({
+    from:    process.env.SMTP_FROM ?? `"Lura Matrimony" <${process.env.SMTP_USER}>`,
     to:      email,
     subject: "Lura Matrimony — Your Login Credentials",
     html: `
@@ -110,5 +103,5 @@ async function sendCredentialsEmail(
       </div>
     `,
     text: `Hi ${firstName},\n\nYour login credentials:\n\nProfile ID: ${profileId}\nPassword:   ${autoPassword}\n\nSign in at: ${loginUrl}\n\n© ${new Date().getFullYear()} Lura Matrimony`,
-  });
+  }, "Resend Credentials");
 }

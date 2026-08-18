@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { ProfileModel, UserModel, AuditLogModel } from "@/lib/models";
 import { authOptions } from "@/lib/auth";
 import { buildFDCard } from "@/lib/cardGenerator";
+import { sendFDCardEmail } from "@/lib/sendFDCardEmail";
 import { ObjectId } from "mongodb";
 
 export async function GET(request: Request) {
@@ -142,7 +143,9 @@ export async function POST(request: Request) {
         if (user?.email) {
           try {
             const fd = buildFDCard(user, profile);
-            void sendFDCardEmail(user.email, user.name, fd).catch(console.error);
+            // Awaited (not fire-and-forget) — a detached promise can be killed
+            // mid-send once this serverless function's response is returned.
+            await sendFDCardEmail(user.email, user.name, fd);
           } catch (e) {
             console.error("Bulk approve FD card error:", e);
           }
@@ -173,66 +176,4 @@ export async function POST(request: Request) {
     console.error("Error updating profiles:", error);
     return NextResponse.json({ error: "Failed to update profiles" }, { status: 500 });
   }
-}
-
-// ── Shared FD-card email helper (mirrors the one in /api/admin/profiles/[id]) ──
-async function sendFDCardEmail(email: string, name: string, fdCard: any) {
-  if (!process.env.SMTP_USER) {
-    console.log(`[FD Email] Gmail not configured — skipping email to ${email}`);
-    return;
-  }
-
-  const nodemailer  = await import("nodemailer");
-  const transporter = nodemailer.default.createTransport({
-    service: "gmail",
-    auth:    { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  });
-
-  const row = (label: string, value: any) =>
-    value
-      ? `<tr><td style="padding:4px 12px;color:#6b7280;font-size:13px;">${label}</td><td style="padding:4px 12px;font-weight:600;font-size:13px;">${value}</td></tr>`
-      : "";
-
-  const html = `
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#faf7f2;">
-      <div style="background:#7a1f2b;padding:24px;text-align:center;">
-        <h1 style="color:#d4af37;margin:0;font-size:22px;">Lura Matrimony</h1>
-        <p style="color:#fff;margin:8px 0 0;font-size:14px;">Your Full Profile Details</p>
-      </div>
-      <div style="padding:24px;">
-        <p style="color:#374151;">Dear <strong>${name}</strong>,</p>
-        <p style="color:#374151;font-size:14px;">Your profile has been approved. Below are your complete profile details for your records.</p>
-        <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;margin:16px 0;">
-          ${row("Profile ID",     fdCard.profileId)}
-          ${row("Name",           fdCard.name)}
-          ${row("Age",            fdCard.age ? `${fdCard.age} years` : null)}
-          ${row("Religion",       fdCard.religion)}
-          ${row("Caste",          fdCard.caste)}
-          ${row("District",       fdCard.district)}
-          ${row("Education",      fdCard.education)}
-          ${row("Nakshatra",      fdCard.nakshatra)}
-          ${row("Rashi",          fdCard.rashi)}
-          ${row("Monthly Income", fdCard.monthlyIncome ? `₹${fdCard.monthlyIncome}` : null)}
-          ${row("Father Name",    fdCard.fatherName)}
-          ${row("Mother Name",    fdCard.motherName)}
-          ${row("Contact Person", fdCard.contactPersonName)}
-          ${row("Contact Number", fdCard.contactNumber)}
-          ${row("WhatsApp",       fdCard.whatsappNo)}
-        </table>
-        <p style="color:#6b7280;font-size:12px;">Please keep this email safe. Do not share your login credentials.</p>
-      </div>
-      <div style="background:#7a1f2b;padding:12px;text-align:center;">
-        <p style="color:#d4af37;margin:0;font-size:12px;">© ${new Date().getFullYear()} Lura Matrimony</p>
-      </div>
-    </div>
-  `;
-
-  await transporter.sendMail({
-    from:    process.env.SMTP_FROM ?? `"Lura Matrimony" <no-reply@luramatrimony.com>`,
-    to:      email,
-    subject: "Your Lura Matrimony Profile Has Been Approved — Full Details",
-    html,
-  });
-
-  console.log(`[FD Email] Sent to ${email}`);
 }

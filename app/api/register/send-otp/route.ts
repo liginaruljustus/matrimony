@@ -13,6 +13,7 @@ import { randomInt } from "crypto";
 import { connectToDatabase } from "@/lib/mongodb";
 import { PendingRegistrationModel, UserModel } from "@/lib/models";
 import { sendOtpSchema } from "@/lib/validators";
+import { sendMailWithRetry } from "@/lib/mailer";
 
 // Must match RESEND_COOLDOWN on the client (app/register/page.tsx)
 const RESEND_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
@@ -113,19 +114,10 @@ async function sendOtpEmail(email: string, name: string, otp: string) {
     return;
   }
 
-  const nodemailer = await import("nodemailer");
-  const transporter = nodemailer.default.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-
   const firstName = name.split(" ")[0];
 
-  await transporter.sendMail({
-    from:    process.env.SMTP_FROM ?? "Lura Matrimony <no-reply@luramatrimony.com>",
+  await sendMailWithRetry({
+    from:    process.env.SMTP_FROM ?? `"Lura Matrimony" <${process.env.SMTP_USER}>`,
     to:      email,
     subject: "Your Lura Matrimony verification code",
     html: `
@@ -162,5 +154,5 @@ async function sendOtpEmail(email: string, name: string, otp: string) {
       </div>
     `,
     text: `Hi ${firstName},\n\nYour Lura Matrimony verification code is: ${otp}\n\nThis code is valid for 5 minutes.\n\nIf you did not request this, please ignore this email.`,
-  });
+  }, "OTP Email");
 }

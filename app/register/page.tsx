@@ -8,8 +8,8 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { signIn } from "next-auth/react";
 import {
-  CheckCircle, FileText, Key, AlertCircle, Heart,
-  Copy, Phone, Mail, RefreshCw, ShieldCheck,
+  CheckCircle, AlertCircle, Heart,
+  Phone, RefreshCw, ShieldCheck,
 } from "lucide-react";
 
 type RegisterForm = {
@@ -21,7 +21,7 @@ type RegisterForm = {
   religion: "HINDU" | "MUSLIM" | "CHRISTIAN" | "OTHER";
 };
 
-type Step = "form" | "otp" | "success";
+type Step = "form" | "otp";
 
 const RESEND_COOLDOWN = 300; // seconds (5 minutes)
 
@@ -40,11 +40,6 @@ export default function RegisterPage() {
   const [resendSeconds, setResendSeconds] = useState(RESEND_COOLDOWN);
   const [resending, setResending]   = useState(false);
   const otpRefs                     = useRef<(HTMLInputElement | null)[]>([]);
-
-  // Credentials step state
-  const [credentials, setCredentials] = useState<{ email: string; autoPassword: string; profileId?: string } | null>(null);
-  const [copied, setCopied]         = useState(false);
-  const [autoLoggingIn, setAutoLoggingIn] = useState(false);
 
   // Persisted form data for the resend flow
   const formDataRef = useRef<RegisterForm | null>(null);
@@ -100,6 +95,18 @@ export default function RegisterPage() {
 
   const onSubmit = (values: RegisterForm) => sendOtp(values, false);
 
+  // ── Auto sign-in right after account creation, straight to the dashboard ──
+  // (No profile ID exists yet — sign in with the login email instead. The
+  // dashboard's Login Credentials card shows the email/password from here.)
+  const autoSignInAndRedirect = async (email: string, password: string) => {
+    try {
+      const res = await signIn("credentials", { profileId: email, password, redirect: false });
+      window.location.href = res?.error ? "/login" : "/dashboard";
+    } catch {
+      window.location.href = "/login";
+    }
+  };
+
   // ── Step 2: Verify OTP → create account ──────────────────────────────────
   const handleVerifyOtp = async () => {
     const otpStr = otp.join("");
@@ -117,8 +124,8 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (res.ok && data.user?.email && data.user?.autoPassword) {
-        setCredentials({ email: data.user.email, autoPassword: data.user.autoPassword });
-        setStep("success");
+        await autoSignInAndRedirect(data.user.email, data.user.autoPassword);
+        return;
       } else {
         setOtpError(data.message ?? "Incorrect OTP. Please try again.");
         // If too many attempts or expired, go back to form
@@ -207,8 +214,8 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (res.ok && data.user?.email && data.user?.autoPassword) {
-        setCredentials({ email: data.user.email, autoPassword: data.user.autoPassword });
-        setStep("success");
+        await autoSignInAndRedirect(data.user.email, data.user.autoPassword);
+        return;
       } else {
         setOtpError(data.message ?? "Incorrect OTP. Please try again.");
         if (res.status === 404 || res.status === 429) {
@@ -222,38 +229,6 @@ export default function RegisterPage() {
     }
   };
 
-  const handleContinue = async () => {
-    if (!credentials) { window.location.href = "/login"; return; }
-    setAutoLoggingIn(true);
-    try {
-      const res = await signIn("credentials", {
-        profileId: credentials.profileId ?? credentials.email,
-        password: credentials.autoPassword,
-        redirect: false,
-      });
-      if (!res?.error) {
-        window.location.href = "/dashboard";
-      } else {
-        // Fallback: manual login if auto-sign-in fails
-        window.location.href = "/login";
-      }
-    } catch {
-      window.location.href = "/login";
-    }
-  };
-
-  const handleCopy = () => {
-    if (!credentials) return;
-    const identifierLine = credentials.profileId
-      ? `Profile ID: ${credentials.profileId}`
-      : `Login Email: ${credentials.email}`;
-    navigator.clipboard.writeText(
-      `${identifierLine}\nPassword: ${credentials.autoPassword}`,
-    );
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const fieldError =
     errors.name?.message ??
     errors.email?.message ??
@@ -261,94 +236,6 @@ export default function RegisterPage() {
     errors.profileType?.message ??
     errors.familyClass?.message ??
     errors.religion?.message;
-
-  // ── Success / Credentials Screen ─────────────────────────────────────────
-  if (step === "success" && credentials) {
-    return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="w-full max-w-sm">
-          {/* Success icon */}
-          <div className="mb-8 text-center">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-green-500 shadow-lg">
-              <CheckCircle size={32} className="text-white" />
-            </div>
-            <h1 className="mt-4 text-3xl font-bold text-[#7a1f2b]">Account Created!</h1>
-            <p className="mt-1 text-sm text-neutral-500">Your credentials have been generated</p>
-          </div>
-
-          <div className="rounded-2xl bg-white dark:bg-neutral-100 shadow-md ring-1 ring-neutral-200 dark:ring-neutral-200 p-6 space-y-4">
-            {/* Email notice */}
-            <div className="flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2.5 ring-1 ring-blue-200">
-              <Mail size={15} className="shrink-0 text-blue-600" />
-              <p className="text-xs font-medium text-blue-700">
-                A Profile ID and these credentials will be emailed to <span className="font-bold">{pendingEmail}</span> once you complete and save your profile.
-              </p>
-            </div>
-
-            {/* Login identifier — email until the profile is finalized */}
-            <div className="rounded-xl bg-blue-50 p-4 ring-1 ring-blue-200">
-              <div className="flex items-center gap-2 mb-1">
-                <FileText size={15} className="text-blue-600" />
-                <p className="text-xs font-semibold text-blue-600">Your Login Email</p>
-              </div>
-              <p className="font-mono text-base font-bold text-blue-900 break-all">
-                {credentials.email}
-              </p>
-              <p className="mt-1 text-[11px] text-blue-600/80">
-                Use this to log in until your profile is complete — a permanent Profile ID will be issued then.
-              </p>
-            </div>
-
-            {/* Auto Password */}
-            <div className="rounded-xl bg-purple-50 p-4 ring-1 ring-purple-200">
-              <div className="flex items-center gap-2 mb-1">
-                <Key size={15} className="text-purple-600" />
-                <p className="text-xs font-semibold text-purple-600">Your Auto-Generated Password</p>
-              </div>
-              <p className="font-mono text-2xl font-bold text-purple-900 tracking-[0.3em]">
-                {credentials.autoPassword}
-              </p>
-            </div>
-
-            {/* Warning */}
-            <div className="rounded-xl bg-amber-50 p-3 ring-1 ring-amber-200">
-              <div className="flex items-start gap-2">
-                <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-700 font-medium">
-                  Save these credentials now. You&apos;ll need them to log in.
-                  This password cannot be recovered.
-                </p>
-              </div>
-            </div>
-
-            {/* Copy Button */}
-            <button
-              onClick={handleCopy}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#7a1f2b] py-3 text-sm font-semibold text-white hover:bg-[#6b1823] transition-colors"
-            >
-              <Copy size={16} />
-              {copied ? "Copied!" : "Copy Credentials"}
-            </button>
-
-            <button
-              onClick={handleContinue}
-              disabled={autoLoggingIn}
-              className="w-full rounded-xl border-2 border-[#7a1f2b] py-2.5 text-sm font-semibold text-[#7a1f2b] hover:bg-[#7a1f2b]/5 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-            >
-              {autoLoggingIn ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#7a1f2b] border-t-transparent" />
-                  Signing you in…
-                </>
-              ) : (
-                "Continue to Dashboard"
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // ── OTP Verification Screen ───────────────────────────────────────────────
   if (step === "otp") {

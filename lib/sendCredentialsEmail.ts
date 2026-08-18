@@ -1,3 +1,5 @@
+import { sendMailWithRetry } from "./mailer";
+
 /** Emails a user's login credentials (Profile ID + auto-generated password). */
 export async function sendCredentialsEmail(
   email: string,
@@ -5,25 +7,10 @@ export async function sendCredentialsEmail(
   profileId: string,
   autoPassword: string,
 ) {
-  if (!process.env.SMTP_USER) {
-    console.log(`[Credentials Email] Gmail not configured — skipping email to ${email}`);
-    return;
-  }
-
-  const nodemailer = await import("nodemailer");
-  const createTransport = nodemailer.createTransport || (nodemailer as any).default?.createTransport;
-  const transporter = createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-
   const firstName  = (name || "").split(" ")[0] || "Member";
   const loginUrl   = `${process.env.NEXTAUTH_URL ?? "https://luramatrimony.com"}/login`;
 
-  await transporter.sendMail({
+  await sendMailWithRetry({
     from:    process.env.SMTP_FROM ?? `"Lura Matrimony" <${process.env.SMTP_USER}>`,
     to:      email,
     subject: "Welcome to Lura Matrimony — Your Login Credentials",
@@ -76,5 +63,5 @@ export async function sendCredentialsEmail(
       </div>
     `,
     text: `Welcome to Lura Matrimony, ${firstName}!\n\nYour profile has been saved. Login credentials:\n\nProfile ID: ${profileId}\nPassword:   ${autoPassword}\n\nPlease save these securely. This password cannot be recovered.\n\nSign in at: ${loginUrl}\n\n© ${new Date().getFullYear()} Lura Matrimony`,
-  });
+  }, "Credentials Email");
 }

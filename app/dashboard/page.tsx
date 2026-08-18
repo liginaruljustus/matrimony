@@ -40,6 +40,7 @@ type UserProfile = {
 
 type UserData = {
   name: string;
+  email?: string;
   profileId?: string;
   autoPassword?: string;
   profileType: "GROOM" | "BRIDE";
@@ -613,7 +614,17 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
                   </code>
                 </div>
               ) : (
-                <p className="text-sm text-slate-400 italic">Profile not yet created</p>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                    Login Email
+                  </p>
+                  <code className="block text-sm font-mono font-bold text-[#7a1f2b] bg-[#7a1f2b]/8 px-3 py-2 rounded-lg break-all">
+                    {userData.email}
+                  </code>
+                  <p className="text-[10px] text-slate-400 mt-1.5">
+                    Use this to log in until your profile is complete — a Profile ID will be issued then.
+                  </p>
+                </div>
               )}
 
               {userData.autoPassword && (
