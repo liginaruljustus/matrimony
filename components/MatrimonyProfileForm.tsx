@@ -339,10 +339,17 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
           <span className="text-primary">{STEPS[step]}</span>
           <span className="text-slate-500 dark:text-neutral-700">{step + 1} of {STEPS.length}</span>
         </div>
-        <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-neutral-300 overflow-hidden">
+        <div
+          className="h-2 w-full rounded-full bg-slate-200 dark:bg-neutral-300 overflow-hidden"
+          role="progressbar"
+          aria-valuenow={Math.round((step / STEPS.length) * 100)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`Profile setup progress: step ${step + 1} of ${STEPS.length}, ${STEPS[step]}`}
+        >
           <div
             className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-300"
-            style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
+            style={{ width: `${(step / STEPS.length) * 100}%` }}
           />
         </div>
       </div>

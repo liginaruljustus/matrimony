@@ -17,17 +17,17 @@ const styles = StyleSheet.create({
   page: {
     fontFamily: "Helvetica",
     backgroundColor: "#ffffff",
-    paddingHorizontal: 32,
-    paddingTop: 20,
-    paddingBottom: 50,
+    paddingHorizontal: 28,
+    paddingTop: 14,
+    paddingBottom: 34,
   },
 
   // ── Header band ────────────────────────────────────────────────────────────
   header: {
     backgroundColor: MAROON,
-    marginHorizontal: -32,
-    marginTop: -20,
-    padding: "20 32 18 32",
+    marginHorizontal: -28,
+    marginTop: -14,
+    padding: "14 28 12 28",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -36,82 +36,82 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerName: {
-    fontSize: 22,
+    fontSize: 18,
     color: "#ffffff",
     fontFamily: "Helvetica-Bold",
-    marginBottom: 3,
-  },
-  headerSub: {
-    fontSize: 10,
-    color: GOLD,
     marginBottom: 2,
   },
+  headerSub: {
+    fontSize: 8.5,
+    color: GOLD,
+    marginBottom: 1,
+  },
   headerBadge: {
-    marginTop: 6,
+    marginTop: 4,
     backgroundColor: GOLD,
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    borderRadius: 9,
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
     alignSelf: "flex-start",
   },
   headerBadgeText: {
-    fontSize: 8,
+    fontSize: 7.5,
     color: MAROON,
     fontFamily: "Helvetica-Bold",
   },
 
   // ── Gold divider under header ───────────────────────────────────────────────
   goldBar: {
-    height: 4,
+    height: 3,
     backgroundColor: GOLD,
-    marginHorizontal: -32,
+    marginHorizontal: -28,
   },
 
   // ── Body ───────────────────────────────────────────────────────────────────
   body: {
-    paddingTop: 16,
+    paddingTop: 10,
   },
 
   // ── Section ────────────────────────────────────────────────────────────────
   section: {
-    marginBottom: 14,
+    marginBottom: 7,
   },
   sectionTitle: {
-    fontSize: 9,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: MAROON,
     textTransform: "uppercase",
-    letterSpacing: 1,
-    borderBottom: `1.5 solid ${MAROON}`,
-    paddingBottom: 3,
-    marginBottom: 8,
+    letterSpacing: 0.75,
+    borderBottom: `1 solid ${MAROON}`,
+    paddingBottom: 2,
+    marginBottom: 5,
   },
 
-  // ── Two-column grid inside a section ───────────────────────────────────────
+  // ── Three-column grid inside a section ─────────────────────────────────────
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 0,
   },
   fieldBox: {
-    width: "50%",
-    paddingRight: 8,
-    marginBottom: 6,
+    width: "33.33%",
+    paddingRight: 6,
+    marginBottom: 5,
   },
   fieldLabel: {
-    fontSize: 7.5,
+    fontSize: 6.5,
     color: "#9ca3af",
-    marginBottom: 1.5,
+    marginBottom: 1,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   },
   fieldValue: {
-    fontSize: 9.5,
+    fontSize: 8.5,
     color: NEUTRAL,
     fontFamily: "Helvetica",
   },
   fieldValueBold: {
-    fontSize: 9.5,
+    fontSize: 8.5,
     color: NEUTRAL,
     fontFamily: "Helvetica-Bold",
   },
@@ -119,19 +119,19 @@ const styles = StyleSheet.create({
   // ── Full-width text block ─────────────────────────────────────────────────
   fullWidth: {
     width: "100%",
-    marginBottom: 6,
+    marginBottom: 5,
   },
   blockText: {
-    fontSize: 9.5,
+    fontSize: 8.5,
     color: NEUTRAL,
-    lineHeight: 1.55,
+    lineHeight: 1.35,
   },
 
   // ── Repeating page header band (matches footer design) ─────────────────────
   photoPage: {
     fontFamily: "Helvetica",
     backgroundColor: "#ffffff",
-    paddingHorizontal: 32,
+    paddingHorizontal: 28,
     paddingTop: 58,
     paddingBottom: 50,
   },
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 32,
+    paddingHorizontal: 28,
   },
   pageHeaderBrand: {
     fontSize: 10,
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 32,
+    paddingHorizontal: 28,
   },
   footerText: {
     fontSize: 8,
@@ -367,8 +367,6 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
                 <Field label="Rashi"             value={fmt(p.rashi)} />
                 <Field label="Nakshatra"         value={fmt(p.nakshatra)} />
                 <Field label="Lagnam"            value={fmt(p.lagnam)} />
-                <Field label="Place of Birth"    value={fmt(p.placeOfBirth)} />
-                <Field label="Time of Birth"     value={fmt(p.timeOfBirth)} />
               </View>
             </View>
           )}

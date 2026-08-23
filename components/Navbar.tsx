@@ -6,6 +6,7 @@ import { useUIStore } from "@/store/uiStore";
 import { Heart, Moon, Sun, Menu, X, Bell, CheckCheck, ExternalLink } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { BottomNavbar } from "@/components/BottomNavbar";
 
 type Notification = {
   id: string;
@@ -199,6 +200,7 @@ export function Navbar() {
   ];
 
   return (
+    <>
     <nav className="sticky top-0 z-40 border-b border-neutral-200 bg-white/95 dark:bg-neutral-100/95 shadow-sm backdrop-blur-sm">
       <div className="flex w-full items-center justify-between px-4 py-3">
         {/* Logo */}
@@ -279,5 +281,7 @@ export function Navbar() {
         </div>
       )}
     </nav>
+    <BottomNavbar />
+    </>
   );
 }

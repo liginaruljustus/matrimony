@@ -502,6 +502,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
 
           {/* Form body */}
           {formOpen && (
+            <div className="border-t border-slate-100 dark:border-neutral-200 px-6 pt-5 pb-6">
               <MatrimonyProfileForm
                 defaultProfile={
                   profile
@@ -511,6 +512,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
                     : null
                 }
               />
+            </div>
           )}
         </div>
         )}
