@@ -606,7 +606,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
               Login Credentials
             </p>
             <div className="space-y-4">
-              {userData.profileId ? (
+              {userData.profileId && (
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
                     Profile ID
@@ -614,18 +614,6 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
                   <code className="block text-sm font-mono font-bold text-[#7a1f2b] bg-[#7a1f2b]/8 px-3 py-2 rounded-lg break-all">
                     {userData.profileId}
                   </code>
-                </div>
-              ) : (
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                    Login Email
-                  </p>
-                  <code className="block text-sm font-mono font-bold text-[#7a1f2b] bg-[#7a1f2b]/8 px-3 py-2 rounded-lg break-all">
-                    {userData.email}
-                  </code>
-                  <p className="text-[10px] text-slate-400 mt-1.5">
-                    Use this to log in until your profile is complete — a Profile ID will be issued then.
-                  </p>
                 </div>
               )}
 

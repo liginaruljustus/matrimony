@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 
 type Props = {
   value: string;
@@ -13,6 +13,19 @@ type Props = {
 export function SearchDropdown({ value, onChange, options, placeholder, className }: Props) {
   const [query, setQuery] = useState(value ?? "");
   const [open, setOpen] = useState(false);
+  // Tracks whether the user has typed/selected locally — once they have, we
+  // stop following external `value` changes so we don't clobber their input.
+  const userEditedRef = useRef(false);
+
+  // Sync displayed text when the external value changes after mount (e.g.
+  // async-loaded defaultValues while editing an existing profile) — without
+  // this, the field can show blank even though a real value is set.
+  useEffect(() => {
+    if (!userEditedRef.current && (value ?? "") !== query) {
+      setQuery(value ?? "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -21,12 +34,14 @@ export function SearchDropdown({ value, onChange, options, placeholder, classNam
   }, [query, options]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    userEditedRef.current = true;
     setQuery(e.target.value);
     onChange(e.target.value);
     setOpen(true);
   };
 
   const handleSelect = (opt: string) => {
+    userEditedRef.current = true;
     setQuery(opt);
     onChange(opt);
     setOpen(false);

@@ -21,50 +21,47 @@ type Props = {
 export function DatePickerSelect({ value, onChange, className }: Props) {
   const currentYear = new Date().getFullYear();
 
-  // Parse initial value
-  const [day,   setDay]   = useState<string>("");
-  const [month, setMonth] = useState<string>("");
-  const [year,  setYear]  = useState<string>("");
+  // Day/month/year live together in one state object so a batch of rapid
+  // changes (e.g. quick keyboard selection across all three <select>s) is
+  // always resolved from the freshest merged state, not per-field closures
+  // that can go stale when React batches several updates into one render.
+  const [parts, setParts] = useState<{ day: string; month: string; year: string }>({
+    day: "", month: "", year: "",
+  });
+  const { day, month, year } = parts;
 
   // Sync selects when external value changes (e.g. defaultValues on mount)
   useEffect(() => {
     if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
       const [y, m, d] = value.split("-");
-      setYear(y);
-      setMonth(String(parseInt(m, 10)));
-      setDay(String(parseInt(d, 10)));
+      setParts({ year: y, month: String(parseInt(m, 10)), day: String(parseInt(d, 10)) });
     }
   }, [value]);
 
-  // Emit YYYY-MM-DD whenever any part changes
-  const emit = (d: string, m: string, y: string) => {
-    if (d && m && y) {
-      const mm = m.padStart(2, "0");
-      const dd = d.padStart(2, "0");
-      onChange(`${y}-${mm}-${dd}`);
+  // Emit YYYY-MM-DD whenever the merged day/month/year state settles.
+  useEffect(() => {
+    if (day && month && year) {
+      onChange(`${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`);
     } else {
       onChange("");
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [day, month, year]);
 
   const handleDay = (v: string) => {
-    setDay(v);
-    emit(v, month, year);
+    setParts((p) => ({ ...p, day: v }));
   };
   const handleMonth = (v: string) => {
-    // If selected day exceeds new month's days, reset day
-    const maxDay = daysInMonth(Number(v), Number(year));
-    const safeDay = Number(day) > maxDay ? "" : day;
-    if (Number(day) > maxDay) setDay("");
-    setMonth(v);
-    emit(safeDay, v, year);
+    setParts((p) => {
+      const maxDay = daysInMonth(Number(v), Number(p.year));
+      return { ...p, month: v, day: Number(p.day) > maxDay ? "" : p.day };
+    });
   };
   const handleYear = (v: string) => {
-    const maxDay = daysInMonth(Number(month), Number(v));
-    const safeDay = Number(day) > maxDay ? "" : day;
-    if (Number(day) > maxDay) setDay("");
-    setYear(v);
-    emit(safeDay, month, v);
+    setParts((p) => {
+      const maxDay = daysInMonth(Number(p.month), Number(v));
+      return { ...p, year: v, day: Number(p.day) > maxDay ? "" : p.day };
+    });
   };
 
   const maxDay = daysInMonth(Number(month), Number(year));

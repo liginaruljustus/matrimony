@@ -86,7 +86,7 @@ export function BottomNavbar() {
     <>
       {/* More sheet — groom overflow links */}
       {moreOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-40 lg:hidden">
           <div
             className="absolute inset-0 bg-black/40"
             onClick={() => setMoreOpen(false)}
@@ -122,7 +122,7 @@ export function BottomNavbar() {
       )}
 
       {/* Bottom tab bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-neutral-200 dark:border-neutral-200 bg-white/95 dark:bg-neutral-100/95 px-1 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] backdrop-blur-sm md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-neutral-200 dark:border-neutral-200 bg-white/95 dark:bg-neutral-100/95 px-1 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] backdrop-blur-sm lg:hidden">
         <ul className="grid grid-cols-5">
           {tabs.map((tab) => {
             const active = isActive(tab.href);

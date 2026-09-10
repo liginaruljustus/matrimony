@@ -15,9 +15,8 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const raw = profileId.trim();
-    if (!raw) return;
-    const id = raw.includes("@") ? raw.toLowerCase() : raw.toUpperCase();
+    const id = profileId.trim().toUpperCase();
+    if (!id) return;
     setLoading(true);
     try {
       const res = await fetch("/api/auth/forgot-password/send-otp", {
@@ -75,7 +74,7 @@ export default function ForgotPasswordPage() {
           </div>
           <h1 className="mt-4 text-2xl font-bold text-[#7a1f2b]">Resend Credentials</h1>
           <p className="mt-1 text-sm text-neutral-500">
-            Enter your Profile ID, or the email you registered with, and we&apos;ll send your login details there.
+            Enter your Profile ID and we&apos;ll send your login details to your registered email.
           </p>
         </div>
 
@@ -83,24 +82,20 @@ export default function ForgotPasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-neutral-700 dark:text-neutral-800">
-                Profile ID or Email
+                Profile ID
               </label>
               <div className="relative">
                 <KeyRound size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                 <input
                   type="text"
                   value={profileId}
-                  onChange={(e) => setProfileId(e.target.value)}
-                  placeholder="e.g. M0626H000042MC or you@example.com"
+                  onChange={(e) => setProfileId(e.target.value.toUpperCase())}
+                  placeholder="e.g. M0626H000042MC"
                   required
                   autoComplete="username"
                   className="w-full rounded-lg border border-neutral-300 py-2.5 pl-9 pr-3 text-sm font-mono tracking-wider outline-none focus:border-[#7a1f2b] focus:ring-2 focus:ring-[#7a1f2b]/20"
                 />
               </div>
-              <p className="mt-1.5 text-[11px] text-neutral-400">
-                Registered multiple profiles under one email but never finished one? Enter that
-                email — we&apos;ll send the password for every unfinished profile.
-              </p>
             </div>
 
             {error && (

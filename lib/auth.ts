@@ -26,34 +26,16 @@ export const authOptions: NextAuthOptions = {
 
         const identifier = credentials.profileId.trim();
         const isEmail = identifier.includes("@");
-        let user: any = null;
-
-        if (isEmail) {
-          // When signing in with email, find matching accounts (admin or incomplete accounts without a profileId)
-          const candidates = await UserModel.find({ email: identifier.toLowerCase() })
-            .sort({ createdAt: -1 })
-            .lean<any[]>();
-
-          for (const cand of candidates) {
-            // Email login allowed for ADMIN or users who haven't finalized their profile yet
-            if (cand.role === "ADMIN" || !cand.profileId) {
-              const matches = await bcrypt.compare(credentials.password, cand.passwordHash);
-              if (matches) {
-                user = cand;
-                break;
-              }
-            }
-          }
-
-          if (!user && candidates.length > 0 && candidates.every(c => c.profileId && c.role !== "ADMIN")) {
-            // All accounts for this email already have a Profile ID
-            throw new Error("PLEASE_USE_PROFILE_ID");
-          }
-        } else {
-          user = await UserModel.findOne({ profileId: identifier.toUpperCase() }).lean<any>();
-        }
-
+        const user = await UserModel.findOne(
+          isEmail ? { email: identifier.toLowerCase() } : { profileId: identifier.toUpperCase() },
+        ).lean<any>();
         if (!user) return null;
+
+        // Email sign-in is reserved for admins — every regular user has a
+        // Profile ID from the moment they register and must use it.
+        if (isEmail && user.role !== "ADMIN") {
+          throw new Error("PLEASE_USE_PROFILE_ID");
+        }
 
         // Block suspended / banned accounts before password check
         if (user.status && user.status !== "ACTIVE") {

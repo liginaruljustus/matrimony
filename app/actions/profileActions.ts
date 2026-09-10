@@ -6,11 +6,8 @@ import { profileSchema, matrimonyProfileSchema } from "@/lib/validators";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ProfileModel, UserModel } from "@/lib/models";
 import { toObjectId } from "@/lib/mongoUtils";
-import { generatePassword, generateProfileId } from "@/lib/profileIdGenerator";
-import { sendCredentialsEmail } from "@/lib/sendCredentialsEmail";
 import { buildFDCard } from "@/lib/cardGenerator";
 import { sendFDCardEmail } from "@/lib/sendFDCardEmail";
-import bcrypt from "bcryptjs";
 
 type ProfileInput = {
   age: number;
@@ -158,52 +155,9 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
     },
   });
 
-  let profileId = user?.profileId;
-
-  // On finalize, assign sequential Profile ID if not already assigned
-  if (finalize && !profileId) {
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const candidate = await generateProfileId(
-        derivedProfileType === "BRIDE" ? "FEMALE" : "MALE",
-        derivedReligion,
-        derivedFamilyClass,
-      );
-      try {
-        await UserModel.findByIdAndUpdate(userId, { $set: { profileId: candidate } });
-        profileId = candidate;
-        break;
-      } catch (updateErr: any) {
-        if (updateErr?.code === 11000 && updateErr?.keyPattern?.profileId) {
-          console.warn(`[finalize] profileId collision (${candidate}), retrying…`);
-          continue;
-        }
-        throw updateErr;
-      }
-    }
-  }
-
-  // Credentials email is sent here — once the user has actually saved their
-  // profile — with derived password and updated passwordHash in database.
-  if (finalize && derivedEmail && derivedPhone && profileId) {
-    const createdAt = user?.createdAt ? new Date(user.createdAt) : new Date();
-    const firstName = userName.split(" ")[0] || "Member";
-    const autoPassword = generatePassword(derivedPhone, createdAt, firstName);
-
-    // Synchronize passwordHash in DB so login with this password is guaranteed
-    try {
-      const passwordHash = await bcrypt.hash(autoPassword, 10);
-      await UserModel.findByIdAndUpdate(userId, { $set: { passwordHash } });
-    } catch (hashErr) {
-      console.error("[finalize] Failed to update passwordHash:", hashErr);
-    }
-
-    try {
-      await sendCredentialsEmail(derivedEmail, userName, profileId, autoPassword);
-      console.log(`[Credentials Email] Sent to ${derivedEmail} for profile ${profileId}`);
-    } catch (err) {
-      console.error("[Credentials Email] Failed to send:", err);
-    }
-  }
+  // Profile ID and password are already assigned at registration — nothing
+  // to generate or re-derive here.
+  const profileId = user?.profileId;
 
   // Profile goes live immediately on finalize — send the FD (full details) card
   if (finalize && derivedEmail && updatedProfile && profileId) {

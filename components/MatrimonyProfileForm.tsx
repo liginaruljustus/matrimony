@@ -6,6 +6,7 @@ import { SearchDropdown } from "@/components/SearchDropdown";
 import { DatePickerSelect } from "@/components/DatePickerSelect";
 import { PhoneInput } from "@/components/PhoneInput";
 import { CASTE_LIST, SUBCASTE_LIST } from "@/lib/casteData";
+import { OCCUPATION_LIST } from "@/lib/occupationData";
 import { DISTRICTS } from "@/lib/districts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { matrimonyProfileSchema } from "@/lib/validators";
@@ -520,7 +521,12 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               </div>
               <div>
                 <label className="label">Current Job *</label>
-                <input {...register("currentJob")} className="input-field" />
+                <select {...register("currentJob")} className="input-field">
+                  <option value="">Select</option>
+                  {OCCUPATION_LIST.map((o) => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                </select>
                 {errors.currentJob && <p className="text-xs text-red-600 mt-1">{errors.currentJob.message}</p>}
               </div>
             </div>
@@ -587,7 +593,18 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               </div>
               <div>
                 <label className="label">Lagnam</label>
-                <input {...register("lagnam")} className="input-field" />
+                <Controller
+                  name="lagnam"
+                  control={control}
+                  render={({ field }) => (
+                    <SearchDropdown
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      options={RASHI_LIST}
+                      placeholder="Search lagnam…"
+                    />
+                  )}
+                />
                 {errors.lagnam && <p className="text-xs text-red-600 mt-1">{errors.lagnam.message}</p>}
               </div>
             </div>

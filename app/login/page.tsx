@@ -31,6 +31,8 @@ function LoginContent() {
         setError("Your account has been permanently banned. Please contact support.");
       } else if (raw.includes("ACCOUNT_INACTIVE")) {
         setError("Your account is inactive. Please contact support.");
+      } else if (raw.includes("PLEASE_USE_PROFILE_ID")) {
+        setError("Please sign in with your Profile ID, not your email — check the credentials email we sent you.");
       } else {
         setError("Invalid Profile ID or password. Please try again.");
       }
