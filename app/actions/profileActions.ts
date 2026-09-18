@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { profileSchema, matrimonyProfileSchema } from "@/lib/validators";
 import { connectToDatabase } from "@/lib/mongodb";
-import { ProfileModel, UserModel } from "@/lib/models";
+import { ProfileModel, UserModel, SettingsModel } from "@/lib/models";
 import { toObjectId } from "@/lib/mongoUtils";
 import { buildFDCard } from "@/lib/cardGenerator";
 import { sendFDCardEmail } from "@/lib/sendFDCardEmail";
@@ -143,6 +143,14 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
   const derivedEmail = user?.email || parsed.data.emailId || "";
   const userName = name || user?.name || "Member";
 
+  // Auto-verify on submit unless the admin has turned "Verification Required"
+  // on in Settings (default: off, i.e. auto-verified) — see Feature Flags.
+  let autoVerified = false;
+  if (finalize) {
+    const settings = await SettingsModel.findOne().select("verificationRequired").lean() as { verificationRequired?: boolean } | null;
+    autoVerified = !(settings?.verificationRequired ?? false);
+  }
+
   // Sync classification fields back to UserModel
   await UserModel.findByIdAndUpdate(userId, {
     $set: {
@@ -152,6 +160,7 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
       religion: derivedReligion,
       ...(derivedPhone ? { phone: derivedPhone } : {}),
       ...(derivedEmail ? { email: derivedEmail } : {}),
+      ...(autoVerified ? { verificationStatus: "VERIFIED" } : {}),
     },
   });
 

@@ -617,7 +617,7 @@ export default function AdminSettingsPage() {
                 checked={settings.verificationRequired}
                 onChange={(v) => set("verificationRequired", v)}
                 label="Verification Required"
-                description="Users must upload verification documents"
+                description="Off (default): profiles are auto-verified as soon as the user submits. On: every profile stays Unverified until an admin manually verifies it."
               />
             </div>
             <div className="pt-3">
