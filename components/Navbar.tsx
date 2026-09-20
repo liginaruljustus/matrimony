@@ -205,7 +205,7 @@ export function Navbar() {
       <div className="flex w-full items-center justify-between px-4 py-3">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-<img src="/logo.jpg" alt="Lura Matrimony Tamil" className="h-10 w-auto mix-blend-multiply" />
+<img src="/logo.jpg" alt="Lura Matrimony Tamil" className="h-12 w-auto sm:h-16 mix-blend-multiply" />
         </Link>
 
         {/* Desktop nav */}

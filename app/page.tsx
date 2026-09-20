@@ -32,7 +32,7 @@ function HomeNavbar() {
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#7a1f2b]/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-<img src="/logo.jpg" alt="Lura Matrimony Tamil" className="h-11 w-auto rounded-lg bg-white p-0.5" />
+<img src="/logo.jpg" alt="Lura Matrimony Tamil" className="h-12 w-auto sm:h-16 rounded-lg bg-white p-0.5" />
         </Link>
 
         {/* Desktop nav links */}
