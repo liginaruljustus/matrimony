@@ -15,13 +15,15 @@ export function MobileHeroSection() {
           இந்தியாவைச் சார்ந்த  தமிழர்களுக்கான திருமண தகவல் மையம்
         </p>
 
-        <h1 className="text-5xl md:text-7xl font-extrabold leading-tight text-white">
-          குடும்பம் பேசும்
-          <span className="block text-accent mt-2">திருமண மேடை</span>
+        <p className="inline-block rounded-full bg-accent px-5 py-1.5 text-sm font-extrabold text-primary">100% Free for Brides</p>
+
+        <h1 className="text-4xl md:text-6xl font-extrabold leading-tight text-white">
+          Lura-வின் துணையுடன்
+          <span className="block text-accent mt-2">உங்கள் வாழ்க்கைத் துணை.</span>
         </h1>
 
         <p className="text-lg md:text-xl text-white/80 leading-relaxed max-w-xl mx-auto">
-          Verified profiles, district-based search, horoscope support, and a family-first experience.
+          Verified profiles, District, Age and Caste based search, and a family-first experience.
         </p>
 
         {/* CTA Buttons */}
@@ -40,21 +42,6 @@ export function MobileHeroSection() {
           </Link>
         </div>
 
-        {/* Stats row - repositioned to bottom */}
-        <div className="relative pt-8 grid grid-cols-3 gap-8 divide-x divide-white/20 border-t border-white/20">
-          <div className="text-center">
-            <p className="text-3xl md:text-4xl font-extrabold text-accent">5,000+</p>
-            <p className="mt-2 text-xs md:text-sm font-medium text-white/70">Active Profiles</p>
-          </div>
-          <div className="px-8 text-center">
-            <p className="text-3xl md:text-4xl font-extrabold text-accent">38</p>
-            <p className="mt-2 text-xs md:text-sm font-medium text-white/70">Districts</p>
-          </div>
-          <div className="pl-8 text-center">
-            <p className="text-3xl md:text-4xl font-extrabold text-accent">200+</p>
-            <p className="mt-2 text-xs md:text-sm font-medium text-white/70">Marriages</p>
-          </div>
-        </div>
       </div>
 
       {/* Scroll indicator */}

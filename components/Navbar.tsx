@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useUIStore } from "@/store/uiStore";
-import { Heart, Moon, Sun, Menu, X, Bell, CheckCheck, ExternalLink } from "lucide-react";
+import { Moon, Sun, Menu, X, Bell, CheckCheck, ExternalLink } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { BottomNavbar } from "@/components/BottomNavbar";
@@ -205,8 +205,7 @@ export function Navbar() {
       <div className="flex w-full items-center justify-between px-4 py-3">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <Heart size={22} className="fill-current text-[#7a1f2b]" />
-          <span className="text-lg font-bold text-[#7a1f2b]">Lura Matrimony</span>
+<img src="/logo.jpg" alt="Lura Matrimony Tamil" className="h-10 w-auto mix-blend-multiply" />
         </Link>
 
         {/* Desktop nav */}

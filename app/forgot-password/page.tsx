@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Heart, CheckCircle, AlertCircle, ArrowLeft, KeyRound } from "lucide-react";
+import { CheckCircle, AlertCircle, ArrowLeft, KeyRound } from "lucide-react";
 
 type Step = "form" | "done";
 
@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
 
           <div className="mt-5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-left text-xs text-blue-700">
             <p className="font-semibold">Check your inbox</p>
-            <p className="mt-0.5">Open the email from Lura Matrimony to find your Profile ID and password.</p>
+            <p className="mt-0.5">Open the email from Lura Tamil Matrimony to find your Profile ID and password.</p>
           </div>
 
           <Link
@@ -69,9 +69,7 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#7a1f2b] shadow-lg">
-            <Heart size={32} className="fill-white text-white" />
-          </div>
+          <img src="/logo.jpg" alt="Lura Matrimony Tamil" className="mx-auto h-28 w-auto mix-blend-multiply" />
           <h1 className="mt-4 text-2xl font-bold text-[#7a1f2b]">Resend Credentials</h1>
           <p className="mt-1 text-sm text-neutral-500">
             Enter your Profile ID and we&apos;ll send your login details to your registered email.
@@ -133,7 +131,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         <p className="mt-6 text-center font-serif text-xs italic text-neutral-400">
-          &ldquo;குடும்பம் பேசும் திருமண மேடை&rdquo;
+          &ldquo;Lura-வின் துணையுடன் உங்கள் வாழ்க்கைத் துணை.&rdquo;
         </p>
       </div>
     </div>

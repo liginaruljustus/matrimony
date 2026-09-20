@@ -25,9 +25,6 @@ function HomeNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-    { href: "/profiles",  label: "Profiles" },
-    { href: "/matches",   label: "Matches" },
-    { href: "/chat",      label: "Chat" },
     ...(session?.user ? [{ href: "/dashboard", label: "Dashboard" }] : []),
   ];
 
@@ -35,8 +32,7 @@ function HomeNavbar() {
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#7a1f2b]/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <Heart size={22} className="fill-[#d4af37] text-[#d4af37]" />
-          <span className="text-lg font-bold text-white">Lura Matrimony</span>
+<img src="/logo.jpg" alt="Lura Matrimony Tamil" className="h-11 w-auto rounded-lg bg-white p-0.5" />
         </Link>
 
         {/* Desktop nav links */}
@@ -105,16 +101,9 @@ function HomeNavbar() {
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-const stats = [
-  { value: "5,000+", label: "Active Profiles" },
-  { value: "38",     label: "Districts" },
-  { value: "200+",   label: "Marriages" },
-  { value: "100%",   label: "Verified" },
-];
-
 const steps = [
-  { step: "01", icon: PenTool,      label: "Register Free",    desc: "Create your profile in minutes with family details and horoscope." },
-  { step: "02", icon: Search,       label: "Browse Profiles",  desc: "Filter by district, community, age, education and more." },
+  { step: "01", icon: PenTool,      label: "Register Free",    desc: "Create your profile in minutes with your family details." },
+  { step: "02", icon: Search,       label: "Browse Profiles",  desc: "District, Age and Caste based search." },
   { step: "03", icon: MessageSquare,label: "Connect",          desc: "Chat directly and securely with families you like." },
 ];
 
@@ -127,7 +116,7 @@ const trustItems = [
 const testimonials = [
   { name: "Priya & Karthik", district: "Chennai", text: "We found each other through Lura within 3 months. The family-first approach made all the difference.", stars: 5 },
   { name: "Meena & Suresh",  district: "Madurai", text: "Verified profiles and district filters made it easy to find a compatible match close to home.", stars: 5 },
-  { name: "Kavya & Rajan",   district: "Coimbatore", text: "The horoscope matching feature impressed our families. Highly recommended!", stars: 5 },
+  { name: "Kavya & Rajan",   district: "Coimbatore", text: "The family-first approach impressed our families. Highly recommended!", stars: 5 },
 ];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -151,14 +140,18 @@ export default function HomePage() {
             </span>
           </div>
 
+          <p className="mb-4 inline-block rounded-full bg-[#d4af37] px-5 py-1.5 text-sm font-extrabold text-[#7a1f2b]">
+            100% Free for Brides
+          </p>
+
           {/* Heading */}
-          <h1 className="text-4xl font-extrabold leading-tight text-white sm:text-5xl md:text-7xl">
-            குடும்பம் பேசும்
-            <span className="mt-2 block text-[#d4af37]">திருமண மேடை</span>
+          <h1 className="text-3xl font-extrabold leading-tight text-white sm:text-4xl md:text-6xl">
+            Lura-வின் துணையுடன்
+            <span className="mt-2 block text-[#d4af37]">உங்கள் வாழ்க்கைத் துணை.</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-base text-white/75 sm:text-lg md:text-xl">
-            Verified profiles, district-based search, horoscope support, and a
+            Verified profiles, District, Age and Caste based search, and a
             family-first matrimony experience across Tamil Nadu.
           </p>
 
@@ -180,15 +173,6 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Stats */}
-          <div className="mt-16 grid grid-cols-2 gap-6 border-t border-white/10 pt-10 sm:grid-cols-4">
-            {stats.map(({ value, label }) => (
-              <div key={label} className="text-center">
-                <p className="text-3xl font-extrabold text-[#d4af37] md:text-4xl">{value}</p>
-                <p className="mt-1 text-sm text-white/60">{label}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -288,7 +272,7 @@ export default function HomePage() {
             Ready to Find Your Match?
           </h2>
           <p className="mt-4 text-lg text-white/70">
-            Join thousands of Tamil families. Register free today and start your journey.
+            Join Lura&apos;s Lakhs of Tamil Families. Register free today and start your journey.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
@@ -313,19 +297,16 @@ export default function HomePage() {
         <div className="mx-auto max-w-5xl">
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
-              <Heart size={20} className="fill-[#d4af37] text-[#d4af37]" />
-              <span className="text-base font-bold text-white">Lura Matrimony</span>
+<img src="/logo.jpg" alt="Lura Matrimony Tamil" className="h-14 w-auto rounded-lg bg-white p-0.5" />
             </div>
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/50">
-              <Link href="/profiles" className="hover:text-white transition-colors">Profiles</Link>
-              <Link href="/matches"  className="hover:text-white transition-colors">Matches</Link>
               <Link href="/register" className="hover:text-white transition-colors">Register</Link>
               <Link href="/login"    className="hover:text-white transition-colors">Login</Link>
             </div>
-            <p className="text-xs text-white/30">© 2026 Lura Matrimony. All rights reserved.</p>
+            <p className="text-xs text-white/30">© 2026 Lura Tamil Matrimony. All rights reserved.</p>
           </div>
           <p className="mt-6 text-center font-serif text-sm italic text-white/30">
-            &ldquo;குடும்பம் பேசும் திருமண மேடை&rdquo;
+            &ldquo;Lura-வின் துணையுடன் உங்கள் வாழ்க்கைத் துணை.&rdquo;
           </p>
         </div>
       </footer>

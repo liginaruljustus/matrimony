@@ -3,7 +3,7 @@ import { SettingsModel } from "@/lib/models";
 
 const DEFAULTS = {
   pdfDownloadEnabled: true,
-  pdfCompanyName: "Lura Matrimony",
+  pdfCompanyName: "Lura Tamil Matrimony",
   pdfFooterText: "Confidential — For Family Use Only",
   pdfShowContactDetails: true,
   pdfShowAstrology: true,

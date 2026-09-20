@@ -1,13 +1,12 @@
 import Link from "next/link";
-import { Heart, Home, Search } from "lucide-react";
+import { Home, Search } from "lucide-react";
 
 export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#faf7f2] dark:bg-neutral-50 px-4 text-center">
       {/* Logo */}
       <div className="mb-6 flex items-center gap-2">
-        <Heart size={28} className="fill-[#7a1f2b] text-[#7a1f2b]" />
-        <span className="text-xl font-bold text-[#7a1f2b]">Lura Matrimony</span>
+<img src="/logo.jpg" alt="Lura Matrimony Tamil" className="h-20 w-auto mix-blend-multiply" />
       </div>
 
       {/* 404 */}
@@ -43,7 +42,7 @@ export default function NotFound() {
 
       {/* Decorative */}
       <p className="mt-16 font-serif text-sm italic text-neutral-300">
-        &ldquo;குடும்பம் பேசும் திருமண மேடை&rdquo;
+        &ldquo;Lura-வின் துணையுடன் உங்கள் வாழ்க்கைத் துணை.&rdquo;
       </p>
     </div>
   );

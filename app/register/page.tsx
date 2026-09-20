@@ -6,7 +6,7 @@ import { sendOtpSchema } from "@/lib/validators";
 import Link from "next/link";
 import { useState, useRef } from "react";
 import { signIn } from "next-auth/react";
-import { AlertCircle, Heart, Phone } from "lucide-react";
+import { AlertCircle, Phone } from "lucide-react";
 
 type RegisterForm = {
   name: string;
@@ -129,11 +129,9 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="mb-8 text-center">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#7a1f2b] shadow-lg">
-            <Heart size={32} className="fill-white text-white" />
-          </div>
+          <img src="/logo.jpg" alt="Lura Matrimony Tamil" className="mx-auto h-28 w-auto mix-blend-multiply" />
           <h1 className="mt-4 text-3xl font-bold text-[#7a1f2b]">Create Account</h1>
-          <p className="mt-1 text-sm text-neutral-500">Join thousands of Tamil families on Lura</p>
+          <p className="mt-1 text-sm text-neutral-500">Join Lura&apos;s Lakhs of Tamil Families</p>
         </div>
 
         {/* Form */}
@@ -246,7 +244,7 @@ export default function RegisterPage() {
         </div>
 
         <p className="mt-6 text-center font-serif text-xs italic text-neutral-400">
-          &ldquo;குடும்பம் பேசும் திருமண மேடை&rdquo;
+          &ldquo;Lura-வின் துணையுடன் உங்கள் வாழ்க்கைத் துணை.&rdquo;
         </p>
       </div>
     </div>

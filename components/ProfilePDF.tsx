@@ -270,7 +270,7 @@ export type PdfSettings = {
 };
 
 const PDF_DEFAULTS: PdfSettings = {
-  pdfCompanyName: "Lura Matrimony",
+  pdfCompanyName: "Lura Tamil Matrimony",
   pdfFooterText: "Confidential — For Family Use Only",
   pdfShowContactDetails: true,
   pdfShowAstrology: true,

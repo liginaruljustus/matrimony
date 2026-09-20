@@ -4,7 +4,7 @@ import { signIn } from "next-auth/react";
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Heart, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 
 function LoginContent() {
   const router = useRouter();
@@ -51,11 +51,9 @@ function LoginContent() {
 
         {/* Brand mark */}
         <div className="mb-8 text-center">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-card-md">
-            <Heart size={32} className="text-white fill-white" />
-          </div>
+          <img src="/logo.jpg" alt="Lura Matrimony Tamil" className="mx-auto h-28 w-auto mix-blend-multiply" />
           <h1 className="mt-4 text-3xl font-bold text-primary">Welcome Back</h1>
-          <p className="mt-1.5 text-sm text-[#7c6b5e]">Sign in to your Lura Matrimony account</p>
+          <p className="mt-1.5 text-sm text-[#7c6b5e]">Sign in to your Lura Tamil Matrimony account</p>
         </div>
 
         {/* Form card */}
@@ -128,7 +126,7 @@ function LoginContent() {
 
         {/* Decorative tagline */}
         <p className="mt-6 text-center font-serif text-xs italic text-[#b09880]">
-          &ldquo;குடும்பம் பேசும் திருமண மேடை&rdquo;
+          &ldquo;Lura-வின் துணையுடன் உங்கள் வாழ்க்கைத் துணை.&rdquo;
         </p>
       </div>
     </div>

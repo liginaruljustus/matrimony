@@ -63,9 +63,9 @@ async function sendCredentialsEmail(
   const loginUrl  = `${process.env.NEXTAUTH_URL ?? "https://luramatrimony.com"}/login`;
 
   await sendMailWithRetry({
-    from:    process.env.SMTP_FROM ?? `"Lura Matrimony" <${process.env.SMTP_USER}>`,
+    from:    process.env.SMTP_FROM ?? `"Lura Tamil Matrimony" <${process.env.SMTP_USER}>`,
     to:      email,
-    subject: "Lura Matrimony — Your Login Credentials",
+    subject: "Lura Tamil Matrimony — Your Login Credentials",
     html: `
       <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#faf7f2;border-radius:16px;">
         <div style="text-align:center;margin-bottom:24px;">
@@ -98,10 +98,10 @@ async function sendCredentialsEmail(
 
         <hr style="border:none;border-top:1px solid #e5e5e5;margin:24px 0;" />
         <p style="color:#bbb;font-size:11px;text-align:center;">
-          © ${new Date().getFullYear()} Lura Matrimony · குடும்பம் பேசும் திருமண மேடை
+          © ${new Date().getFullYear()} Lura Tamil Matrimony · Lura-வின் துணையுடன் உங்கள் வாழ்க்கைத் துணை.
         </p>
       </div>
     `,
-    text: `Hi ${firstName},\n\nYour login credentials:\n\nProfile ID: ${profileId}\nPassword:   ${autoPassword}\n\nSign in at: ${loginUrl}\n\n© ${new Date().getFullYear()} Lura Matrimony`,
+    text: `Hi ${firstName},\n\nYour login credentials:\n\nProfile ID: ${profileId}\nPassword:   ${autoPassword}\n\nSign in at: ${loginUrl}\n\n© ${new Date().getFullYear()} Lura Tamil Matrimony`,
   }, "Resend Credentials");
 }
