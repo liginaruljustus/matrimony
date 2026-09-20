@@ -193,11 +193,13 @@ export function Navbar() {
     { href: "/dashboard", label: "Dashboard" },
   ];
 
-  const navLinks = [
-    ...(isGroom ? groomLinks : isBride ? brideLinks : []),
-    ...commonLinks,
-    ...(isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
-  ];
+  // Admins already have the admin sidebar (Dashboard, etc.), so no top links.
+  const navLinks = isAdmin
+    ? []
+    : [
+        ...(isGroom ? groomLinks : isBride ? brideLinks : []),
+        ...commonLinks,
+      ];
 
   return (
     <>
@@ -255,7 +257,7 @@ export function Navbar() {
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileOpen((v) => !v)}
-            className="rounded-lg border border-neutral-200 p-2 hover:bg-neutral-50 transition-colors md:hidden"
+            className={`rounded-lg border border-neutral-200 p-2 hover:bg-neutral-50 transition-colors md:hidden ${navLinks.length === 0 ? "hidden" : ""}`}
           >
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
