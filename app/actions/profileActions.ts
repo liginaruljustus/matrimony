@@ -163,6 +163,13 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
   // Auto-verify on submit unless "Verification Required" is on.
   const autoVerified = finalize && !verificationRequired;
 
+  // Browse/search filter on the Profile's own profileType/familyClass, so
+  // keep them in sync with the user (otherwise the profile is never listed).
+  await ProfileModel.updateOne(
+    { userId },
+    { $set: { profileType: derivedProfileType, familyClass: derivedFamilyClass } },
+  );
+
   // Sync classification fields back to UserModel
   await UserModel.findByIdAndUpdate(userId, {
     $set: {

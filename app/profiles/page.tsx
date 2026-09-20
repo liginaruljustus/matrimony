@@ -280,19 +280,12 @@ function MDProfileCard({
     <div className={`group relative flex flex-col overflow-hidden rounded-3xl border-2 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ${cardStyle}`}>
       {/* Photo */}
       <div className={`relative h-52 overflow-hidden ${FAMILY_CLASS_PLACEHOLDER_BG[profile.familyClass] ?? FAMILY_CLASS_PLACEHOLDER_FALLBACK}`}>
-        {profile.photo ? (
-          <img
-            src={profile.photo}
-            alt={profile.profileId}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/70 dark:bg-neutral-100/70 text-3xl font-bold text-[#7a1f2b] ring-4 ring-[#d4af37]/40 shadow-md">
-              {profile.profileId.charAt(0)}
-            </div>
+        {/* Photos are intentionally not shown in Browse — initial only */}
+        <div className="flex h-full items-center justify-center">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/70 dark:bg-neutral-100/70 text-3xl font-bold text-[#7a1f2b] ring-4 ring-[#d4af37]/40 shadow-md">
+            {profile.profileId.charAt(0)}
           </div>
-        )}
+        </div>
         {/* Bottom fade for legibility */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/25 to-transparent" />
 
