@@ -609,7 +609,7 @@ export default function AdminSettingsPage() {
                 checked={settings.profileApprovalRequired}
                 onChange={(v) => set("profileApprovalRequired", v)}
                 label="Profile Approval Required"
-                description="Profiles must be reviewed by admin before going live"
+                description="Off (default): a profile is listed in Browse as soon as the user submits it. On: it waits in Pending until an admin approves it."
               />
             </div>
             <div className="pt-3">

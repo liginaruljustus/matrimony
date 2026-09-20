@@ -105,17 +105,34 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
   // Strip photos (managed via /api/photos) and name (lives on UserModel, not ProfileModel)
   const { photos: _photos, name, ...profileFields } = parsed.data as any;
 
-  // On finalize: permanently lock the profile and it goes live immediately
-  // (APPROVED) — no manual admin approval step. Admin can still review and
-  // flag/reject afterward via the admin panel if needed.
+  // Feature flags (Admin > Settings). Both default to off = fully automatic.
+  let profileApprovalRequired = false;
+  let verificationRequired = false;
+  if (finalize) {
+    const settings = await SettingsModel.findOne()
+      .select("profileApprovalRequired verificationRequired")
+      .lean() as { profileApprovalRequired?: boolean; verificationRequired?: boolean } | null;
+    profileApprovalRequired = settings?.profileApprovalRequired ?? false;
+    verificationRequired = settings?.verificationRequired ?? false;
+  }
+  // Goes live (listed in Browse) immediately unless the admin turned approval on.
+  const goesLive = finalize && !profileApprovalRequired;
+
+  // On finalize: permanently lock the profile. Unless "Profile Approval
+  // Required" is on, it is listed immediately (APPROVED) with no admin step;
+  // admin can still flag/reject afterward.
   const lockFields = finalize
     ? {
         isLocked: true,
         lockedAt: new Date(),
-        profileStatus: "APPROVED",
-        approvalDate: new Date(),
-        generatedCards: { MD: true, AD: true, CD: true, FD: true },
-        cardsGeneratedAt: new Date(),
+        ...(goesLive
+          ? {
+              profileStatus: "APPROVED",
+              approvalDate: new Date(),
+              generatedCards: { MD: true, AD: true, CD: true, FD: true },
+              cardsGeneratedAt: new Date(),
+            }
+          : { profileStatus: "PENDING_APPROVAL" }),
       }
     : {};
 
@@ -143,13 +160,8 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
   const derivedEmail = user?.email || parsed.data.emailId || "";
   const userName = name || user?.name || "Member";
 
-  // Auto-verify on submit unless the admin has turned "Verification Required"
-  // on in Settings (default: off, i.e. auto-verified) — see Feature Flags.
-  let autoVerified = false;
-  if (finalize) {
-    const settings = await SettingsModel.findOne().select("verificationRequired").lean() as { verificationRequired?: boolean } | null;
-    autoVerified = !(settings?.verificationRequired ?? false);
-  }
+  // Auto-verify on submit unless "Verification Required" is on.
+  const autoVerified = finalize && !verificationRequired;
 
   // Sync classification fields back to UserModel
   await UserModel.findByIdAndUpdate(userId, {
@@ -168,8 +180,8 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
   // to generate or re-derive here.
   const profileId = user?.profileId;
 
-  // Profile goes live immediately on finalize — send the FD (full details) card
-  if (finalize && derivedEmail && updatedProfile && profileId) {
+  // Profile is live — send the FD (full details) card
+  if (goesLive && derivedEmail && updatedProfile && profileId) {
     try {
       const fd = buildFDCard({ ...(user ?? {}), name: userName, email: derivedEmail, profileId }, updatedProfile);
       await sendFDCardEmail(derivedEmail, userName, fd);
