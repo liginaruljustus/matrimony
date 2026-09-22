@@ -51,7 +51,6 @@ export default function ProfileDetailPage() {
 
   const [profile, setProfile]     = useState<PublicProfile | null>(null);
   const [loading, setLoading]     = useState(true);
-  const [activePhoto, setActivePhoto] = useState(0);
   const [isFavorited, setIsFavorited] = useState(false);
 
   // Redirect unauthenticated visitors directly to login (not via /profiles)
@@ -121,7 +120,6 @@ export default function ProfileDetailPage() {
 
   const isOwn  = session?.user?.id === profile.userId;
   const frozen = profile.isFrozen || profile.isAutoFrozen;
-  const photos = profile.photos;
 
   return (
     <div className="bg-[#faf7f2] dark:bg-neutral-100 min-h-screen">
@@ -143,36 +141,13 @@ export default function ProfileDetailPage() {
         </div>
       )}
 
-      {/* Photo gallery */}
+      {/* Photo placeholder — never shown here; photos only appear in the exported PDF */}
       <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
-        {photos[activePhoto] ? (
-          <img
-            src={photos[activePhoto]}
-            alt={profile.profileId}
-            className="h-80 w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-80 items-center justify-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#7a1f2b]/20 text-4xl font-bold text-[#7a1f2b]">
-              {profile.profileId.charAt(0)}
-            </div>
+        <div className="flex h-80 items-center justify-center">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#7a1f2b]/20 text-4xl font-bold text-[#7a1f2b]">
+            {profile.profileId.charAt(0)}
           </div>
-        )}
-        {photos.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto p-3">
-            {photos.map((src, i) => (
-              <button
-                key={src}
-                onClick={() => setActivePhoto(i)}
-                className={`h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 transition ${
-                  i === activePhoto ? "border-[#7a1f2b]" : "border-transparent opacity-60"
-                }`}
-              >
-                <img src={src} alt="" className="h-full w-full object-cover" />
-              </button>
-            ))}
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Name + badges + CTA */}
