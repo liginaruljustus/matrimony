@@ -8,6 +8,9 @@
  *   transactionId: string,      // UPI/bank transaction ref
  *   paymentMethod: string,      // "gpay" | "upi" | "bank"
  *   totalAmount: number,
+ *   payerPhone: string,         // phone/UPI number the groom paid from
+ *   paymentDate: string,        // date they say they paid (YYYY-MM-DD)
+ *   reportedAmount: number,     // amount they say they sent (for admin cross-check only)
  * }
  *
  * Flow:
@@ -30,17 +33,26 @@ export async function POST(req: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { favoriteIds, transactionId, paymentMethod, totalAmount } = await req.json();
+    const { favoriteIds, transactionId, paymentMethod, totalAmount, payerPhone, paymentDate, reportedAmount } = await req.json();
     if (!Array.isArray(favoriteIds) || !favoriteIds.length) {
       return Response.json({ error: "favoriteIds required" }, { status: 400 });
     }
     if (!transactionId?.trim()) {
       return Response.json({ error: "transactionId required" }, { status: 400 });
     }
+    if (!payerPhone?.trim()) {
+      return Response.json({ error: "payerPhone required" }, { status: 400 });
+    }
+
+    // Client-supplied payment date — must be a valid date, not in the future.
+    const now = new Date();
+    let paidOn = now;
+    if (paymentDate) {
+      const parsed = new Date(paymentDate);
+      if (!isNaN(parsed.getTime()) && parsed.getTime() <= now.getTime()) paidOn = parsed;
+    }
 
     await connectToDatabase();
-
-    const now = new Date();
 
     // Validate favorites
     const favs = await FavoriteModel.find({
@@ -95,7 +107,9 @@ export async function POST(req: Request) {
       status:        "PENDING",
       transactionId: transactionId.trim(),
       paymentMethod: paymentMethod ?? "upi",
-      paymentDate:   now,
+      payerPhone:    payerPhone.trim(),
+      reportedAmount: typeof reportedAmount === "number" && reportedAmount > 0 ? reportedAmount : undefined,
+      paymentDate:   paidOn,
       approvalStatus:"PENDING_ADMIN_REVIEW",
     });
 

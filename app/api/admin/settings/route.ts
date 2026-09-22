@@ -14,6 +14,7 @@ const DEFAULTS = {
   contactDetailsGating: true,
   paymentRequired: true,
   upiId: "luramatrimony@upi",
+  adminPhone: "",
   bankName: "State Bank of India",
   bankAccountNo: "",
   bankIfsc: "",
@@ -59,6 +60,7 @@ export async function GET() {
       paymentRequired:       settings.paymentRequired       ?? true,
       verificationRequired:  settings.verificationRequired  ?? false,
       upiId:                 settings.upiId                 ?? DEFAULTS.upiId,
+      adminPhone:            settings.adminPhone            ?? DEFAULTS.adminPhone,
       bankName:              settings.bankName              ?? DEFAULTS.bankName,
       bankAccountNo:         settings.bankAccountNo         ?? "",
       bankIfsc:              settings.bankIfsc              ?? "",
@@ -120,6 +122,7 @@ export async function PUT(request: Request) {
     }
     if ("maintenanceMessage" in body) allowed.maintenanceMessage = String(body.maintenanceMessage ?? "");
     if ("upiId"             in body) allowed.upiId             = String(body.upiId ?? "");
+    if ("adminPhone"        in body) allowed.adminPhone        = String(body.adminPhone ?? "").slice(0, 20);
     if ("bankName"          in body) allowed.bankName          = String(body.bankName ?? "");
     if ("bankAccountNo"     in body) allowed.bankAccountNo     = String(body.bankAccountNo ?? "");
     if ("bankIfsc"          in body) allowed.bankIfsc          = String(body.bankIfsc ?? "");

@@ -61,8 +61,8 @@ export function BottomNavbar() {
   ];
   const groomMoreLinks = [
     { href: "/favorites",       label: "Favourites",     icon: Star },
-    { href: "/payment/first",   label: "1st Payment",    icon: Wallet },
-    { href: "/payment/second",  label: "2nd Payment",    icon: Wallet },
+    { href: "/payment/first",   label: "Initial Payment", icon: Wallet },
+    { href: "/payment/second",  label: "Final Payment",   icon: Wallet },
     { href: "/payment/history", label: "Payment History", icon: CreditCard },
     { href: "/contact-details", label: "Contacts",       icon: Phone },
     { href: "/settings",        label: "Settings",       icon: Settings },

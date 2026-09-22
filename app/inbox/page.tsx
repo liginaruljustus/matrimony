@@ -417,7 +417,7 @@ export default function InboxPage() {
                     {/* Inline 2nd payment form */}
                     {isPayingThis && (
                       <div className="mt-4 rounded-xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-4">
-                        <p className="mb-1 text-sm font-semibold text-neutral-800 dark:text-neutral-900">2nd Payment</p>
+                        <p className="mb-1 text-sm font-semibold text-neutral-800 dark:text-neutral-900">Final Payment</p>
                         <div className="mb-3 rounded-lg bg-[#faf7f2] dark:bg-neutral-200 px-3 py-2">
                           <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">Amount Due</p>
                           <p className="text-lg font-extrabold text-[#7a1f2b]">

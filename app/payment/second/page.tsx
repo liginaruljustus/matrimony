@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -13,6 +13,7 @@ type Method = "gpay" | "upi" | "bank";
 
 type PaymentDetails = {
   upiId: string;
+  adminPhone: string;
   bankName: string;
   bankAccountNo: string;
   bankIfsc: string;
@@ -29,6 +30,7 @@ type EligibleFav = {
 
 const DETAIL_DEFAULTS: PaymentDetails = {
   upiId: "luramatrimony@upi",
+  adminPhone: "",
   bankName: "State Bank of India",
   bankAccountNo: "",
   bankIfsc: "",
@@ -46,6 +48,10 @@ function SecondPaymentContent() {
 
   const [method, setMethod]         = useState<Method>("gpay");
   const [txnId, setTxnId]           = useState("");
+  const [payerPhone, setPayerPhone] = useState("");
+  const [payDate, setPayDate]       = useState(() => new Date().toISOString().slice(0, 10));
+  const [paidAmount, setPaidAmount] = useState("");
+  const amountTouchedRef            = useRef(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted]   = useState(false);
   const [error, setError]           = useState("");
@@ -64,12 +70,15 @@ function SecondPaymentContent() {
         if (d) {
           setDetails({
             upiId:             d.upiId             ?? DETAIL_DEFAULTS.upiId,
+            adminPhone:        d.adminPhone         ?? DETAIL_DEFAULTS.adminPhone,
             bankName:          d.bankName          ?? DETAIL_DEFAULTS.bankName,
             bankAccountNo:     d.bankAccountNo     ?? DETAIL_DEFAULTS.bankAccountNo,
             bankIfsc:          d.bankIfsc          ?? DETAIL_DEFAULTS.bankIfsc,
             bankAccountHolder: d.bankAccountHolder ?? DETAIL_DEFAULTS.bankAccountHolder,
           });
           setPaymentAmt(d.secondPaymentAmounts ?? DEFAULT_PAYMENT_AMT);
+          // Fixed to the admin's configured number — the field is disabled, not user-editable.
+          if (d.adminPhone) setPayerPhone(d.adminPhone);
         }
       })
       .catch(() => {});
@@ -112,6 +121,13 @@ function SecondPaymentContent() {
 
   const selected = eligible.find((f) => f.id === selectedId) ?? null;
 
+  // Pre-fill the "amount paid" field once a profile (and its due amount) is selected,
+  // and keep it in sync (e.g. once /api/settings/payment resolves and recalculates the
+  // fee) while the groom hasn't touched it.
+  useEffect(() => {
+    if (selected && !amountTouchedRef.current) setPaidAmount(String(selected.amount));
+  }, [selected?.id, selected?.amount]);
+
   const copy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
     setCopied(key);
@@ -120,7 +136,10 @@ function SecondPaymentContent() {
 
   const handleSubmit = async () => {
     if (!selected) return;
-    if (!txnId.trim()) { setError("Please enter your transaction reference ID"); return; }
+    if (!payerPhone.trim())      { setError("Payment phone number not configured — contact admin"); return; }
+    if (!payDate)                { setError("Please select the payment date"); return; }
+    if (!paidAmount || Number(paidAmount) <= 0) { setError("Please enter the amount you paid"); return; }
+    if (!txnId.trim())           { setError("Please enter your transaction reference ID"); return; }
     setSubmitting(true);
     setError("");
     try {
@@ -131,6 +150,9 @@ function SecondPaymentContent() {
           favoriteId:    selected.id,
           transactionId: txnId.trim(),
           paymentMethod: method,
+          payerPhone:     payerPhone.trim(),
+          paymentDate:    payDate,
+          reportedAmount: Number(paidAmount),
         }),
       });
       const data = await res.json();
@@ -190,7 +212,7 @@ function SecondPaymentContent() {
           Back to Inbox
         </Link>
 
-        <h1 className="text-2xl font-bold text-[#7a1f2b]">2nd Payment</h1>
+        <h1 className="text-2xl font-bold text-[#7a1f2b]">Final Payment</h1>
         <p className="mt-1 text-sm text-neutral-500">
           Unlock contact details — pay for one profile at a time
         </p>
@@ -244,14 +266,14 @@ function SecondPaymentContent() {
     <div className="mx-auto max-w-2xl px-4 py-8">
       {/* Back */}
       <button
-        onClick={() => { setSelectedId(""); setError(""); setTxnId(""); }}
+        onClick={() => { setSelectedId(""); setError(""); setTxnId(""); setPaidAmount(""); amountTouchedRef.current = false; }}
         className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-neutral-500 hover:text-neutral-700"
       >
         <ArrowLeft size={15} />
         {eligible.length > 1 ? "Choose a different profile" : "Back to Inbox"}
       </button>
 
-      <h1 className="text-2xl font-bold text-[#7a1f2b]">2nd Payment</h1>
+      <h1 className="text-2xl font-bold text-[#7a1f2b]">Final Payment</h1>
       <p className="mt-1 text-sm text-neutral-500">
         Unlock contact details for <strong>{selected.name}</strong> ({selected.profileId})
       </p>
@@ -326,6 +348,51 @@ function SecondPaymentContent() {
         )}
       </div>
 
+      {/* Payer phone / GPay number — fixed to the admin-configured number, not user-editable */}
+      <div className="mt-5">
+        <label className="mb-1.5 block text-sm font-semibold text-neutral-700">
+          Phone / GPay Number
+        </label>
+        <input
+          type="tel"
+          value={payerPhone}
+          disabled
+          placeholder="Set by admin in Settings"
+          className="w-full cursor-not-allowed rounded-xl border border-neutral-300 bg-neutral-100 px-4 py-3 text-sm text-neutral-500"
+        />
+        <p className="mt-1 text-xs text-neutral-400">
+          {payerPhone ? "Set by admin — send your payment from this number." : "Admin hasn't set a phone number yet."}
+        </p>
+      </div>
+
+      {/* Payment date + amount paid */}
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold text-neutral-700">
+            Payment Date *
+          </label>
+          <input
+            type="date"
+            value={payDate}
+            max={new Date().toISOString().slice(0, 10)}
+            onChange={(e) => setPayDate(e.target.value)}
+            className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/20"
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold text-neutral-700">
+            Amount Paid (₹) *
+          </label>
+          <input
+            type="number"
+            min={1}
+            value={paidAmount}
+            onChange={(e) => { amountTouchedRef.current = true; setPaidAmount(e.target.value); }}
+            className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/20"
+          />
+        </div>
+      </div>
+
       {/* Transaction ID input */}
       <div className="mt-5">
         <label className="mb-1.5 block text-sm font-semibold text-neutral-700">
@@ -355,7 +422,7 @@ function SecondPaymentContent() {
 
       <button
         onClick={handleSubmit}
-        disabled={submitting || !txnId.trim()}
+        disabled={submitting || !txnId.trim() || !payerPhone.trim() || !payDate || !paidAmount}
         className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#7a1f2b] py-3.5 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors disabled:opacity-50"
       >
         <CreditCard size={16} />

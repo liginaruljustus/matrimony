@@ -7,6 +7,9 @@
  *   favoriteId: string,      // FavoriteModel _id (single profile)
  *   transactionId: string,
  *   paymentMethod: string,
+ *   payerPhone: string,      // phone/UPI number the groom paid from
+ *   paymentDate: string,     // date they say they paid (YYYY-MM-DD)
+ *   reportedAmount: number,  // amount they say they sent (for admin cross-check only)
  * }
  *
  * Rules:
@@ -31,9 +34,18 @@ export async function POST(req: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { favoriteId, transactionId, paymentMethod } = await req.json();
+    const { favoriteId, transactionId, paymentMethod, payerPhone, paymentDate, reportedAmount } = await req.json();
     if (!favoriteId) return Response.json({ error: "favoriteId required" }, { status: 400 });
     if (!transactionId?.trim()) return Response.json({ error: "transactionId required" }, { status: 400 });
+    if (!payerPhone?.trim()) return Response.json({ error: "payerPhone required" }, { status: 400 });
+
+    // Client-supplied payment date — must be a valid date, not in the future.
+    const submittedAt = new Date();
+    let paidOn = submittedAt;
+    if (paymentDate) {
+      const parsed = new Date(paymentDate);
+      if (!isNaN(parsed.getTime()) && parsed.getTime() <= submittedAt.getTime()) paidOn = parsed;
+    }
 
     await connectToDatabase();
 
@@ -95,7 +107,9 @@ export async function POST(req: Request) {
       status:        "PENDING",
       transactionId: transactionId.trim(),
       paymentMethod: paymentMethod ?? "upi",
-      paymentDate:   now,
+      payerPhone:    payerPhone.trim(),
+      reportedAmount: typeof reportedAmount === "number" && reportedAmount > 0 ? reportedAmount : undefined,
+      paymentDate:   paidOn,
       approvalStatus:"PENDING_ADMIN_REVIEW",
     });
 

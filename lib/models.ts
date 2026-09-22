@@ -205,6 +205,11 @@ const paymentSchema = new Schema(
     },
     transactionId:  { type: String },
     paymentMethod:  { type: String },   // "gpay" | "upi" | "bank"
+    // Phone/UPI number the groom paid from — for admin reconciliation with the UPI app
+    payerPhone:     { type: String },
+    // Amount the groom says they sent — for admin cross-check; the authoritative
+    // `amount` above is always server-calculated from family-class fees, never this.
+    reportedAmount: { type: Number },
     paymentDate:    { type: Date },
     approvalStatus: {
       type: String,
@@ -277,6 +282,9 @@ const settingsSchema = new Schema(
     paymentRequired:          { type: Boolean, default: true },
     // Payment collection details (shown on payment page)
     upiId:              { type: String, default: "luramatrimony@upi" },
+    // Admin's phone/GPay number — defaults the groom's "paid from" field on the
+    // payment form (editable — the groom corrects it if they used a different number)
+    adminPhone:         { type: String, default: "" },
     bankName:           { type: String, default: "State Bank of India" },
     bankAccountNo:      { type: String, default: "" },
     bankIfsc:           { type: String, default: "" },

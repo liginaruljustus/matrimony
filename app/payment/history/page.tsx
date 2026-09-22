@@ -23,8 +23,8 @@ type Payment = {
 };
 
 const TIER_LABEL: Record<string, string> = {
-  FIRST_PAYMENT:  "1st Payment – Inbox Unlock",
-  SECOND_PAYMENT: "2nd Payment – Contact Details",
+  FIRST_PAYMENT:  "Initial Payment – Inbox Unlock",
+  SECOND_PAYMENT: "Final Payment – Contact Details",
 };
 
 const APPROVAL_CONFIG = {

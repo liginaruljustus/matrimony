@@ -22,6 +22,9 @@ type Payment = {
   tier: "FIRST_PAYMENT" | "SECOND_PAYMENT" | string;
   transactionId: string;
   paymentMethod?: string;
+  payerPhone?: string;
+  reportedAmount?: number;
+  paymentDate?: string;
   approvalStatus: string;
   status: string;
   createdAt: string;
@@ -49,8 +52,8 @@ function useToast() {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const TIER_LABEL: Record<string, string> = {
-  FIRST_PAYMENT:  "1st Payment (MD→AD)",
-  SECOND_PAYMENT: "2nd Payment (AD→CD)",
+  FIRST_PAYMENT:  "Initial Payment (MD→AD)",
+  SECOND_PAYMENT: "Final Payment (AD→CD)",
   BASIC:          "Basic",
   PROFILE_VIEW:   "Profile View",
   CONTACT_DETAILS:"Contact Details",
@@ -218,11 +221,11 @@ function PaymentsContent() {
             </div>
             <div>
               <p className="text-lg font-bold text-neutral-800">{fmt(revenue.firstPayment)}</p>
-              <p className="text-xs text-neutral-500">1st Payments</p>
+              <p className="text-xs text-neutral-500">Initial Payments</p>
             </div>
             <div>
               <p className="text-lg font-bold text-neutral-800">{fmt(revenue.secondPayment)}</p>
-              <p className="text-xs text-neutral-500">2nd Payments</p>
+              <p className="text-xs text-neutral-500">Final Payments</p>
             </div>
             <div>
               <p className="flex items-center gap-1 text-lg font-bold text-neutral-800">
@@ -351,6 +354,25 @@ function PaymentsContent() {
                         <div className="text-xs text-neutral-400">
                           {fmtDate(payment.createdAt)}
                         </div>
+                        {payment.payerPhone && (
+                          <div>
+                            <span className="text-xs text-neutral-400">Paid from: </span>
+                            <span className="font-mono text-xs text-neutral-700">{payment.payerPhone}</span>
+                          </div>
+                        )}
+                        {payment.paymentDate && (
+                          <div>
+                            <span className="text-xs text-neutral-400">Payment date: </span>
+                            <span className="text-xs text-neutral-700">{fmtDate(payment.paymentDate)}</span>
+                          </div>
+                        )}
+                        {typeof payment.reportedAmount === "number" && payment.reportedAmount !== payment.amount && (
+                          <div>
+                            <span className="text-xs text-amber-600 font-semibold">
+                              Groom reported {fmt(payment.reportedAmount)} ⚠️
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Rejection reason */}

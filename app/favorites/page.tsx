@@ -553,17 +553,13 @@ function FavCard({
         </button>
       )}
 
-      {/* Photo */}
+      {/* Photo — never shown here; photos only appear in the exported PDF */}
       <div className="relative h-40 bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
-        {card.photo ? (
-          <img src={card.photo} alt={hideName ? card.profileId : card.name} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#7a1f2b]/20 text-2xl font-bold text-[#7a1f2b]">
-              {hideName ? <Lock size={22} /> : card.name.charAt(0)}
-            </div>
+        <div className="flex h-full items-center justify-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#7a1f2b]/20 text-2xl font-bold text-[#7a1f2b]">
+            {hideName ? <Lock size={22} /> : card.name.charAt(0)}
           </div>
-        )}
+        </div>
         <span
           className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
             CLASS_COLOR[card.familyClass] ?? FAMILY_CLASS_FALLBACK

@@ -224,26 +224,18 @@ export default function ProfileDetailPage() {
         }}
       />
 
-      {/* Bio */}
-      {profile.bio && (
-        <div className="rounded-2xl bg-white dark:bg-neutral-100 p-4 shadow-sm ring-1 ring-neutral-100 dark:ring-neutral-200">
-          <h2 className="mb-2 text-sm font-semibold text-[#7a1f2b]">About</h2>
-          <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-700">{profile.bio}</p>
-        </div>
-      )}
-
       {/* Payment tier info — non-owner, non-frozen */}
       {!isOwn && !frozen && (
         <div className="rounded-2xl border border-[#d4af37]/30 bg-[#fff9ef] dark:bg-neutral-200 p-4">
           <h2 className="mb-3 text-sm font-semibold text-[#7a1f2b]">Unlock More Details</h2>
           <div className="space-y-2">
             <TierRow
-              step="1st Payment"
+              step="Initial Payment"
               desc="Unlock family details, horoscope & more photos — visible on both sides"
               color="text-blue-700"
             />
             <TierRow
-              step="2nd Payment"
+              step="Final Payment"
               desc="Unlock phone number, WhatsApp & contact person — visible on both sides"
               color="text-green-700"
             />

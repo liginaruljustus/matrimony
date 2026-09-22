@@ -36,6 +36,7 @@ type Settings = {
   verificationRequired: boolean;
   // Payment collection details
   upiId: string;
+  adminPhone: string;
   bankName: string;
   bankAccountNo: string;
   bankIfsc: string;
@@ -341,6 +342,7 @@ export default function AdminSettingsPage() {
         paymentRequired: true,
         verificationRequired: false,
         upiId: "luramatrimony@upi",
+        adminPhone: "",
         bankName: "State Bank of India",
         bankAccountNo: "",
         bankIfsc: "",
@@ -456,7 +458,7 @@ export default function AdminSettingsPage() {
 
         {/* ── 1st Payment Amounts ────────────────────────────────────────── */}
         <SectionCard>
-          <SectionTitle icon={CreditCard} title="1st Payment Amounts" />
+          <SectionTitle icon={CreditCard} title="Initial Payment Amounts" />
           <p className="text-xs text-slate-500 mb-4 -mt-2">
             Charged when a groom moves a bride to payment (unlocks Additional Details).
           </p>
@@ -487,7 +489,7 @@ export default function AdminSettingsPage() {
 
         {/* ── 2nd Payment Amounts ────────────────────────────────────────── */}
         <SectionCard>
-          <SectionTitle icon={CreditCard} title="2nd Payment Amounts" />
+          <SectionTitle icon={CreditCard} title="Final Payment Amounts" />
           <p className="text-xs text-slate-500 mb-4 -mt-2">
             Charged to unlock Contact Details, after the inbox freeze period ends.
           </p>
@@ -529,6 +531,15 @@ export default function AdminSettingsPage() {
               placeholder="example@upi"
               onChange={(v) => set("upiId", v)}
             />
+            <TextInput
+              label="Admin Phone / GPay Number"
+              value={settings.adminPhone}
+              placeholder="e.g. 9876543210"
+              onChange={(v) => set("adminPhone", v)}
+            />
+            <p className="-mt-3 text-xs text-slate-500">
+              Pre-fills the &quot;paid from&quot; number on the groom&apos;s payment form as a default — they can still correct it.
+            </p>
             <div className="border-t border-slate-100 pt-4 grid grid-cols-2 gap-4">
               <TextInput
                 label="Bank Name"
@@ -752,7 +763,7 @@ export default function AdminSettingsPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-xs font-semibold text-slate-900">1st Payment Auto-Approval (Days)</label>
+              <label className="mb-2 block text-xs font-semibold text-slate-900">Initial Payment Auto-Approval (Days)</label>
               <input
                 type="number"
                 min="1"
@@ -767,7 +778,7 @@ export default function AdminSettingsPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-xs font-semibold text-slate-900">2nd Payment Auto-Approval (Days)</label>
+              <label className="mb-2 block text-xs font-semibold text-slate-900">Final Payment Auto-Approval (Days)</label>
               <input
                 type="number"
                 min="1"

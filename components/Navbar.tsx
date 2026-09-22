@@ -173,9 +173,9 @@ export function Navbar() {
   const groomLinks = [
     { href: "/profiles",         label: "Browse Brides" },
     { href: "/favorites",        label: "Favourites" },
-    { href: "/payment/first",    label: "1st Payment" },
+    { href: "/payment/first",    label: "Initial Payment" },
     { href: "/inbox",            label: "Inbox" },
-    { href: "/payment/second",   label: "2nd Payment" },
+    { href: "/payment/second",   label: "Final Payment" },
     { href: "/contact-details",  label: "Contacts" },
     { href: "/payment/history",  label: "Payments" },
     { href: "/my-profile",       label: "My Profile" },
