@@ -37,6 +37,7 @@ type Settings = {
   // Payment collection details
   upiId: string;
   adminPhone: string;
+  paytmNumber: string;
   bankName: string;
   bankAccountNo: string;
   bankIfsc: string;
@@ -343,6 +344,7 @@ export default function AdminSettingsPage() {
         verificationRequired: false,
         upiId: "luramatrimony@upi",
         adminPhone: "",
+        paytmNumber: "",
         bankName: "State Bank of India",
         bankAccountNo: "",
         bankIfsc: "",
@@ -538,8 +540,14 @@ export default function AdminSettingsPage() {
               onChange={(v) => set("adminPhone", v)}
             />
             <p className="-mt-3 text-xs text-slate-500">
-              Pre-fills the &quot;paid from&quot; number on the groom&apos;s payment form as a default — they can still correct it.
+              Shown (read-only) to users as the mobile number to send their payment to.
             </p>
+            <TextInput
+              label="PayTm Number"
+              value={settings.paytmNumber}
+              placeholder="Leave empty to use the number above"
+              onChange={(v) => set("paytmNumber", v)}
+            />
             <div className="border-t border-slate-100 pt-4 grid grid-cols-2 gap-4">
               <TextInput
                 label="Bank Name"

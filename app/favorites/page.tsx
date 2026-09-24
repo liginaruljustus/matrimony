@@ -338,7 +338,7 @@ export default function FavoritesPage() {
                           className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#7a1f2b] py-1.5 text-xs font-bold text-white hover:bg-[#6b1823] transition-colors disabled:opacity-60"
                         >
                           <CreditCard size={13} />
-                          {payingThis ? "Processing…" : "Pay Now"}
+                          {payingThis ? "Processing…" : "Move to Payment"}
                         </button>
                       )
                     }

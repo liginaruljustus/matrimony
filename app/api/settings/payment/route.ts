@@ -13,6 +13,7 @@ import { DEFAULT_FIRST_PAYMENT_AMOUNTS, DEFAULT_SECOND_PAYMENT_AMOUNTS } from "@
 const DEFAULTS = {
   upiId:             "luramatrimony@upi",
   adminPhone:        "",
+  paytmNumber:       "",
   bankName:          "State Bank of India",
   bankAccountNo:     "",
   bankIfsc:          "",
@@ -31,12 +32,13 @@ export async function GET() {
     await connectToDatabase();
 
     const settings = await SettingsModel.findOne()
-      .select("upiId adminPhone bankName bankAccountNo bankIfsc bankAccountHolder firstPaymentAmounts secondPaymentAmounts")
+      .select("upiId adminPhone paytmNumber bankName bankAccountNo bankIfsc bankAccountHolder firstPaymentAmounts secondPaymentAmounts")
       .lean<any>();
 
     return Response.json({
       upiId:             settings?.upiId             ?? DEFAULTS.upiId,
       adminPhone:        settings?.adminPhone        ?? DEFAULTS.adminPhone,
+      paytmNumber:       settings?.paytmNumber       ?? DEFAULTS.paytmNumber,
       bankName:          settings?.bankName          ?? DEFAULTS.bankName,
       bankAccountNo:     settings?.bankAccountNo     ?? DEFAULTS.bankAccountNo,
       bankIfsc:          settings?.bankIfsc          ?? DEFAULTS.bankIfsc,

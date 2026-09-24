@@ -457,10 +457,10 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
               <Lock size={18} className="text-amber-600" />
             </div>
             <div>
-              <p className="font-bold text-slate-900 dark:text-neutral-900">Profile Locked</p>
+              <p className="font-bold text-slate-900 dark:text-neutral-900">Edit Profile</p>
               <p className="text-sm text-slate-500 dark:text-neutral-700 mt-0.5">
-                Your profile has been submitted and is now locked. Send a request to ask
-                the admin to unlock it.
+                Your profile has been successfully submitted. If you wish to make any
+                changes to your profile, please click below.
               </p>
               <RequestEditButton />
             </div>

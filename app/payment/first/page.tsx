@@ -6,14 +6,15 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   CreditCard, CheckCircle, Copy, AlertCircle,
-  ArrowLeft, Smartphone, Building2, QrCode, Lock,
+  ArrowLeft, Smartphone, Wallet, Building2, QrCode, Lock,
 } from "lucide-react";
 
-type Method = "gpay" | "upi" | "bank";
+type Method = "gpay" | "upi" | "paytm" | "bank";
 
 type PaymentDetails = {
   upiId: string;
   adminPhone: string;
+  paytmNumber: string;
   bankName: string;
   bankAccountNo: string;
   bankIfsc: string;
@@ -32,6 +33,7 @@ type LockedFav = {
 const DETAIL_DEFAULTS: PaymentDetails = {
   upiId: "luramatrimony@upi",
   adminPhone: "",
+  paytmNumber: "",
   bankName: "State Bank of India",
   bankAccountNo: "",
   bankIfsc: "",
@@ -49,7 +51,6 @@ function PaymentContent() {
 
   const [method, setMethod]         = useState<Method>("gpay");
   const [txnId, setTxnId]           = useState("");
-  const [payerPhone, setPayerPhone] = useState("");
   const [payDate, setPayDate]       = useState(() => new Date().toISOString().slice(0, 10));
   const [paidAmount, setPaidAmount] = useState("");
   const amountTouchedRef            = useRef(false);
@@ -70,14 +71,13 @@ function PaymentContent() {
           setDetails({
             upiId:            d.upiId            ?? DETAIL_DEFAULTS.upiId,
             adminPhone:       d.adminPhone        ?? DETAIL_DEFAULTS.adminPhone,
+            paytmNumber:      d.paytmNumber       ?? DETAIL_DEFAULTS.paytmNumber,
             bankName:         d.bankName         ?? DETAIL_DEFAULTS.bankName,
             bankAccountNo:    d.bankAccountNo    ?? DETAIL_DEFAULTS.bankAccountNo,
             bankIfsc:         d.bankIfsc         ?? DETAIL_DEFAULTS.bankIfsc,
             bankAccountHolder:d.bankAccountHolder?? DETAIL_DEFAULTS.bankAccountHolder,
           });
           setPaymentAmt(d.firstPaymentAmounts ?? DEFAULT_PAYMENT_AMT);
-          // Fixed to the admin's configured number — the field is disabled, not user-editable.
-          if (d.adminPhone) setPayerPhone(d.adminPhone);
         }
       })
       .catch(() => {}); // keep defaults on error
@@ -136,6 +136,9 @@ function PaymentContent() {
     setCopied(key);
     setTimeout(() => setCopied(""), 2000);
   };
+
+  // Number the payment goes to — fixed by admin, not user-editable.
+  const payerPhone = method === "paytm" ? (details.paytmNumber || details.adminPhone) : details.adminPhone;
 
   const handleSubmit = async () => {
     if (!payerPhone.trim())      { setError("Payment phone number not configured — contact admin"); return; }
@@ -216,8 +219,7 @@ function PaymentContent() {
 
       <h1 className="text-2xl font-bold text-[#7a1f2b]">Initial Payment</h1>
       <p className="mt-1 text-sm text-neutral-500">
-        Unlock additional details for {favoriteIds.length} bride profile
-        {favoriteIds.length !== 1 ? "s" : ""}
+        To send your profile details to prospective brides.
       </p>
 
       {/* Empty state — nothing awaiting payment */}
@@ -256,7 +258,7 @@ function PaymentContent() {
                 </div>
                 {f.paymentLockExpiresAt && (
                   <p className="mt-0.5 text-[10px] text-neutral-400">
-                    Payment window open until {new Date(f.paymentLockExpiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} — you can still pay any time after, no rush
+                    The deadline for payment is {new Date(f.paymentLockExpiresAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}; if you do not make the payment within the specified time, the selected profiles will automatically revert to the &apos;Favourites&apos; section.
                   </p>
                 )}
               </div>
@@ -283,8 +285,8 @@ function PaymentContent() {
       {/* Payment method tabs */}
       <div className="mt-6">
         <p className="mb-3 text-sm font-semibold text-neutral-700">Choose Payment Method</p>
-        <div className="grid grid-cols-3 gap-3">
-          {(["gpay", "upi", "bank"] as Method[]).map((m) => (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {(["gpay", "upi", "paytm", "bank"] as Method[]).map((m) => (
             <button
               key={m}
               onClick={() => setMethod(m)}
@@ -296,8 +298,9 @@ function PaymentContent() {
             >
               {m === "gpay"  && <Smartphone size={18} />}
               {m === "upi"   && <QrCode size={18} />}
+              {m === "paytm" && <Wallet size={18} />}
               {m === "bank"  && <Building2 size={18} />}
-              {m === "gpay" ? "Google Pay" : m === "upi" ? "UPI / PhonePe" : "Bank Transfer"}
+              {m === "gpay" ? "Google Pay" : m === "upi" ? "UPI / PhonePe" : m === "paytm" ? "PayTm" : "Bank Transfer"}
             </button>
           ))}
         </div>
@@ -311,6 +314,14 @@ function PaymentContent() {
             <p className="text-xs text-neutral-400">
               Open Google Pay / PhonePe / any UPI app, send ₹{totalAmount.toLocaleString("en-IN")} to the UPI ID above,
               then enter the transaction ID below.
+            </p>
+          </div>
+        )}
+        {method === "paytm" && (
+          <div className="space-y-3">
+            <InfoRow label="PayTm Number" value={payerPhone || "—"} onCopy={payerPhone ? () => copy(payerPhone, "paytm") : undefined} copied={copied === "paytm"} />
+            <p className="text-xs text-neutral-400">
+              Open PayTm, send ₹{totalAmount.toLocaleString("en-IN")} to the mobile number above, then enter the transaction ID below.
             </p>
           </div>
         )}
@@ -341,7 +352,7 @@ function PaymentContent() {
           className="w-full cursor-not-allowed rounded-xl border border-neutral-300 bg-neutral-100 dark:bg-neutral-200 px-4 py-3 text-sm text-neutral-500"
         />
         <p className="mt-1 text-xs text-neutral-400">
-          {payerPhone ? "Set by admin — send your payment from this number." : "Admin hasn't set a phone number yet."}
+          {payerPhone ? "You can send your payment to this mobile number." : "Admin hasn't set a phone number yet."}
         </p>
       </div>
 
@@ -410,7 +421,7 @@ function PaymentContent() {
       </button>
 
       <p className="mt-4 text-center text-xs text-neutral-400">
-        Your payment will be manually verified by our team within 24 hours.
+        Your payment verification will be completed within 7 days.
       </p>
       </>
       )}

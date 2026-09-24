@@ -339,11 +339,6 @@ function MDProfileCard({
             </span>
             <span className="pt-0.5">{profile.education}</span>
           </div>
-          {profile.nakshatra && (
-            <p className="pl-7 text-[11px] text-neutral-400">
-              ★ {profile.nakshatra} • {profile.rashi}
-            </p>
-          )}
         </div>
 
         <div className="mt-4 flex gap-2">

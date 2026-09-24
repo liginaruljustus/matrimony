@@ -6,14 +6,15 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   CreditCard, CheckCircle, Copy, AlertCircle,
-  ArrowLeft, Smartphone, Building2, QrCode, Phone, ChevronRight,
+  ArrowLeft, Smartphone, Wallet, Building2, QrCode, Phone, ChevronRight,
 } from "lucide-react";
 
-type Method = "gpay" | "upi" | "bank";
+type Method = "gpay" | "upi" | "paytm" | "bank";
 
 type PaymentDetails = {
   upiId: string;
   adminPhone: string;
+  paytmNumber: string;
   bankName: string;
   bankAccountNo: string;
   bankIfsc: string;
@@ -31,6 +32,7 @@ type EligibleFav = {
 const DETAIL_DEFAULTS: PaymentDetails = {
   upiId: "luramatrimony@upi",
   adminPhone: "",
+  paytmNumber: "",
   bankName: "State Bank of India",
   bankAccountNo: "",
   bankIfsc: "",
@@ -48,7 +50,6 @@ function SecondPaymentContent() {
 
   const [method, setMethod]         = useState<Method>("gpay");
   const [txnId, setTxnId]           = useState("");
-  const [payerPhone, setPayerPhone] = useState("");
   const [payDate, setPayDate]       = useState(() => new Date().toISOString().slice(0, 10));
   const [paidAmount, setPaidAmount] = useState("");
   const amountTouchedRef            = useRef(false);
@@ -71,14 +72,13 @@ function SecondPaymentContent() {
           setDetails({
             upiId:             d.upiId             ?? DETAIL_DEFAULTS.upiId,
             adminPhone:        d.adminPhone         ?? DETAIL_DEFAULTS.adminPhone,
+            paytmNumber:      d.paytmNumber       ?? DETAIL_DEFAULTS.paytmNumber,
             bankName:          d.bankName          ?? DETAIL_DEFAULTS.bankName,
             bankAccountNo:     d.bankAccountNo     ?? DETAIL_DEFAULTS.bankAccountNo,
             bankIfsc:          d.bankIfsc          ?? DETAIL_DEFAULTS.bankIfsc,
             bankAccountHolder: d.bankAccountHolder ?? DETAIL_DEFAULTS.bankAccountHolder,
           });
           setPaymentAmt(d.secondPaymentAmounts ?? DEFAULT_PAYMENT_AMT);
-          // Fixed to the admin's configured number — the field is disabled, not user-editable.
-          if (d.adminPhone) setPayerPhone(d.adminPhone);
         }
       })
       .catch(() => {});
@@ -133,6 +133,9 @@ function SecondPaymentContent() {
     setCopied(key);
     setTimeout(() => setCopied(""), 2000);
   };
+
+  // Number the payment goes to — fixed by admin, not user-editable.
+  const payerPhone = method === "paytm" ? (details.paytmNumber || details.adminPhone) : details.adminPhone;
 
   const handleSubmit = async () => {
     if (!selected) return;
@@ -303,8 +306,8 @@ function SecondPaymentContent() {
       {/* Payment method tabs */}
       <div className="mt-6">
         <p className="mb-3 text-sm font-semibold text-neutral-700">Choose Payment Method</p>
-        <div className="grid grid-cols-3 gap-3">
-          {(["gpay", "upi", "bank"] as Method[]).map((m) => (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {(["gpay", "upi", "paytm", "bank"] as Method[]).map((m) => (
             <button
               key={m}
               onClick={() => setMethod(m)}
@@ -316,8 +319,9 @@ function SecondPaymentContent() {
             >
               {m === "gpay" && <Smartphone size={18} />}
               {m === "upi"  && <QrCode size={18} />}
+              {m === "paytm" && <Wallet size={18} />}
               {m === "bank" && <Building2 size={18} />}
-              {m === "gpay" ? "Google Pay" : m === "upi" ? "UPI / PhonePe" : "Bank Transfer"}
+              {m === "gpay" ? "Google Pay" : m === "upi" ? "UPI / PhonePe" : m === "paytm" ? "PayTm" : "Bank Transfer"}
             </button>
           ))}
         </div>
@@ -331,6 +335,14 @@ function SecondPaymentContent() {
             <p className="text-xs text-neutral-400">
               Open Google Pay / PhonePe / any UPI app, send ₹{selected.amount.toLocaleString("en-IN")} to the UPI ID above,
               then enter the transaction ID below.
+            </p>
+          </div>
+        )}
+        {method === "paytm" && (
+          <div className="space-y-3">
+            <InfoRow label="PayTm Number" value={payerPhone || "—"} onCopy={payerPhone ? () => copy(payerPhone, "paytm") : undefined} copied={copied === "paytm"} />
+            <p className="text-xs text-neutral-400">
+              Open PayTm, send ₹{selected.amount.toLocaleString("en-IN")} to the mobile number above, then enter the transaction ID below.
             </p>
           </div>
         )}
@@ -361,7 +373,7 @@ function SecondPaymentContent() {
           className="w-full cursor-not-allowed rounded-xl border border-neutral-300 bg-neutral-100 px-4 py-3 text-sm text-neutral-500"
         />
         <p className="mt-1 text-xs text-neutral-400">
-          {payerPhone ? "Set by admin — send your payment from this number." : "Admin hasn't set a phone number yet."}
+          {payerPhone ? "You can send your payment to this mobile number." : "Admin hasn't set a phone number yet."}
         </p>
       </div>
 
@@ -430,7 +442,7 @@ function SecondPaymentContent() {
       </button>
 
       <p className="mt-4 text-center text-xs text-neutral-400">
-        Your payment will be manually verified by our team within 24 hours.
+        Your payment verification will be completed within 7 days.
       </p>
     </div>
   );

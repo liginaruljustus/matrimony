@@ -67,6 +67,7 @@ const TIER_COLOR: Record<string, string> = {
 const METHOD_ICON: Record<string, React.ReactNode> = {
   gpay: <Smartphone size={12} />,
   upi:  <QrCode     size={12} />,
+  paytm: <Smartphone size={12} />,
   bank: <Building2  size={12} />,
 };
 
@@ -334,7 +335,7 @@ function PaymentsContent() {
                         {payment.paymentMethod && (
                           <span className="flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold text-neutral-600 capitalize">
                             {METHOD_ICON[payment.paymentMethod]}
-                            {payment.paymentMethod === "gpay" ? "Google Pay" : payment.paymentMethod === "upi" ? "UPI" : "Bank"}
+                            {payment.paymentMethod === "gpay" ? "Google Pay" : payment.paymentMethod === "upi" ? "UPI" : payment.paymentMethod === "paytm" ? "PayTm" : "Bank"}
                           </span>
                         )}
                       </div>

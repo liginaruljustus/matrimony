@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import {
-  CheckCircle, Lock, ArrowLeft,
+  CheckCircle, Lock, ArrowLeft, CreditCard,
 } from "lucide-react";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ProfileDetailsList } from "@/components/ProfileDetailsList";
@@ -52,6 +52,32 @@ export default function ProfileDetailPage() {
   const [profile, setProfile]     = useState<PublicProfile | null>(null);
   const [loading, setLoading]     = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [moving, setMoving]       = useState(false);
+  const [moveError, setMoveError] = useState("");
+
+  // Look up this profile's favourite id, move it to payment, and open the payment page.
+  const handleMoveToPayment = async (targetUserId: string) => {
+    setMoving(true);
+    setMoveError("");
+    try {
+      const favRes  = await fetch("/api/favorites");
+      const favData = await favRes.json();
+      const fav = (favData.favorites ?? []).find((f: any) => f.favoriteUserId === targetUserId);
+      if (!fav) { setMoveError("Add this profile to Favourites first"); return; }
+      const res  = await fetch("/api/favorites/move-to-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ favoriteIds: [fav.id] }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setMoveError(data.error ?? "Failed"); return; }
+      router.push(`/payment/first?ids=${fav.id}&amount=${data.totalAmount}`);
+    } catch {
+      setMoveError("Network error");
+    } finally {
+      setMoving(false);
+    }
+  };
 
   // Redirect unauthenticated visitors directly to login (not via /profiles)
   useEffect(() => {
@@ -126,11 +152,11 @@ export default function ProfileDetailPage() {
       <div className="mx-auto max-w-2xl space-y-4 px-4 py-6">
       {/* Back */}
       <Link
-        href="/profiles"
+        href={isFavorited && !isOwn ? "/favorites" : "/profiles"}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-500 hover:text-[#7a1f2b]"
       >
         <ArrowLeft size={15} />
-        Back to Profiles
+        {isFavorited && !isOwn ? "Back to Favourites" : "Back to Profiles"}
       </Link>
 
       {/* Frozen banner */}
@@ -165,13 +191,27 @@ export default function ProfileDetailPage() {
         </div>
 
         {!isOwn && !frozen && (
-          <FavoriteButton
-            targetUserId={profile.userId}
-            variant="button"
-            label="Add Favourite"
-            initialIsFavorited={isFavorited}
-            onToggle={(v) => setIsFavorited(v)}
-          />
+          <div className="flex flex-col items-end gap-2">
+            <FavoriteButton
+              targetUserId={profile.userId}
+              variant="button"
+              label="Add Favourite"
+              initialIsFavorited={isFavorited}
+              onToggle={(v) => setIsFavorited(v)}
+            />
+            {isFavorited && (
+              <button
+                type="button"
+                onClick={() => handleMoveToPayment(profile.userId)}
+                disabled={moving}
+                className="flex items-center gap-1.5 rounded-xl bg-[#7a1f2b] px-4 py-2 text-sm font-semibold text-white hover:bg-[#6b1823] transition-colors disabled:opacity-60"
+              >
+                <CreditCard size={14} />
+                {moving ? "Processing…" : "Move to Payment"}
+              </button>
+            )}
+            {moveError && <p className="text-xs text-red-600">{moveError}</p>}
+          </div>
         )}
         {isOwn && (
           <Link
@@ -206,12 +246,12 @@ export default function ProfileDetailPage() {
           <div className="space-y-2">
             <TierRow
               step="Initial Payment"
-              desc="Unlock family details, horoscope & more photos — visible on both sides"
+              desc="To send your profile to the bride's inbox."
               color="text-blue-700"
             />
             <TierRow
               step="Final Payment"
-              desc="Unlock phone number, WhatsApp & contact person — visible on both sides"
+              desc="Obtain the bride's contact details and send your contact details to the bride."
               color="text-green-700"
             />
           </div>

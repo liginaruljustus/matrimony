@@ -285,6 +285,8 @@ const settingsSchema = new Schema(
     // Admin's phone/GPay number — defaults the groom's "paid from" field on the
     // payment form (editable — the groom corrects it if they used a different number)
     adminPhone:         { type: String, default: "" },
+    // PayTm number shown for the PayTm payment method (falls back to adminPhone when empty)
+    paytmNumber:        { type: String, default: "" },
     bankName:           { type: String, default: "State Bank of India" },
     bankAccountNo:      { type: String, default: "" },
     bankIfsc:           { type: String, default: "" },
