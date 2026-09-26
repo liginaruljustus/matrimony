@@ -324,7 +324,6 @@ function MDProfileCard({
             </span>
             <span className="pt-0.5">
               {profile.religion} • {profile.caste}
-              {profile.subCaste ? ` (${profile.subCaste})` : ""}
             </span>
           </div>
           <div className="flex items-start gap-2 text-xs text-neutral-600 dark:text-neutral-700">
