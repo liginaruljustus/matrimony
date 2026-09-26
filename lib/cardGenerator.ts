@@ -46,6 +46,17 @@ export interface ADCard {
   district: string;
   education: string;
   familyClass: string;
+  // Personal details marked AD in the profile spec
+  gender?: string;
+  maritalStatus?: string;
+  subCaste?: string;
+  motherTongue?: string;
+  height?: number;
+  weight?: number;
+  currentJob?: string;
+  complexion?: string;
+  physicallyChallenge?: boolean;
+  otherDetails?: string;
   // Additional details
   fatherName?: string;
   fatherOccupation?: string;
@@ -121,6 +132,16 @@ export function buildADCard(user: any, profile: any): ADCard {
     district:        profile.nativeDistrict ?? profile.location ?? "",
     education:       profile.education ?? "",
     familyClass:     user.familyClass ?? profile.familyClass ?? "",
+    gender:          profile.gender,
+    maritalStatus:   profile.maritalStatus,
+    subCaste:        profile.subCaste,
+    motherTongue:    profile.motherTongue,
+    height:          profile.height,
+    weight:          profile.weight,
+    currentJob:      profile.currentJob,
+    complexion:      profile.complexion,
+    physicallyChallenge: profile.physicallyChallenge,
+    otherDetails:    profile.otherDetails,
     fatherName:      profile.fatherName,
     fatherOccupation:profile.fatherOccupation,
     motherName:      profile.motherName,

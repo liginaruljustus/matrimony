@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
 const fmt  = (v: any) => (v !== null && v !== undefined && v !== "" ? String(v) : "—");
 const fmtH = (v: any) => (v ? `${v} cm` : "—");
 const fmtW = (v: any) => (v ? `${v} kg` : "—");
-const fmtI = (v: any) => (v != null && v !== "" ? `₹${Number(v).toLocaleString("en-IN")}/month` : "—");
+const fmtI = (v: any) => (v != null && v !== "" ? `Rs. ${Number(v).toLocaleString("en-IN")}/month` : "—");
 const fmtFS = (v: any) =>
   v === "MC" ? "Middle Class" : v === "UC" ? "Upper Class" : v === "EC" ? "Elite Class" : fmt(v);
 const fmtDOB = (v: any) => {
@@ -267,6 +267,8 @@ export type PdfSettings = {
   pdfFooterText: string;
   pdfShowContactDetails: boolean;
   pdfShowAstrology: boolean;
+  /** Additional-Details (AD) export: omit date of birth, address, contact and bio. */
+  adOnly?: boolean;
 };
 
 const PDF_DEFAULTS: PdfSettings = {
@@ -283,7 +285,7 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
   const cfg        = pdfSettings;
   const name       = user?.name ?? p.name ?? "Profile";
   const profileId  = user?.profileId ?? "—";
-  const status     = STATUS_LABEL[p.profileStatus] ?? "Draft";
+  const status     = cfg.adOnly ? "Additional Details" : (STATUS_LABEL[p.profileStatus] ?? "Draft");
   const initial    = name.charAt(0).toUpperCase();
   const photos: string[] = Array.isArray(p.photos) ? p.photos : [];
   const mainPhoto  = photos[0];
@@ -318,7 +320,7 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Personal Details</Text>
             <View style={styles.grid}>
-              <Field label="Date of Birth"     value={fmtDOB(p.dateOfBirth)} />
+              {!cfg.adOnly && <Field label="Date of Birth" value={fmtDOB(p.dateOfBirth)} />}
               <Field label="Age"               value={p.age ? `${p.age} years` : "—"} />
               <Field label="Gender"            value={p.gender === "MALE" ? "Male" : p.gender === "FEMALE" ? "Female" : fmt(p.gender)} />
               <Field label="Marital Status"    value={fmt(p.maritalStatus)} />
@@ -331,6 +333,12 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
               <Field label="Sub-Caste"         value={fmt(p.subCaste)} />
               <Field label="Mother Tongue"     value={fmt(p.motherTongue)} />
             </View>
+            {p.otherDetails && (
+              <View style={styles.fullWidth}>
+                <Text style={styles.fieldLabel}>Other Details</Text>
+                <Text style={styles.blockText}>{p.otherDetails}</Text>
+              </View>
+            )}
           </View>
 
           {/* Location */}
@@ -341,7 +349,7 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
               <Field label="Place of Birth"    value={fmt(p.placeOfBirth)} />
               <Field label="Time of Birth"     value={fmt(p.timeOfBirth)} />
             </View>
-            {p.address && (
+            {!cfg.adOnly && p.address && (
               <View style={styles.fullWidth}>
                 <Text style={styles.fieldLabel}>Address</Text>
                 <Text style={styles.blockText}>{p.address}</Text>
@@ -389,7 +397,7 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
           </View>
 
           {/* Contact — controlled by pdfShowContactDetails */}
-          {cfg.pdfShowContactDetails && (
+          {cfg.pdfShowContactDetails && !cfg.adOnly && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Contact Person</Text>
               <View style={styles.grid}>
@@ -401,10 +409,10 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
           )}
 
           {/* Bio */}
-          {(p.bio || p.expectations) && (
+          {((!cfg.adOnly && p.bio) || p.expectations) && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>About & Expectations</Text>
-              {p.bio && (
+              <Text style={styles.sectionTitle}>{cfg.adOnly ? "Partner Expectations" : "About & Expectations"}</Text>
+              {!cfg.adOnly && p.bio && (
                 <View style={{ marginBottom: 6 }}>
                   <Text style={styles.fieldLabel}>About Me</Text>
                   <Text style={styles.blockText}>{p.bio}</Text>
@@ -485,4 +493,18 @@ export async function downloadProfilePDF(profile: any, user: any, pdfSettings?: 
   a.download = `${user?.name ?? "profile"}-lura-matrimony.pdf`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Download a groom/bride's Additional Details (AD card) as a PDF, photos included.
+ * Maps the AD card's field names onto the profile shape ProfileDocument expects.
+ */
+export async function downloadADCardPDF(card: any) {
+  const profile = {
+    ...card,
+    nativeDistrict: card.district,
+    photos: card.photos?.length ? card.photos : card.photo ? [card.photo] : [],
+  };
+  const user = { name: card.name, profileId: card.profileId };
+  await downloadProfilePDF(profile, user, { adOnly: true });
 }

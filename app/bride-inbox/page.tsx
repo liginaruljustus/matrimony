@@ -9,6 +9,8 @@ import {
   XCircle, Clock, AlertCircle, Heart, Users,
   ChevronDown, ChevronUp,
 } from "lucide-react";
+import { PhotoLightbox } from "@/components/PhotoLightbox";
+import { ADDetailsGrid, DownloadADPdfButton } from "@/components/ADDetails";
 import { FAMILY_CLASS_COLORS as CLASS_COLOR, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 type InboxItem = {
   favoriteId: string;
@@ -275,7 +277,9 @@ function GroomCard({
   declined?: boolean;
 }) {
   const [showDetails, setShowDetails] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const card = item.mdCard;
+  const allPhotos = card?.photos?.length ? card.photos : card?.photo ? [card.photo] : [];
   if (!card) return null;
 
   const fmtVal = (v: any) => (v !== null && v !== undefined && v !== "" ? String(v) : "—");
@@ -292,8 +296,23 @@ function GroomCard({
       {/* Photo */}
       <div className="relative h-44 bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
         {card.photo ? (
-          <img src={card.photo} alt={card.name} className="h-full w-full object-cover" />
-        ) : (
+          <img
+            src={card.photo}
+            alt={card.name}
+            onClick={() => setLightboxIndex(Math.max(0, allPhotos.indexOf(card.photo!)))}
+            className="h-full w-full cursor-zoom-in object-cover object-top"
+          />
+        ) : null}
+        {lightboxIndex !== null && allPhotos.length > 0 && (
+          <PhotoLightbox
+            photos={allPhotos}
+            index={lightboxIndex}
+            alt={card.name}
+            onClose={() => setLightboxIndex(null)}
+            onIndexChange={setLightboxIndex}
+          />
+        )}
+        {!card.photo && (
           <div className="flex h-full items-center justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#7a1f2b]/20 text-2xl font-bold text-[#7a1f2b]">
               {card.name.charAt(0)}
@@ -361,32 +380,11 @@ function GroomCard({
           </span>
           {showDetails ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
         </button>
+        <DownloadADPdfButton card={card} />
 
         {showDetails && (
           <div className="mt-2 rounded-lg border border-neutral-100 dark:border-neutral-200 bg-neutral-50 dark:bg-neutral-200 p-3">
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-              <DetailField label="Father" value={fmtVal(card.fatherName)} />
-              <DetailField label="Father's Occupation" value={fmtVal(card.fatherOccupation)} />
-              <DetailField label="Mother" value={fmtVal(card.motherName)} />
-              <DetailField label="Mother's Occupation" value={fmtVal(card.motherOccupation)} />
-              <DetailField
-                label="Brothers"
-                value={card.totalBrothers != null ? `${card.totalBrothers} (${card.marriedBrothers ?? 0} married)` : "—"}
-              />
-              <DetailField
-                label="Sisters"
-                value={card.totalSisters != null ? `${card.totalSisters} (${card.marriedSisters ?? 0} married)` : "—"}
-              />
-              <DetailField label="Family Status" value={familyStatusLabel} />
-              <DetailField
-                label="Monthly Income"
-                value={card.monthlyIncome != null ? `₹${Number(card.monthlyIncome).toLocaleString("en-IN")}` : "—"}
-              />
-              <DetailField label="House Details" value={fmtVal(card.houseDetails)} />
-              <DetailField label="Place of Birth" value={fmtVal(card.placeOfBirth)} />
-              <DetailField label="Time of Birth" value={fmtVal(card.timeOfBirth)} />
-              <DetailField label="Lagnam" value={fmtVal(card.lagnam)} />
-            </div>
+            <ADDetailsGrid card={card} />
 
             {card.expectations && (
               <div className="mt-3 border-t border-neutral-200 pt-2">
@@ -406,7 +404,8 @@ function GroomCard({
                       key={i}
                       src={photo}
                       alt={`${card.name} photo ${i + 2}`}
-                      className="h-16 w-16 shrink-0 rounded-lg object-cover border border-neutral-200"
+                      onClick={() => setLightboxIndex(i + 1)}
+                      className="h-16 w-16 shrink-0 cursor-zoom-in rounded-lg object-cover border border-neutral-200"
                     />
                   ))}
                 </div>
