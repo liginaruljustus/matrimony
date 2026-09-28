@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { UpiQrCode } from "@/components/UpiQrCode";
 import {
   CreditCard, CheckCircle, Copy, AlertCircle,
   ArrowLeft, Smartphone, Wallet, Building2, QrCode, Lock,
@@ -312,8 +313,9 @@ function PaymentContent() {
         {(method === "gpay" || method === "upi") && (
           <div className="space-y-3">
             <InfoRow label="UPI ID" value={details.upiId} onCopy={() => copy(details.upiId, "upi")} copied={copied === "upi"} />
+            <UpiQrCode upiId={details.upiId} amount={totalAmount} payeeName={details.bankAccountHolder} note={"Lura Initial Payment"} />
             <p className="text-xs text-neutral-400">
-              Open Google Pay / PhonePe / any UPI app, send ₹{totalAmount.toLocaleString("en-IN")} to the UPI ID above,
+              Scan the QR code, or open Google Pay / PhonePe / any UPI app and send ₹{totalAmount.toLocaleString("en-IN")} to the UPI ID above,
               then enter the transaction ID below.
             </p>
           </div>

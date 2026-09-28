@@ -79,11 +79,6 @@ export default function InboxPage() {
   const [pending, setPending]       = useState(0);
   const [loading, setLoading]       = useState(true);
   const [expanded, setExpanded]     = useState<Set<string>>(new Set());
-  const [payingFor, setPayingFor]   = useState<string | null>(null);
-  const [txnId, setTxnId]           = useState("");
-  const [paying, setPaying]         = useState(false);
-  const [payError, setPayError]     = useState("");
-  const [upiId, setUpiId]           = useState("luramatrimony@upi");
   const [paymentAmounts, setPaymentAmounts] = useState<Record<string, number>>(DEFAULT_PAYMENT_AMOUNTS);
 
   const load = useCallback(async () => {
@@ -109,11 +104,6 @@ export default function InboxPage() {
         return;
       }
       load();
-      // Fetch payment settings for UPI ID
-      fetch("/api/settings/payment")
-        .then((r) => r.ok ? r.json() : null)
-        .then((d) => { if (d?.upiId) setUpiId(d.upiId); })
-        .catch(() => {});
     }
   }, [status, session, load, router]);
 
@@ -123,28 +113,6 @@ export default function InboxPage() {
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
-
-  const handleSecondPayment = async (favoriteId: string) => {
-    if (!txnId.trim()) { setPayError("Enter transaction ID"); return; }
-    setPaying(true);
-    setPayError("");
-    try {
-      const res = await fetch("/api/payment/second", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ favoriteId, transactionId: txnId, paymentMethod: "upi" }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setPayError(data.error ?? "Failed"); return; }
-      setPayingFor(null);
-      setTxnId("");
-      load();
-    } catch {
-      setPayError("Network error");
-    } finally {
-      setPaying(false);
-    }
-  };
 
   if (status === "loading" || loading) {
     return (
@@ -271,7 +239,6 @@ export default function InboxPage() {
             // Profiles stay in the Inbox permanently — the Final Payment is allowed any time
             // after the waiting period, even if the bride is currently inactive.
             const canPay2nd    = !item.inboxFrozen && !item.secondPaidAt;
-            const isPayingThis = payingFor === item.favoriteId;
             const days         = item.inboxFrozenUntil ? daysLeft(item.inboxFrozenUntil) : 0;
 
             return (
@@ -400,55 +367,16 @@ export default function InboxPage() {
                     )}
 
 
-                    {/* 2nd payment CTA */}
-                    {canPay2nd && !isPayingThis && (
-                      <button
-                        onClick={() => { setPayingFor(item.favoriteId); setTxnId(""); setPayError(""); }}
+                    {/* Final Payment CTA — opens the full payment page, which shows every
+                        admin-configured method (UPI + QR code, phone, PayTm, bank). */}
+                    {canPay2nd && (
+                      <Link
+                        href={`/payment/second?id=${item.favoriteId}`}
                         className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#7a1f2b] py-3 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors"
                       >
                         <CreditCard size={15} />
                         Pay for Contact Details — ₹{(paymentAmounts[card.familyClass] ?? 500).toLocaleString("en-IN")}
-                      </button>
-                    )}
-
-                    {/* Inline 2nd payment form */}
-                    {isPayingThis && (
-                      <div className="mt-4 rounded-xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-4">
-                        <p className="mb-1 text-sm font-semibold text-neutral-800 dark:text-neutral-900">Final Payment</p>
-                        <div className="mb-3 rounded-lg bg-[#faf7f2] dark:bg-neutral-200 px-3 py-2">
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">Amount Due</p>
-                          <p className="text-lg font-extrabold text-[#7a1f2b]">
-                            ₹{(paymentAmounts[card.familyClass] ?? 500).toLocaleString("en-IN")}
-                          </p>
-                        </div>
-                        <p className="mb-3 text-xs text-neutral-500">
-                          Send payment to UPI ID: <strong>{upiId}</strong>
-                        </p>
-                        <input
-                          value={txnId}
-                          onChange={(e) => setTxnId(e.target.value)}
-                          placeholder="Transaction / UPI reference ID"
-                          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
-                        />
-                        {payError && (
-                          <p className="mt-1 text-xs text-red-600">{payError}</p>
-                        )}
-                        <div className="mt-3 flex gap-2">
-                          <button
-                            onClick={() => handleSecondPayment(item.favoriteId)}
-                            disabled={paying}
-                            className="flex-1 rounded-lg bg-[#7a1f2b] py-2 text-xs font-bold text-white hover:bg-[#6b1823] disabled:opacity-60 transition-colors"
-                          >
-                            {paying ? "Submitting…" : "Submit Payment"}
-                          </button>
-                          <button
-                            onClick={() => setPayingFor(null)}
-                            className="rounded-lg border border-neutral-200 dark:border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
+                      </Link>
                     )}
                   </div>
                 )}
