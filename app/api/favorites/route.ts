@@ -67,9 +67,10 @@ export async function GET() {
 
       const isBrideFrozen = !!(u?.isFrozen || u?.isAutoFrozen || p?.isFrozen || p?.isAutoFrozen);
       const isBrideBanned = !u || u.status === "BANNED" || u.status === "INACTIVE";
-      // Don't return profile card data for frozen/banned targets — the record still
-      // exists in the list so the groom knows they have a favorite there.
-      const cardVisible = !isBrideFrozen && !isBrideBanned;
+      // Once the groom has paid (profile is in his Inbox) it stays visible permanently,
+      // even if the bride later freezes. Unpaid frozen/banned targets hide card data —
+      // the record still exists so the groom knows they have a favorite there.
+      const cardVisible = !isBrideBanned && (!isBrideFrozen || !!fav.firstPaidAt);
 
       return {
         id:                    String(fav._id),

@@ -97,13 +97,13 @@ function SecondPaymentContent() {
       .then((data) => {
         if (!data?.inbox) return;
         const ready = (data.inbox as any[]).filter(
-          (item) => item.adCard && !item.inboxFrozen && !item.secondPaidAt && !item.isBrideFrozen,
+          (item) => item.adCard && !item.inboxFrozen && !item.secondPaidAt,
         );
         const mapped: EligibleFav[] = ready.map((item) => {
           const fc = item.adCard?.familyClass ?? "MC";
           return {
             id:          item.favoriteId,
-            name:        item.adCard?.name ?? "Profile",
+            name:        item.adCard?.profileId ?? "Profile",
             profileId:   item.adCard?.profileId ?? "—",
             familyClass: fc,
             amount:      paymentAmt[fc] ?? 500,
@@ -180,7 +180,7 @@ function SecondPaymentContent() {
         </div>
         <h1 className="text-2xl font-bold text-neutral-800">Payment Submitted!</h1>
         <p className="mt-3 text-sm text-neutral-500">
-          Your 2nd payment for <strong>{selected.name}</strong> is under admin review.
+          Your Final Payment for <strong>{selected.name}</strong> is under admin review.
           Contact details will be unlocked once approved.
         </p>
         <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 p-4 text-left text-sm text-amber-800">
@@ -224,11 +224,11 @@ function SecondPaymentContent() {
           <div className="mt-8 rounded-xl border border-neutral-200 bg-white p-8 text-center">
             <AlertCircle size={32} className="mx-auto text-neutral-300" />
             <p className="mt-3 font-semibold text-neutral-700">
-              No profiles ready for 2nd payment
+              No profiles ready for Final Payment
             </p>
             <p className="mt-1 text-sm text-neutral-400">
-              A bride becomes eligible once your 1st payment is approved and her
-              30-day inbox period has ended.
+              A bride becomes eligible once your Initial Payment is approved and
+              her waiting period has ended.
             </p>
             <Link
               href="/inbox"
@@ -246,8 +246,7 @@ function SecondPaymentContent() {
                 className="flex w-full items-center justify-between rounded-xl border border-neutral-200 bg-white px-4 py-3 text-left transition-colors hover:border-[#7a1f2b]/40 hover:bg-[#faf7f2]"
               >
                 <div>
-                  <p className="text-sm font-bold text-neutral-800">{f.name}</p>
-                  <p className="text-xs font-mono text-neutral-400">{f.profileId}</p>
+                  <p className="font-mono text-sm font-bold text-neutral-800">{f.profileId}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
@@ -278,7 +277,7 @@ function SecondPaymentContent() {
 
       <h1 className="text-2xl font-bold text-[#7a1f2b]">Final Payment</h1>
       <p className="mt-1 text-sm text-neutral-500">
-        Unlock contact details for <strong>{selected.name}</strong> ({selected.profileId})
+        Unlock contact details for <strong>{selected.profileId}</strong>
       </p>
 
       {/* What you unlock */}

@@ -199,7 +199,7 @@ export function isPaymentLockExpired(fav: any): boolean {
   return new Date() > new Date(fav.paymentLockExpiresAt);
 }
 
-/** Check if inbox 30-day freeze is still active */
+/** Check if the inbox waiting period is still active (the profile itself never expires) */
 export function isInboxFrozen(fav: any): boolean {
   if (!fav?.inboxFrozenUntil) return false;
   return new Date() < new Date(fav.inboxFrozenUntil);

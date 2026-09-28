@@ -168,7 +168,7 @@ const favoriteSchema = new Schema(
     // After 1st payment approved, profile is in Inbox
     firstPaymentId:      { type: Schema.Types.ObjectId, ref: "Payment" },
     firstPaidAt:         { type: Date },
-    inboxFrozenUntil:    { type: Date }, // +30 days after 1st payment approved
+    inboxFrozenUntil:    { type: Date }, // end of the waiting period (approval + inboxFreezeDays); not an expiry
     // 2nd payment (contact details)
     movedToSecondPayment:    { type: Boolean, default: false },
     movedToSecondPaymentAt:  { type: Date },

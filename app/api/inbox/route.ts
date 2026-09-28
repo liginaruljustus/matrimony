@@ -8,7 +8,8 @@
  * Rules:
  *  - Only favorites where firstPaidAt is set AND payment approvalStatus=APPROVED
  *  - Shows AD card (additional details)
- *  - 30-day inbox freeze period (inboxFrozenUntil) — after that groom can pay 2nd
+ *  - Profiles stay in the Inbox permanently (no expiry). The waiting period
+ *    (inboxFrozenUntil) only delays the AD card; after it the groom can pay the Final Payment.
  *  - The bride's accept/decline response is shown immediately, even while
  *    the AD card is still locked, so the groom knows she has responded.
  *  - Recently paid first (firstPaidAt DESC)
@@ -77,7 +78,7 @@ export async function GET() {
 
       const isBrideFrozen = !!(u?.isFrozen || u?.isAutoFrozen || p?.isFrozen || p?.isAutoFrozen);
 
-      // AD details are LOCKED during the 30-day waiting window — only the
+      // AD details are LOCKED during the waiting period — only the
       // bride's Profile ID is shown. After the window ends (or once the
       // 2nd payment is made) the AD card becomes visible.
       const adLocked = !!inboxFrozen && !fav.secondPaidAt;
@@ -98,8 +99,10 @@ export async function GET() {
         declinedAt:       fav.declinedAt ?? null,
         // Whether the bride's profile is currently frozen (she may have frozen after groom paid)
         isBrideFrozen,
-        // AD card is only served after the 30-day waiting window
-        adCard:           u && p && !adLocked ? buildADCard(u, p) : null,
+        // AD card is only served after the waiting period
+        // Name is a contact-level detail — withheld until the Final Payment unlocks
+        // contact details (the Contacts page then shows it).
+        adCard:           u && p && !adLocked ? { ...buildADCard(u, p), name: "" } : null,
       };
     });
 

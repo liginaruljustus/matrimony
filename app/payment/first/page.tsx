@@ -191,7 +191,8 @@ function PaymentContent() {
           <ul className="mt-2 list-disc list-inside space-y-1 text-xs">
             <li>Admin verifies your transaction ID</li>
             <li>Brides&apos; additional details are unlocked in your Inbox</li>
-            <li>30-day inbox access begins from approval date</li>
+            <li>The brides are added to your Inbox permanently — no expiry</li>
+            <li>Their additional details are shown after the waiting period</li>
           </ul>
         </div>
         <div className="mt-6 flex flex-col gap-3">

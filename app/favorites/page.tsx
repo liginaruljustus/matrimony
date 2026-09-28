@@ -131,7 +131,9 @@ export default function FavoritesPage() {
   );
   // Both payments approved → contact unlocked
   const fullyPaid = favorites.filter((f) => f.secondPaidAt && f.secondPaymentApproved);
-  const frozenFavs = favorites.filter((f) => f.isBrideFrozen);
+  // Only unpaid favourites move to "Frozen" — once paid, a profile stays in its
+  // Inbox/Contacts section permanently, with an "inactive" note if she has frozen.
+  const frozenFavs = favorites.filter((f) => f.isBrideFrozen && !f.firstPaidAt);
 
   const selectable = unpaid.filter((f) => !f.movedToPayment || f.lockExpired);
 
@@ -559,6 +561,8 @@ function FavCard({
 }) {
   const card = fav.mdCard;
   if (!card) return null;
+  // Paid profile whose bride has since frozen — still shown, just flagged.
+  const inactive = fav.isBrideFrozen && !frozen;
 
   return (
     <div
@@ -622,6 +626,12 @@ function FavCard({
         <p className="mt-0.5 text-xs text-neutral-500">
           {card.age} yrs · {card.maritalStatus?.replace("_", " ") ?? "Single"}
         </p>
+        {inactive && (
+          <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-neutral-500">
+            <AlertCircle size={10} />
+            Profile currently inactive
+          </p>
+        )}
 
         <div className="mt-2 space-y-1">
           <p className="flex items-center gap-1 text-[11px] text-neutral-500">

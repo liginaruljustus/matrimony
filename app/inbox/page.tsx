@@ -211,7 +211,7 @@ export default function InboxPage() {
           {inbox.map((item) => {
             const card = item.adCard;
 
-            // ── 30-day waiting period: AD locked, only Profile ID shows ──
+            // ── Waiting period: AD locked, only Profile ID shows ──
             if (!card && item.adLocked) {
               const unlockDate = item.inboxFrozenUntil
                 ? new Date(item.inboxFrozenUntil).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
@@ -256,7 +256,7 @@ export default function InboxPage() {
                         {item.isBrideFrozen && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-neutral-500">
                             <AlertCircle size={10} />
-                            Profile temporarily unavailable
+                            Profile currently inactive
                           </span>
                         )}
                       </div>
@@ -268,8 +268,9 @@ export default function InboxPage() {
 
             if (!card) return null;
             const isExpanded   = expanded.has(item.favoriteId);
-            // Cannot pay 2nd if inbox freeze is active, already paid, or bride is frozen
-            const canPay2nd    = !item.inboxFrozen && !item.secondPaidAt && !item.isBrideFrozen;
+            // Profiles stay in the Inbox permanently — the Final Payment is allowed any time
+            // after the waiting period, even if the bride is currently inactive.
+            const canPay2nd    = !item.inboxFrozen && !item.secondPaidAt;
             const isPayingThis = payingFor === item.favoriteId;
             const days         = item.inboxFrozenUntil ? daysLeft(item.inboxFrozenUntil) : 0;
 
@@ -283,10 +284,10 @@ export default function InboxPage() {
                   {/* Photo */}
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
                     {card.photos?.[0] ? (
-                      <img src={card.photos[0]} alt={card.name} className="h-full w-full object-cover" />
+                      <img src={card.photos[0]} alt={card.profileId} className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-xl font-bold text-[#7a1f2b]">
-                        {card.name.charAt(0)}
+                        <Lock size={20} className="text-[#7a1f2b]/60" />
                       </div>
                     )}
                   </div>
@@ -294,7 +295,7 @@ export default function InboxPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{card.name}</h3>
+                        <h3 className="font-mono font-bold tracking-wide text-neutral-900 dark:text-neutral-900">{card.profileId}</h3>
                         <p className="text-xs text-neutral-500">{card.age} yrs · {card.district}</p>
                       </div>
                       <span
@@ -322,25 +323,25 @@ export default function InboxPage() {
                       {item.isBrideFrozen && (
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-neutral-500">
                           <AlertCircle size={10} />
-                          Profile temporarily unavailable
+                          Profile currently inactive
                         </span>
                       )}
-                      {!item.isBrideFrozen && item.secondPaidAt ? (
+                      {item.secondPaidAt ? (
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-700">
                           <CheckCircle size={10} />
                           Contact details requested
                         </span>
-                      ) : !item.isBrideFrozen && item.inboxFrozen ? (
+                      ) : item.inboxFrozen ? (
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700">
                           <Clock size={10} />
                           Inbox active · {days} day{days !== 1 ? "s" : ""} left
                         </span>
-                      ) : !item.isBrideFrozen ? (
+                      ) : (
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700">
                           <CheckCircle size={10} />
-                          Ready for 2nd payment
+                          Ready for Final Payment
                         </span>
-                      ) : null}
+                      )}
                       {item.isAccepted && (
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-700">
                           <CheckCircle size={10} />

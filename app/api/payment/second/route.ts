@@ -14,7 +14,7 @@
  *
  * Rules:
  *  - 1st payment must already be admin-approved (firstPaidAt set)
- *  - Inbox freeze (30 days) must have passed, OR this is allowed any time (configurable)
+ *  - The waiting period (inboxFreezeDays) must have passed. Allowed even if the bride is currently inactive.
  *  - 2nd payment amount = same as 1st (based on bride's familyClass)
  *  - Creates PaymentModel with tier=SECOND_PAYMENT
  *  - Admin approves → unlocks CD card for this profile
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     }
     if (fav.secondPaidAt) return Response.json({ error: "2nd payment already submitted" }, { status: 400 });
 
-    // Enforce 30-day inbox freeze — must wait before unlocking contact details
+    // Enforce the waiting period (inboxFreezeDays) before contact details can be unlocked
     if (fav.inboxFrozenUntil && new Date(fav.inboxFrozenUntil) > new Date()) {
       const daysLeft = Math.ceil(
         (new Date(fav.inboxFrozenUntil).getTime() - Date.now()) / 86400000,
