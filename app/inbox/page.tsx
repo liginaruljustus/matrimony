@@ -281,15 +281,9 @@ export default function InboxPage() {
               >
                 {/* Card header */}
                 <div className="flex items-start gap-4 p-5">
-                  {/* Photo */}
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
-                    {card.photos?.[0] ? (
-                      <img src={card.photos[0]} alt={card.profileId} className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xl font-bold text-[#7a1f2b]">
-                        <Lock size={20} className="text-[#7a1f2b]/60" />
-                      </div>
-                    )}
+                  {/* Photo placeholder — photos are never shown here, only in the PDF */}
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
+                    <Lock size={20} className="text-[#7a1f2b]/60" />
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -405,14 +399,6 @@ export default function InboxPage() {
                       </div>
                     )}
 
-                    {/* Photos grid */}
-                    {(card.photos?.length ?? 0) > 1 && (
-                      <div className="mt-4 grid grid-cols-3 gap-2">
-                        {card.photos!.slice(1).map((url, i) => (
-                          <img key={i} src={url} alt="" className="h-24 w-full rounded-lg object-cover" />
-                        ))}
-                      </div>
-                    )}
 
                     {/* 2nd payment CTA */}
                     {canPay2nd && !isPayingThis && (
