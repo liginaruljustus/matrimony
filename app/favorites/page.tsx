@@ -10,6 +10,15 @@ import {
   ShoppingCart, Inbox, ChevronRight,
 } from "lucide-react";
 import { FAMILY_CLASS_COLORS as CLASS_COLOR, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
+/** "today" / "tomorrow" / "in N days" — counted in calendar days. */
+function unlockWhen(iso: string): string {
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startOfDay(new Date(iso)) - startOfDay(new Date())) / 86400000);
+  if (days <= 0) return "today";
+  if (days === 1) return "tomorrow";
+  return `in ${days} days`;
+}
+
 type FavItem = {
   id: string;
   favoriteUserId: string;
@@ -23,6 +32,8 @@ type FavItem = {
   secondPaidAt: string | null;
   secondPaymentApproved: boolean;
   createdAt: string;
+  isAccepted?: boolean;
+  declinedAt?: string | null;
   isBrideFrozen: boolean;
   mdCard: {
     profileId: string;
@@ -353,6 +364,7 @@ export default function FavoritesPage() {
             <Section title="Frozen Profiles" count={frozenFavs.length} muted>
               {frozenFavs.map((fav) => (
                 <FavCard
+                  hideName
                   key={fav.id}
                   fav={fav}
                   selectable={false}
@@ -375,6 +387,7 @@ export default function FavoritesPage() {
             <Section title="Payment Submitted — Awaiting Approval" count={pendingFirstApproval.length} muted>
               {pendingFirstApproval.map((fav) => (
                 <FavCard
+                  hideName
                   key={fav.id}
                   fav={fav}
                   selectable={false}
@@ -393,7 +406,7 @@ export default function FavoritesPage() {
 
           {/* ── Inbox (1st payment approved) ─────────────── */}
           {approvedInbox.length > 0 && (
-            <Section title="In Inbox (Additional Details Unlocked)" count={approvedInbox.length}>
+            <Section title="In Inbox (Initial Payment Approved)" count={approvedInbox.length}>
               {approvedInbox.map((fav) => {
                 const inboxFrozen =
                   fav.inboxFrozenUntil && new Date(fav.inboxFrozenUntil) > new Date();
@@ -404,21 +417,36 @@ export default function FavoritesPage() {
                     selectable={false}
                     selected={false}
                     onSelect={() => {}}
+                    hideName
                     badge={
                       inboxFrozen ? (
                         <span className="flex items-center gap-1 text-[10px] font-bold text-blue-700">
                           <Clock size={10} />
-                          Inbox active until{" "}
-                          {new Date(fav.inboxFrozenUntil!).toLocaleDateString("en-IN")}
+                          Details shown on{" "}
+                          {new Date(fav.inboxFrozenUntil!).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                          {" "}({unlockWhen(fav.inboxFrozenUntil!)})
                         </span>
                       ) : (
                         <span className="flex items-center gap-1 text-[10px] font-bold text-green-700">
                           <CheckCircle size={10} />
-                          Ready for 2nd payment
+                          Ready for Final Payment
                         </span>
                       )
                     }
                     actionButton={
+                      <>
+                      {fav.isAccepted && (
+                        <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-green-200 bg-green-50 px-2 py-1.5 text-[11px] font-bold text-green-700">
+                          <CheckCircle size={12} />
+                          Bride accepted your proposal
+                        </p>
+                      )}
+                      {!fav.isAccepted && fav.declinedAt && (
+                        <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2 py-1.5 text-[11px] font-bold text-red-600">
+                          <AlertCircle size={12} />
+                          Bride declined your proposal
+                        </p>
+                      )}
                       <Link
                         href="/inbox"
                         className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#7a1f2b] py-2 text-xs font-bold text-white hover:bg-[#6b1823] transition-colors"
@@ -426,6 +454,7 @@ export default function FavoritesPage() {
                         <Inbox size={13} />
                         View in Inbox
                       </Link>
+                      </>
                     }
                   />
                 );
@@ -435,9 +464,10 @@ export default function FavoritesPage() {
 
           {/* ── Awaiting 2nd payment approval ────────────── */}
           {pendingSecondApproval.length > 0 && (
-            <Section title="Contact Payment — Awaiting Approval" count={pendingSecondApproval.length} muted>
+            <Section title="Final Payment — Awaiting Approval" count={pendingSecondApproval.length} muted>
               {pendingSecondApproval.map((fav) => (
                 <FavCard
+                  hideName
                   key={fav.id}
                   fav={fav}
                   selectable={false}

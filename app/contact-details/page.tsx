@@ -32,6 +32,7 @@ export default function ContactDetailsPage() {
   const [pending, setPending]     = useState(0);
   const [loading, setLoading]     = useState(true);
   const [copied, setCopied]       = useState("");
+  const isBride = (session?.user as any)?.profileType === "BRIDE";
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -76,7 +77,9 @@ export default function ContactDetailsPage() {
           Contact Details
         </h1>
         <p className="mt-0.5 text-sm text-neutral-500">
-          Contact information for brides you&apos;ve unlocked
+          {isBride
+            ? "Contact information of grooms who have completed the Final Payment"
+            : "Contact information for brides you've unlocked"}
         </p>
       </div>
 
@@ -98,13 +101,15 @@ export default function ContactDetailsPage() {
           <Phone size={52} className="mb-4 text-neutral-200" strokeWidth={1.5} />
           <h2 className="text-lg font-semibold text-neutral-600">No Contact Details Yet</h2>
           <p className="mt-1 text-sm text-neutral-400">
-            Complete 2nd payment for profiles in your Inbox to unlock contact details.
+            {isBride
+              ? "A groom's contact details appear here once he completes the Final Payment."
+              : "Complete the Final Payment for profiles in your Inbox to unlock contact details."}
           </p>
           <Link
-            href="/inbox"
+            href={isBride ? "/accepted" : "/inbox"}
             className="mt-5 rounded-lg bg-[#7a1f2b] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors"
           >
-            Go to Inbox
+            {isBride ? "Go to Accepted" : "Go to Inbox"}
           </Link>
         </div>
       ) : (

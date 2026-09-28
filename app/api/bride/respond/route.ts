@@ -78,7 +78,7 @@ export async function POST(req: Request) {
         await NotificationModel.create({
           userId:  fav.userId,
           type:    "INTEREST_ACCEPTED",
-          message: `${brideUser.name} has accepted your proposal! Open your Inbox to connect further.`,
+          message: `Bride ${brideUser.profileId} has accepted your proposal! Open your Inbox to see the details.`,
           link:    "/inbox",
         });
       } catch { /* non-critical */ }
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
         await NotificationModel.create({
           userId:  fav.userId,
           type:    "INTEREST_DECLINED",
-          message: `${brideUser.name} has declined your proposal. You can continue browsing other profiles.`,
+          message: `Bride ${brideUser.profileId} has declined your proposal. You can continue browsing other profiles.`,
           link:    "/profiles",
         });
       } catch { /* non-critical */ }

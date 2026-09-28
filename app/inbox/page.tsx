@@ -62,6 +62,15 @@ function daysLeft(iso: string): number {
   return Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000));
 }
 
+/** "today" / "tomorrow" / "in N days" — counted in calendar days, not 24-hour blocks. */
+function unlockWhen(iso: string): string {
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startOfDay(new Date(iso)) - startOfDay(new Date())) / 86400000);
+  if (days <= 0) return "today";
+  if (days === 1) return "tomorrow";
+  return `in ${days} days`;
+}
+
 export default function InboxPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -204,7 +213,9 @@ export default function InboxPage() {
 
             // ── 30-day waiting period: AD locked, only Profile ID shows ──
             if (!card && item.adLocked) {
-              const unlockDays = item.inboxFrozenUntil ? daysLeft(item.inboxFrozenUntil) : 0;
+              const unlockDate = item.inboxFrozenUntil
+                ? new Date(item.inboxFrozenUntil).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+                : null;
               return (
                 <div
                   key={item.favoriteId}
@@ -218,25 +229,24 @@ export default function InboxPage() {
                       <h3 className="font-mono font-bold text-neutral-900 dark:text-neutral-900">
                         {item.brideProfileId || "Profile"}
                       </h3>
-                      <p className="mt-0.5 text-xs text-neutral-500">
-                        Additional details are locked during the 30-day waiting period.
+                      {item.isAccepted && (
+                        <div className="mt-2 flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
+                          <CheckCircle size={16} className="mt-0.5 shrink-0 text-green-600" />
+                          <div>
+                            <p className="text-sm font-bold text-green-700">The bride has accepted your proposal!</p>
+                            {item.acceptedAt && (
+                              <p className="text-[11px] text-green-700/80">
+                                Accepted on {new Date(item.acceptedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      <p className="mt-2 text-xs text-neutral-500">
+                        Waiting period — her additional details will be shown
+                        {unlockDate ? <> on <strong>{unlockDate}</strong> ({unlockWhen(item.inboxFrozenUntil!)})</> : " soon"}.
                       </p>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700">
-                          <Clock size={10} />
-                          Unlocks in {unlockDays} day{unlockDays !== 1 ? "s" : ""}
-                          {item.inboxFrozenUntil && (
-                            <> · {new Date(item.inboxFrozenUntil).toLocaleDateString("en-IN", {
-                              day: "numeric", month: "short", year: "numeric",
-                            })}</>
-                          )}
-                        </span>
-                        {item.isAccepted && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-700">
-                            <CheckCircle size={10} />
-                            Bride accepted
-                          </span>
-                        )}
                         {!item.isAccepted && item.declinedAt && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-red-600">
                             <XCircle size={10} />

@@ -1,9 +1,11 @@
 /**
  * GET /api/contact-details
  *
- * CD cards of brides for which 2nd payment was approved — either manually by
- * admin, or automatically once secondPaymentAutoApproveDays has passed since
- * payment (SLA fallback, see lib/paymentApproval.ts).
+ * Groom: CD cards of brides for which his 2nd (Final) payment was approved —
+ * either manually by admin, or automatically once secondPaymentAutoApproveDays
+ * has passed since payment (SLA fallback, see lib/paymentApproval.ts).
+ * Bride: CD cards of grooms whose Final Payment for her was approved — payment
+ * unlocks contact details on both sides.
  * Recently paid first (secondPaidAt DESC).
  */
 import { getServerSession } from "next-auth/next";
@@ -26,8 +28,14 @@ export async function GET() {
     // the admin-configured window.
     await autoApproveDuePayments("SECOND_PAYMENT");
 
+    const me      = await UserModel.findById(session.user.id).select("profileType").lean() as any;
+    const isBride = me?.profileType === "BRIDE";
+    // A favourite is always groom (userId) → bride (favoriteUserId); the
+    // "other person" is whichever side the current user is not.
+    const otherId = (f: any) => (isBride ? f.userId : f.favoriteUserId);
+
     const favs = await FavoriteModel.find({
-      userId:       session.user.id,
+      [isBride ? "favoriteUserId" : "userId"]: session.user.id,
       secondPaidAt: { $exists: true, $ne: null },
     }).sort({ secondPaidAt: -1 }).lean() as any[];
 
@@ -49,7 +57,7 @@ export async function GET() {
       return Response.json({ contacts: [], pendingApproval: favs.length });
     }
 
-    const targetUserIds = approvedFavs.map((f: any) => f.favoriteUserId);
+    const targetUserIds = approvedFavs.map(otherId);
     const [targetUsers, targetProfiles] = await Promise.all([
       UserModel.find({ _id: { $in: targetUserIds } }).lean() as Promise<any[]>,
       ProfileModel.find({ userId: { $in: targetUserIds } }).lean() as Promise<any[]>,
@@ -58,7 +66,7 @@ export async function GET() {
     const profileMap = Object.fromEntries(targetProfiles.map((p: any) => [String(p.userId), p]));
 
     const contacts = approvedFavs.map((fav: any) => {
-      const uid = String(fav.favoriteUserId);
+      const uid = String(otherId(fav));
       const u   = userMap[uid];
       const p   = profileMap[uid];
       return {

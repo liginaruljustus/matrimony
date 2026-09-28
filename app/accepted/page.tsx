@@ -274,7 +274,7 @@ function AcceptedGroomCard({ item }: { item: AcceptedItem }) {
           </div>
         )}
 
-        {/* Contact Details (CD) — unlocked once groom's 2nd payment is admin-approved */}
+        {/* Contact Details (CD) — unlocked once groom's Final Payment is admin-approved */}
         {item.cdCard ? (
           <div className="mt-3 rounded-lg border border-green-200 bg-green-50 p-3">
             <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold text-green-700">
@@ -304,7 +304,7 @@ function AcceptedGroomCard({ item }: { item: AcceptedItem }) {
           </div>
         ) : (
           <p className="mt-3 text-[10px] text-neutral-400">
-            Contact details will appear here once the groom completes the 2nd payment.
+            Contact details will appear here once the groom completes the Final Payment.
           </p>
         )}
 

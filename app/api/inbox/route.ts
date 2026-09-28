@@ -9,10 +9,8 @@
  *  - Only favorites where firstPaidAt is set AND payment approvalStatus=APPROVED
  *  - Shows AD card (additional details)
  *  - 30-day inbox freeze period (inboxFrozenUntil) — after that groom can pay 2nd
- *  - The bride's accept/decline response is likewise held back until the
- *    freeze period ends (or 2nd payment is made): a decline surfaces early
- *    (no reason to keep bad news waiting), but an accept is revealed only
- *    once the AD card itself unlocks.
+ *  - The bride's accept/decline response is shown immediately, even while
+ *    the AD card is still locked, so the groom knows she has responded.
  *  - Recently paid first (firstPaidAt DESC)
  */
 import { getServerSession } from "next-auth/next";
@@ -94,12 +92,9 @@ export async function GET() {
         brideProfileId:   u?.profileId ?? "",
         brideFamilyClass: u?.familyClass ?? p?.familyClass ?? "MC",
         secondPaidAt:     fav.secondPaidAt ?? null,
-        // Bride's ACCEPTANCE is held back until the AD card itself unlocks —
-        // matches "accept workflow shows to the boy after 30 days or admin
-        // approval". A decline surfaces immediately regardless (no reason to
-        // sit on bad news).
-        isAccepted:       !adLocked && (fav.isAccepted ?? false),
-        acceptedAt:       !adLocked ? (fav.acceptedAt ?? null) : null,
+        // Bride's response is shown straight away, even during the waiting period.
+        isAccepted:       fav.isAccepted ?? false,
+        acceptedAt:       fav.acceptedAt ?? null,
         declinedAt:       fav.declinedAt ?? null,
         // Whether the bride's profile is currently frozen (she may have frozen after groom paid)
         isBrideFrozen,

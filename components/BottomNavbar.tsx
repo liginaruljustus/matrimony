@@ -72,6 +72,7 @@ export function BottomNavbar() {
     { href: "/dashboard",    label: "Home",      icon: Home },
     { href: "/bride-inbox",  label: "Proposals", icon: Heart, badge: unread },
     { href: "/accepted",     label: "Accepted",  icon: CheckCircle },
+    { href: "/contact-details", label: "Contacts", icon: Phone },
     { href: "/my-profile",   label: "Profile",   icon: User },
     { href: "/settings",     label: "Settings",  icon: Settings },
   ];
@@ -123,7 +124,10 @@ export function BottomNavbar() {
 
       {/* Bottom tab bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-neutral-200 dark:border-neutral-200 bg-white/95 dark:bg-neutral-100/95 px-1 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] backdrop-blur-sm lg:hidden">
-        <ul className="grid grid-cols-5">
+        <ul
+          className="grid"
+          style={{ gridTemplateColumns: `repeat(${tabs.length + (showMore ? 1 : 0)}, minmax(0, 1fr))` }}
+        >
           {tabs.map((tab) => {
             const active = isActive(tab.href);
             const Icon = tab.icon;

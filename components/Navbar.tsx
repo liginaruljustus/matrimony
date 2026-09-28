@@ -185,6 +185,7 @@ export function Navbar() {
   const brideLinks = [
     { href: "/bride-inbox",  label: "Proposals" },
     { href: "/accepted",     label: "Accepted" },
+    { href: "/contact-details", label: "Contacts" },
     { href: "/my-profile",   label: "My Profile" },
     { href: "/settings",     label: "Settings" },
   ];

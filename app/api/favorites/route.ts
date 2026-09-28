@@ -88,6 +88,9 @@ export async function GET() {
                                  ? approvedPaymentSet.has(String(fav.secondPaymentId))
                                  : false,
         createdAt:             fav.createdAt,
+        // Bride's response — shown to the groom straight away
+        isAccepted:            fav.isAccepted ?? false,
+        declinedAt:            fav.declinedAt ?? null,
         mdCard:                cardVisible && u && p ? buildMDCard(u, p) : null,
         isBrideFrozen,
         isBrideBanned,
