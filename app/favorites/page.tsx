@@ -408,7 +408,7 @@ export default function FavoritesPage() {
 
           {/* ── Inbox (1st payment approved) ─────────────── */}
           {approvedInbox.length > 0 && (
-            <Section title="In Inbox (Initial Payment Approved)" count={approvedInbox.length}>
+            <Section title="Paid Profiles (Initial Payment)" count={approvedInbox.length}>
               {approvedInbox.map((fav) => {
                 const inboxFrozen =
                   fav.inboxFrozenUntil && new Date(fav.inboxFrozenUntil) > new Date();
