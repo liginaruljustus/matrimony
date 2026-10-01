@@ -125,6 +125,8 @@ export default function FavoritesPage() {
   const approvedInbox = favorites.filter(
     (f) => f.firstPaidAt && f.firstPaymentApproved && !f.secondPaidAt,
   );
+  // The Inbox lists only brides who accepted — its badge counts those
+  const acceptedCount = favorites.filter((f) => f.firstPaymentApproved && f.isAccepted).length;
   // 2nd payment submitted but awaiting admin approval
   const pendingSecondApproval = favorites.filter(
     (f) => f.secondPaidAt && !f.secondPaymentApproved,
@@ -227,9 +229,9 @@ export default function FavoritesPage() {
           >
             <Inbox size={14} />
             Inbox
-            {approvedInbox.length > 0 && (
+            {acceptedCount > 0 && (
               <span className="ml-1 rounded-full bg-[#7a1f2b] px-1.5 py-0.5 text-[10px] text-white">
-                {approvedInbox.length}
+                {acceptedCount}
               </span>
             )}
           </Link>

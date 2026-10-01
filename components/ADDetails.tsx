@@ -91,7 +91,7 @@ export function ADDetailsGrid({ card }: { card: any }) {
 }
 
 /** Downloads the AD card (all details above + photos) as a PDF. */
-export function DownloadADPdfButton({ card }: { card: any }) {
+export function DownloadADPdfButton({ card, label = "Download Details (PDF)" }: { card: any; label?: string }) {
   const [busy, setBusy]   = useState(false);
   const [error, setError] = useState("");
 
@@ -118,7 +118,7 @@ export function DownloadADPdfButton({ card }: { card: any }) {
         className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#7a1f2b]/30 bg-white dark:bg-neutral-100 px-3 py-2 text-[11px] font-bold text-[#7a1f2b] hover:bg-[#7a1f2b]/5 transition-colors disabled:opacity-60"
       >
         <Download size={12} />
-        {busy ? "Preparing PDF…" : "Download Details (PDF)"}
+        {busy ? "Preparing PDF…" : label}
       </button>
       {error && <p className="mt-1 text-[10px] text-red-600">{error}</p>}
     </div>

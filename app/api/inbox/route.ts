@@ -1,9 +1,9 @@
 /**
  * GET /api/inbox
  *
- * Groom's inbox — AD cards of brides for which 1st payment was approved
- * (manually by admin, or automatically via the SLA fallback — see
- * lib/paymentApproval.ts).
+ * Groom's inbox — AD cards of brides who ACCEPTED his proposal, for which the
+ * 1st payment was approved (manually by admin, or automatically via the SLA
+ * fallback — see lib/paymentApproval.ts).
  *
  * Rules:
  *  - Only favorites where firstPaidAt is set AND payment approvalStatus=APPROVED
@@ -70,7 +70,7 @@ export async function GET() {
     const profileMap = Object.fromEntries(targetProfiles.map((p: any) => [String(p.userId), p]));
 
     const now = new Date();
-    const inbox = approvedFavs.map((fav: any) => {
+    const allItems = approvedFavs.map((fav: any) => {
       const uid = String(fav.favoriteUserId);
       const u   = userMap[uid];
       const p   = profileMap[uid];
@@ -106,11 +106,19 @@ export async function GET() {
       };
     });
 
+    // The Inbox lists only brides who have ACCEPTED the proposal. Paid profiles
+    // still awaiting her response (or declined) stay on the Favourites page.
+    const inbox            = allItems.filter((i: any) => i.isAccepted);
+    const awaitingResponse = allItems.filter((i: any) => !i.isAccepted && !i.declinedAt).length;
+    const declined         = allItems.filter((i: any) => !i.isAccepted && i.declinedAt).length;
+
     const secondPaymentAmounts = await getPaymentAmounts("SECOND_PAYMENT");
 
     return Response.json({
       inbox,
       pendingApproval: favs.length - approvedFavs.length,
+      awaitingResponse,
+      declined,
       secondPaymentAmounts,
     });
   } catch (error) {

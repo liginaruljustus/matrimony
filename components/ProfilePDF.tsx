@@ -505,6 +505,8 @@ export async function downloadADCardPDF(card: any) {
     nativeDistrict: card.district,
     photos: card.photos?.length ? card.photos : card.photo ? [card.photo] : [],
   };
-  const user = { name: card.name, profileId: card.profileId };
+  // The name may be withheld (groom viewing a bride before the Final Payment) —
+  // fall back to the Profile ID for the PDF heading and file name.
+  const user = { name: card.name || card.profileId, profileId: card.profileId };
   await downloadProfilePDF(profile, user, { adOnly: true });
 }

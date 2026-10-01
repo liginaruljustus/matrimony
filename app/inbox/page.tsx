@@ -7,8 +7,9 @@ import Link from "next/link";
 import {
   Inbox, MapPin, GraduationCap, Star, Clock,
   CheckCircle, CreditCard, Users, Briefcase,
-  Home, ChevronDown, ChevronUp, AlertCircle, XCircle, Lock,
+  Home, ChevronDown, ChevronUp, AlertCircle, XCircle, Lock, Download,
 } from "lucide-react";
+import { DownloadADPdfButton } from "@/components/ADDetails";
 import { FAMILY_CLASS_COLORS, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 const DEFAULT_PAYMENT_AMOUNTS: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
@@ -77,6 +78,7 @@ export default function InboxPage() {
 
   const [inbox, setInbox]           = useState<InboxItem[]>([]);
   const [pending, setPending]       = useState(0);
+  const [awaiting, setAwaiting]     = useState(0);
   const [loading, setLoading]       = useState(true);
   const [expanded, setExpanded]     = useState<Set<string>>(new Set());
   const [paymentAmounts, setPaymentAmounts] = useState<Record<string, number>>(DEFAULT_PAYMENT_AMOUNTS);
@@ -88,6 +90,7 @@ export default function InboxPage() {
       const data = await res.json();
       setInbox(data.inbox ?? []);
       setPending(data.pendingApproval ?? 0);
+      setAwaiting(data.awaitingResponse ?? 0);
       setPaymentAmounts(data.secondPaymentAmounts ?? DEFAULT_PAYMENT_AMOUNTS);
     } catch {
       setInbox([]);
@@ -133,7 +136,7 @@ export default function InboxPage() {
             My Inbox
           </h1>
           <p className="mt-0.5 text-sm text-neutral-500">
-            Additional details of brides you&apos;ve unlocked
+            Brides who have accepted your proposal
           </p>
         </div>
         <Link
@@ -160,12 +163,28 @@ export default function InboxPage() {
         </div>
       )}
 
+      {/* Paid profiles still waiting for the bride's answer — they live on Favourites */}
+      {awaiting > 0 && (
+        <div className="mb-5 flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
+          <Clock size={16} className="mt-0.5 shrink-0 text-blue-600" />
+          <div>
+            <p className="text-sm font-semibold text-blue-800">
+              {awaiting} paid profile{awaiting > 1 ? "s are" : " is"} waiting for the bride&apos;s response
+            </p>
+            <p className="text-xs text-blue-700">
+              A profile comes to your Inbox once the bride accepts. Until then you can see it under{" "}
+              <Link href="/favorites" className="font-semibold underline">Favourites</Link>.
+            </p>
+          </div>
+        </div>
+      )}
+
       {inbox.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Inbox size={52} className="mb-4 text-neutral-200" strokeWidth={1.5} />
           <h2 className="text-lg font-semibold text-neutral-600">Inbox is Empty</h2>
           <p className="mt-1 text-sm text-neutral-400">
-            Complete payment for your favourite profiles to unlock their additional details.
+            Profiles appear here once the bride accepts your proposal.
           </p>
           <Link
             href="/favorites"
@@ -228,6 +247,19 @@ export default function InboxPage() {
                           </span>
                         )}
                       </div>
+                      {/* Enabled once the waiting period ends */}
+                      <button
+                        type="button"
+                        disabled
+                        title="Available after the waiting period"
+                        className="mt-3 flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-neutral-100 px-3 py-2 text-[11px] font-bold text-neutral-400 sm:w-auto"
+                      >
+                        <Download size={12} />
+                        Download More Details with Photo
+                      </button>
+                      <p className="mt-1 text-[10px] text-neutral-400">
+                        Available after the waiting period{unlockDate ? ` — ${unlockDate}` : ""}.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -315,6 +347,9 @@ export default function InboxPage() {
                           Bride declined
                         </span>
                       )}
+                    </div>
+                    <div className="sm:max-w-xs">
+                      <DownloadADPdfButton card={card} label="Download More Details with Photo" />
                     </div>
                   </div>
                 </div>
