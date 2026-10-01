@@ -25,7 +25,6 @@ type InboxItem = {
   secondPaidAt: string | null;
   isAccepted: boolean;
   acceptedAt: string | null;
-  declinedAt: string | null;
   isBrideFrozen: boolean;
   adCard: {
     profileId: string;
@@ -234,12 +233,6 @@ export default function InboxPage() {
                         {unlockDate ? <> on <strong>{unlockDate}</strong> ({unlockWhen(item.inboxFrozenUntil!)})</> : " soon"}.
                       </p>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        {!item.isAccepted && item.declinedAt && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-red-600">
-                            <XCircle size={10} />
-                            Bride declined
-                          </span>
-                        )}
                         {item.isBrideFrozen && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-neutral-500">
                             <AlertCircle size={10} />
@@ -339,12 +332,6 @@ export default function InboxPage() {
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-700">
                           <CheckCircle size={10} />
                           Bride accepted
-                        </span>
-                      )}
-                      {!item.isAccepted && item.declinedAt && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-red-600">
-                          <XCircle size={10} />
-                          Bride declined
                         </span>
                       )}
                     </div>

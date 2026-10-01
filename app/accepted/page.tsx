@@ -18,7 +18,6 @@ type AcceptedItem = {
   firstPaidAt: string;
   isAccepted: boolean;
   acceptedAt: string | null;
-  declinedAt: string | null;
   mdCard: {
     profileId: string;
     name: string;

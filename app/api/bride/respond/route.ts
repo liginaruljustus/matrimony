@@ -1,9 +1,10 @@
 /**
  * POST /api/bride/respond
  *
- * Bride accepts or declines a groom's interest.
+ * Bride accepts a groom's interest. (Declining was removed — a proposal simply
+ * stays pending until she accepts.)
  *
- * Body: { favoriteId: string, action: "accept" | "decline" }
+ * Body: { favoriteId: string, action: "accept" }
  *
  * Rules:
  *  - Must be a bride
@@ -25,8 +26,8 @@ export async function POST(req: Request) {
 
     const { favoriteId, action } = await req.json();
     if (!favoriteId) return Response.json({ error: "favoriteId required" }, { status: 400 });
-    if (!["accept", "decline"].includes(action)) {
-      return Response.json({ error: "action must be accept or decline" }, { status: 400 });
+    if (action !== "accept") {
+      return Response.json({ error: "action must be accept" }, { status: 400 });
     }
 
     await connectToDatabase();
@@ -56,10 +57,10 @@ export async function POST(req: Request) {
       }
     }
 
-    // One-time response only — cannot change after the first answer
-    if (fav.isAccepted || fav.declinedAt) {
+    // Accepting is final. (Legacy declined proposals count as pending and can be accepted.)
+    if (fav.isAccepted) {
       return Response.json(
-        { error: "You have already responded to this proposal" },
+        { error: "You have already accepted this proposal" },
         { status: 409 },
       );
     }
@@ -69,35 +70,20 @@ export async function POST(req: Request) {
     // Track activity so the bride isn't auto-frozen for inactivity
     await UserModel.findByIdAndUpdate(session.user.id, { $set: { lastActivity: now } });
 
-    if (action === "accept") {
-      await FavoriteModel.findByIdAndUpdate(favoriteId, {
-        $set: { isAccepted: true, acceptedAt: now },
+    await FavoriteModel.findByIdAndUpdate(favoriteId, {
+      $set: { isAccepted: true, acceptedAt: now },
+      $unset: { declinedAt: "" },
+    });
+    // Notify the groom
+    try {
+      await NotificationModel.create({
+        userId:  fav.userId,
+        type:    "INTEREST_ACCEPTED",
+        message: `Bride ${brideUser.profileId} has accepted your proposal! Open your Inbox to see the details.`,
+        link:    "/inbox",
       });
-      // Notify the groom
-      try {
-        await NotificationModel.create({
-          userId:  fav.userId,
-          type:    "INTEREST_ACCEPTED",
-          message: `Bride ${brideUser.profileId} has accepted your proposal! Open your Inbox to see the details.`,
-          link:    "/inbox",
-        });
-      } catch { /* non-critical */ }
-      return Response.json({ ok: true, message: "Groom interest accepted" });
-    } else {
-      await FavoriteModel.findByIdAndUpdate(favoriteId, {
-        $set: { isAccepted: false, declinedAt: now },
-      });
-      // Notify the groom
-      try {
-        await NotificationModel.create({
-          userId:  fav.userId,
-          type:    "INTEREST_DECLINED",
-          message: `Bride ${brideUser.profileId} has declined your proposal. You can continue browsing other profiles.`,
-          link:    "/profiles",
-        });
-      } catch { /* non-critical */ }
-      return Response.json({ ok: true, message: "Groom interest declined" });
-    }
+    } catch { /* non-critical */ }
+    return Response.json({ ok: true, message: "Groom interest accepted" });
   } catch (error) {
     console.error("POST /api/bride/respond error:", error);
     return Response.json({ error: "Server error" }, { status: 500 });

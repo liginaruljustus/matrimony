@@ -111,7 +111,6 @@ export async function GET() {
         secondPaidAt:   fav.secondPaidAt ?? null,
         isAccepted:     fav.isAccepted ?? false,
         acceptedAt:     fav.acceptedAt  ?? null,
-        declinedAt:     fav.declinedAt  ?? null,
         mdCard:         card,
         cdCard,
       };

@@ -10,7 +10,7 @@
  *  - Shows AD card (additional details)
  *  - Profiles stay in the Inbox permanently (no expiry). The waiting period
  *    (inboxFrozenUntil) only delays the AD card; after it the groom can pay the Final Payment.
- *  - The bride's accept/decline response is shown immediately, even while
+ *  - The bride's acceptance is shown immediately, even while
  *    the AD card is still locked, so the groom knows she has responded.
  *  - Recently paid first (firstPaidAt DESC)
  */
@@ -103,7 +103,6 @@ export async function GET() {
         // Bride's response is shown straight away, even during the waiting period.
         isAccepted:       fav.isAccepted ?? false,
         acceptedAt:       fav.acceptedAt ?? null,
-        declinedAt:       fav.declinedAt ?? null,
         // Whether the bride's profile is currently frozen (she may have frozen after groom paid)
         isBrideFrozen,
         // AD card is only served after the waiting period
@@ -118,10 +117,9 @@ export async function GET() {
     });
 
     // The Inbox lists only brides who have ACCEPTED the proposal. Paid profiles
-    // still awaiting her response (or declined) stay on the Favourites page.
+    // still awaiting her response stay on the Favourites page.
     const inbox            = allItems.filter((i: any) => i.isAccepted);
-    const awaitingResponse = allItems.filter((i: any) => !i.isAccepted && !i.declinedAt).length;
-    const declined         = allItems.filter((i: any) => !i.isAccepted && i.declinedAt).length;
+    const awaitingResponse = allItems.length - inbox.length;
 
     const secondPaymentAmounts = await getPaymentAmounts("SECOND_PAYMENT");
 
@@ -129,7 +127,6 @@ export async function GET() {
       inbox,
       pendingApproval: favs.length - approvedFavs.length,
       awaitingResponse,
-      declined,
       secondPaymentAmounts,
     });
   } catch (error) {

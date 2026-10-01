@@ -33,7 +33,6 @@ type FavItem = {
   secondPaymentApproved: boolean;
   createdAt: string;
   isAccepted?: boolean;
-  declinedAt?: string | null;
   isBrideFrozen: boolean;
   mdCard: {
     profileId: string;
@@ -443,12 +442,6 @@ export default function FavoritesPage() {
                         <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-green-200 bg-green-50 px-2 py-1.5 text-[11px] font-bold text-green-700">
                           <CheckCircle size={12} />
                           Bride accepted your proposal
-                        </p>
-                      )}
-                      {!fav.isAccepted && fav.declinedAt && (
-                        <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2 py-1.5 text-[11px] font-bold text-red-600">
-                          <AlertCircle size={12} />
-                          Bride declined your proposal
                         </p>
                       )}
                       <Link

@@ -18,7 +18,6 @@ type InboxItem = {
   firstPaidAt: string;
   isAccepted: boolean;
   acceptedAt: string | null;
-  declinedAt: string | null;
   mdCard: {
     profileId: string;
     name: string;
@@ -93,7 +92,7 @@ export default function BrideInboxPage() {
     }
   }, [status, session, load, router]);
 
-  const respond = async (favoriteId: string, action: "accept" | "decline") => {
+  const respond = async (favoriteId: string, action: "accept") => {
     if (action === "accept") {
       const confirmed = window.confirm(
         "Accept this proposal? The groom family will be notified and your inbox will remain connected.",
@@ -130,8 +129,7 @@ export default function BrideInboxPage() {
   }
 
   const accepted  = inbox.filter((i) => i.isAccepted);
-  const declined  = inbox.filter((i) => !i.isAccepted && !!i.declinedAt);
-  const pending2  = inbox.filter((i) => !i.isAccepted && !i.declinedAt);
+  const pending2  = inbox.filter((i) => !i.isAccepted);
 
   return (
     <div className="bg-[#faf7f2] dark:bg-neutral-100 min-h-screen">
@@ -149,12 +147,11 @@ export default function BrideInboxPage() {
 
       {/* Stats summary */}
       {inbox.length > 0 && (
-        <div className="mb-6 grid grid-cols-4 gap-3">
+        <div className="mb-6 grid grid-cols-3 gap-3">
           {[
             { label: "Total",    value: inbox.length,    color: "text-[#7a1f2b]",  bg: "bg-white dark:bg-neutral-100 border-neutral-200 dark:border-neutral-200" },
             { label: "Pending",  value: pending2.length, color: "text-amber-700",  bg: "bg-amber-50 border-amber-200" },
             { label: "Accepted", value: accepted.length, color: "text-green-700",  bg: "bg-green-50 border-green-200" },
-            { label: "Declined", value: declined.length, color: "text-red-600",    bg: "bg-red-50 border-red-200" },
           ].map(({ label, value, color, bg }) => (
             <div key={label} className={`rounded-xl border p-3 text-center ${bg}`}>
               <p className={`text-[10px] font-semibold uppercase tracking-wide ${color} opacity-70`}>{label}</p>
@@ -207,7 +204,6 @@ export default function BrideInboxPage() {
                     key={item.favoriteId}
                     item={item}
                     onAccept={() => respond(item.favoriteId, "accept")}
-                    onDecline={() => respond(item.favoriteId, "decline")}
                     responding={responding === item.favoriteId}
                   />
                 ))}
@@ -237,27 +233,6 @@ export default function BrideInboxPage() {
             </div>
           )}
 
-          {/* ── Declined ─────────────────────────────────── */}
-          {declined.length > 0 && (
-            <div>
-              <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-neutral-400">
-                Declined
-                <span className="ml-1.5 rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-500">
-                  {declined.length}
-                </span>
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {declined.map((item) => (
-                  <GroomCard
-                    key={item.favoriteId}
-                    item={item}
-                    responding={false}
-                    declined
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </>
       )}
       </div>
@@ -267,14 +242,12 @@ export default function BrideInboxPage() {
 
 // ── Groom Card ──────────────────────────────────────────────────────────────
 function GroomCard({
-  item, onAccept, onDecline, responding, accepted = false, declined = false,
+  item, onAccept, responding, accepted = false,
 }: {
   item: InboxItem;
   onAccept?: () => void;
-  onDecline?: () => void;
   responding: boolean;
   accepted?: boolean;
-  declined?: boolean;
 }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const card = item.mdCard;
@@ -286,7 +259,7 @@ function GroomCard({
 
   return (
     <div className={`overflow-hidden rounded-2xl border bg-white dark:bg-neutral-100 shadow-sm transition-all ${
-      accepted ? "border-green-200" : declined ? "border-neutral-200 dark:border-neutral-200 opacity-60" : "border-neutral-100 dark:border-neutral-200 hover:shadow-md"
+      accepted ? "border-green-200" : "border-neutral-100 dark:border-neutral-200 hover:shadow-md"
     }`}>
       {/* Photo */}
       <div className="relative h-44 bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
@@ -323,12 +296,6 @@ function GroomCard({
           <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-bold text-white">
             <CheckCircle size={10} />
             Accepted
-          </div>
-        )}
-        {declined && (
-          <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-neutral-400 px-2 py-0.5 text-[10px] font-bold text-white">
-            <XCircle size={10} />
-            Declined
           </div>
         )}
       </div>
@@ -374,37 +341,21 @@ function GroomCard({
         </p>
 
         {/* Action buttons — only for unanswered proposals */}
-        {!accepted && !declined && (
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <button
-              onClick={onAccept}
-              disabled={responding}
-              className="flex items-center justify-center gap-1.5 rounded-lg bg-green-600 py-2 text-xs font-bold text-white hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              <CheckCircle size={13} />
-              Accept
-            </button>
-            <button
-              onClick={onDecline}
-              disabled={responding}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-200 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50"
-            >
-              <XCircle size={13} />
-              Decline
-            </button>
-          </div>
+        {!accepted && (
+          <button
+            onClick={onAccept}
+            disabled={responding}
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-green-600 py-2 text-xs font-bold text-white hover:bg-green-700 transition-colors disabled:opacity-50"
+          >
+            <CheckCircle size={13} />
+            Accept
+          </button>
         )}
 
         {accepted && item.acceptedAt && (
           <p className="mt-3 flex items-center gap-1 text-[10px] text-green-700 font-semibold">
             <CheckCircle size={10} />
             Accepted on {new Date(item.acceptedAt).toLocaleDateString("en-IN")}
-          </p>
-        )}
-        {declined && item.declinedAt && (
-          <p className="mt-3 flex items-center gap-1 text-[10px] text-neutral-400 font-semibold">
-            <XCircle size={10} />
-            Declined on {new Date(item.declinedAt).toLocaleDateString("en-IN")}
           </p>
         )}
       </div>
