@@ -54,6 +54,9 @@ export default function ProfileDetailPage() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [moving, setMoving]       = useState(false);
   const [moveError, setMoveError] = useState("");
+  // Payment state of this favourite — decides whether "Move to Payment" still applies
+  const [favPaid, setFavPaid]           = useState(false); // Initial Payment already made
+  const [favInPayment, setFavInPayment] = useState(false); // moved to payment, not yet paid
 
   // Look up this profile's favourite id, move it to payment, and open the payment page.
   const handleMoveToPayment = async (targetUserId: string) => {
@@ -126,8 +129,10 @@ export default function ProfileDetailPage() {
         const favRes = await fetch("/api/favorites");
         if (favRes.ok) {
           const favData = await favRes.json();
-          const favIds = new Set((favData.favorites ?? []).map((f: any) => f.favoriteUserId as string));
-          setIsFavorited(favIds.has(resolvedUserId));
+          const fav = (favData.favorites ?? []).find((f: any) => f.favoriteUserId === resolvedUserId);
+          setIsFavorited(!!fav);
+          setFavPaid(!!fav?.firstPaidAt);
+          setFavInPayment(!!fav?.movedToPayment && !fav?.firstPaidAt);
         }
       } catch { /* keep default false */ }
     };
@@ -199,7 +204,22 @@ export default function ProfileDetailPage() {
               initialIsFavorited={isFavorited}
               onToggle={(v) => setIsFavorited(v)}
             />
-            {isFavorited && (
+            {isFavorited && favPaid && (
+              <p className="flex items-center gap-1.5 text-sm font-semibold text-green-700">
+                <CheckCircle size={14} />
+                Initial Payment done
+              </p>
+            )}
+            {isFavorited && !favPaid && favInPayment && (
+              <Link
+                href="/payment/first"
+                className="flex items-center gap-1.5 rounded-xl bg-[#7a1f2b] px-4 py-2 text-sm font-semibold text-white hover:bg-[#6b1823] transition-colors"
+              >
+                <CreditCard size={14} />
+                Continue Payment
+              </Link>
+            )}
+            {isFavorited && !favPaid && !favInPayment && (
               <button
                 type="button"
                 onClick={() => handleMoveToPayment(profile.userId)}
