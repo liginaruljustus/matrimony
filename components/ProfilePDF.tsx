@@ -383,9 +383,9 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Family Details</Text>
             <View style={styles.grid}>
-              <Field label="Father's Name"        value={fmt(p.fatherName)} />
+              {!(cfg.adOnly && !p.fatherName) && <Field label="Father's Name" value={fmt(p.fatherName)} />}
               <Field label="Father's Occupation"  value={fmt(p.fatherOccupation)} />
-              <Field label="Mother's Name"        value={fmt(p.motherName)} />
+              {!(cfg.adOnly && !p.motherName) && <Field label="Mother's Name" value={fmt(p.motherName)} />}
               <Field label="Mother's Occupation"  value={fmt(p.motherOccupation)} />
               <Field label="Brothers (Total)"     value={fmt(p.totalBrothers)} />
               <Field label="Brothers (Married)"   value={fmt(p.marriedBrothers)} />

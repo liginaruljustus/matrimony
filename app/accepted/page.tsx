@@ -9,7 +9,7 @@ import {
   ChevronDown, ChevronUp, Inbox, Phone, MessageCircle, User,
 } from "lucide-react";
 import { PhotoLightbox } from "@/components/PhotoLightbox";
-import { ADDetailsGrid, DownloadADPdfButton } from "@/components/ADDetails";
+import { DownloadADPdfButton } from "@/components/ADDetails";
 import { FAMILY_CLASS_COLORS as CLASS_COLOR, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 
 type AcceptedItem = {
@@ -146,18 +146,13 @@ export default function AcceptedPage() {
 
 // ── Accepted Groom Card ───────────────────────────────────────────────────────
 function AcceptedGroomCard({ item }: { item: AcceptedItem }) {
-  const [showDetails, setShowDetails] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const card = item.mdCard;
+  // Name is withheld until the groom's Final Payment is approved
+  const displayName = card?.name || card?.profileId || "Profile";
   const allPhotos = card?.photos?.length ? card.photos : card?.photo ? [card.photo] : [];
   if (!card) return null;
 
-  const fmtVal = (v: any) => (v !== null && v !== undefined && v !== "" ? String(v) : "—");
-  const familyStatusLabel =
-    card.familyStatus === "MC" ? "Middle Class"
-    : card.familyStatus === "UC" ? "Upper Class"
-    : card.familyStatus === "EC" ? "Elite Class"
-    : fmtVal(card.familyStatus);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-green-200 bg-white dark:bg-neutral-100 shadow-sm hover:shadow-md transition-all">
@@ -167,7 +162,7 @@ function AcceptedGroomCard({ item }: { item: AcceptedItem }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={card.photo}
-            alt={card.name}
+            alt={displayName}
             onClick={() => setLightboxIndex(Math.max(0, allPhotos.indexOf(card.photo!)))}
             className="h-full w-full cursor-zoom-in object-cover object-top"
           />
@@ -176,7 +171,7 @@ function AcceptedGroomCard({ item }: { item: AcceptedItem }) {
           <PhotoLightbox
             photos={allPhotos}
             index={lightboxIndex}
-            alt={card.name}
+            alt={displayName}
             onClose={() => setLightboxIndex(null)}
             onIndexChange={setLightboxIndex}
           />
@@ -184,7 +179,7 @@ function AcceptedGroomCard({ item }: { item: AcceptedItem }) {
         {!card.photo && (
           <div className="flex h-full items-center justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#7a1f2b]/20 text-2xl font-bold text-[#7a1f2b]">
-              {card.name.charAt(0)}
+              {displayName.charAt(0)}
             </div>
           </div>
         )}
@@ -202,8 +197,8 @@ function AcceptedGroomCard({ item }: { item: AcceptedItem }) {
       {/* Info */}
       <div className="p-4">
         <div className="flex items-start justify-between">
-          <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{card.name}</h3>
-          <span className="font-mono text-[10px] text-neutral-400">{card.profileId}</span>
+          <h3 className={`font-bold text-neutral-900 dark:text-neutral-900 ${card.name ? "" : "font-mono tracking-wide"}`}>{displayName}</h3>
+          {card.name && <span className="font-mono text-[10px] text-neutral-400">{card.profileId}</span>}
         </div>
         <p className="mt-0.5 text-xs text-neutral-500">
           {card.age} yrs · {card.maritalStatus?.replace("_", " ") ?? "Single"}
@@ -230,49 +225,8 @@ function AcceptedGroomCard({ item }: { item: AcceptedItem }) {
           )}
         </div>
 
-        {/* Additional Details (AD) */}
-        <button
-          onClick={() => setShowDetails(!showDetails)}
-          className="mt-3 flex w-full items-center justify-between rounded-lg bg-[#7a1f2b]/5 px-3 py-2 text-[11px] font-bold text-[#7a1f2b] hover:bg-[#7a1f2b]/10 transition-colors"
-        >
-          <span className="flex items-center gap-1.5">
-            <Users size={12} />
-            Family &amp; Additional Details
-          </span>
-          {showDetails ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-        </button>
+        {/* Additional details — download only (PDF with photos) */}
         <DownloadADPdfButton card={card} />
-
-        {showDetails && (
-          <div className="mt-2 rounded-lg border border-neutral-100 dark:border-neutral-200 bg-neutral-50 dark:bg-neutral-200 p-3">
-            <ADDetailsGrid card={card} />
-
-            {card.expectations && (
-              <div className="mt-3 border-t border-neutral-200 pt-2">
-                <p className="text-[9px] font-bold uppercase tracking-wide text-neutral-400">Partner Expectations</p>
-                <p className="mt-0.5 text-[11px] leading-relaxed text-neutral-600">{card.expectations}</p>
-              </div>
-            )}
-
-            {card.photos && card.photos.length > 1 && (
-              <div className="mt-3 border-t border-neutral-200 pt-2">
-                <p className="mb-1.5 text-[9px] font-bold uppercase tracking-wide text-neutral-400">More Photos</p>
-                <div className="flex gap-2 overflow-x-auto">
-                  {card.photos.slice(1).map((photo, i) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      key={i}
-                      src={photo}
-                      alt={`${card.name} photo ${i + 2}`}
-                      onClick={() => setLightboxIndex(i + 1)}
-                      className="h-16 w-16 shrink-0 cursor-zoom-in rounded-lg object-cover border border-neutral-200"
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Contact Details (CD) — unlocked once groom's Final Payment is admin-approved */}
         {item.cdCard ? (

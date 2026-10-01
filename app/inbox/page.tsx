@@ -380,12 +380,17 @@ export default function InboxPage() {
                       {card.lagnam       && <Detail label="Lagnam"         value={card.lagnam} />}
                       {card.houseDetails && <Detail label="House"          value={card.houseDetails} />}
                       {card.familyStatus && <Detail label="Family Status"  value={card.familyStatus} />}
-                      {card.fatherName && (
+                      {/* Parents' names appear only after the Final Payment — until then, occupation only */}
+                      {card.fatherName ? (
                         <Detail label="Father" value={`${card.fatherName}${card.fatherOccupation ? ` (${card.fatherOccupation})` : ""}`} />
-                      )}
-                      {card.motherName && (
+                      ) : card.fatherOccupation ? (
+                        <Detail label="Father's Occupation" value={card.fatherOccupation} />
+                      ) : null}
+                      {card.motherName ? (
                         <Detail label="Mother" value={`${card.motherName}${card.motherOccupation ? ` (${card.motherOccupation})` : ""}`} />
-                      )}
+                      ) : card.motherOccupation ? (
+                        <Detail label="Mother's Occupation" value={card.motherOccupation} />
+                      ) : null}
                       {card.totalBrothers !== undefined && (
                         <Detail label="Brothers" value={`${card.totalBrothers} total, ${card.marriedBrothers ?? 0} married`} />
                       )}

@@ -69,6 +69,13 @@ export async function GET() {
     const userMap    = Object.fromEntries(targetUsers.map((u: any) => [String(u._id), u]));
     const profileMap = Object.fromEntries(targetProfiles.map((p: any) => [String(p.userId), p]));
 
+    // Final Payments already approved — name + parents' names unlock with them
+    const secondPaymentIds = approvedFavs.map((f: any) => f.secondPaymentId).filter(Boolean);
+    const approvedSecond   = secondPaymentIds.length
+      ? await PaymentModel.find({ _id: { $in: secondPaymentIds }, approvalStatus: "APPROVED" }).select("_id").lean() as any[]
+      : [];
+    const approvedSecondSet = new Set(approvedSecond.map((p: any) => String(p._id)));
+
     const now = new Date();
     const allItems = approvedFavs.map((fav: any) => {
       const uid = String(fav.favoriteUserId);
@@ -100,9 +107,13 @@ export async function GET() {
         // Whether the bride's profile is currently frozen (she may have frozen after groom paid)
         isBrideFrozen,
         // AD card is only served after the waiting period
-        // Name is a contact-level detail — withheld until the Final Payment unlocks
-        // contact details (the Contacts page then shows it).
-        adCard:           u && p && !adLocked ? { ...buildADCard(u, p), name: "" } : null,
+        // The bride's name and her parents' names are contact-level details —
+        // withheld until the Final Payment is approved.
+        adCard:           !(u && p) || adLocked
+                            ? null
+                            : fav.secondPaymentId && approvedSecondSet.has(String(fav.secondPaymentId))
+                              ? buildADCard(u, p)
+                              : { ...buildADCard(u, p), name: "", fatherName: undefined, motherName: undefined },
       };
     });
 

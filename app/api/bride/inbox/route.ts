@@ -96,8 +96,13 @@ export async function GET() {
       const u   = userMap[uid];
       const p   = profileMap[uid];
       // Merge MD (public) + AD (additional) — CD (contact) only once 2nd payment is approved
-      const card = u && p ? { ...buildMDCard(u, p), ...buildADCard(u, p) } : null;
       const secondPaymentApproved = !!(fav.secondPaymentId && approvedSecondSet.has(String(fav.secondPaymentId)));
+      // The groom's name and his parents' names are contact-level details — shown to
+      // the bride only once his Final Payment is approved.
+      const fullCard = u && p ? { ...buildMDCard(u, p), ...buildADCard(u, p) } : null;
+      const card = fullCard && !secondPaymentApproved
+        ? { ...fullCard, name: "", fatherName: undefined, motherName: undefined }
+        : fullCard;
       const cdCard = secondPaymentApproved && u && p ? buildCDCard(u, p) : null;
       return {
         favoriteId:     String(fav._id),
