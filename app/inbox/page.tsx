@@ -79,7 +79,6 @@ export default function InboxPage() {
   const [pending, setPending]       = useState(0);
   const [awaiting, setAwaiting]     = useState(0);
   const [loading, setLoading]       = useState(true);
-  const [expanded, setExpanded]     = useState<Set<string>>(new Set());
   const [paymentAmounts, setPaymentAmounts] = useState<Record<string, number>>(DEFAULT_PAYMENT_AMOUNTS);
 
   const load = useCallback(async () => {
@@ -108,13 +107,6 @@ export default function InboxPage() {
       load();
     }
   }, [status, session, load, router]);
-
-  const toggleExpand = (id: string) =>
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
 
   if (status === "loading" || loading) {
     return (
@@ -260,7 +252,6 @@ export default function InboxPage() {
             }
 
             if (!card) return null;
-            const isExpanded   = expanded.has(item.favoriteId);
             // Profiles stay in the Inbox permanently — the Final Payment is allowed any time
             // after the waiting period, even if the bride is currently inactive.
             const canPay2nd    = !item.inboxFrozen && !item.secondPaidAt;
@@ -341,70 +332,20 @@ export default function InboxPage() {
                   </div>
                 </div>
 
-                {/* Expand / collapse additional details */}
-                <button
-                  onClick={() => toggleExpand(item.favoriteId)}
-                  className="flex w-full items-center justify-center gap-1 border-t border-neutral-100 dark:border-neutral-200 py-2 text-xs font-semibold text-neutral-500 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
-                >
-                  {isExpanded ? (
-                    <><ChevronUp size={13} /> Hide Details</>
-                  ) : (
-                    <><ChevronDown size={13} /> View Additional Details</>
-                  )}
-                </button>
-
-                {isExpanded && (
-                  <div className="border-t border-neutral-100 dark:border-neutral-200 bg-neutral-50/50 dark:bg-neutral-200/50 p-5">
-                    <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
-                      <Detail label="Profile ID"    value={card.profileId} />
-                      {card.monthlyIncome && (
-                        <Detail label="Monthly Income" value={`₹${card.monthlyIncome.toLocaleString("en-IN")}`} />
-                      )}
-                      {card.placeOfBirth && <Detail label="Place of Birth" value={card.placeOfBirth} />}
-                      {card.timeOfBirth  && <Detail label="Time of Birth"  value={card.timeOfBirth} />}
-                      {card.nakshatra    && <Detail label="Nakshatra"      value={card.nakshatra} />}
-                      {card.rashi        && <Detail label="Rashi"          value={card.rashi} />}
-                      {card.lagnam       && <Detail label="Lagnam"         value={card.lagnam} />}
-                      {card.houseDetails && <Detail label="House"          value={card.houseDetails} />}
-                      {card.familyStatus && <Detail label="Family Status"  value={card.familyStatus} />}
-                      {/* Parents' names appear only after the Final Payment — until then, occupation only */}
-                      {card.fatherName ? (
-                        <Detail label="Father" value={`${card.fatherName}${card.fatherOccupation ? ` (${card.fatherOccupation})` : ""}`} />
-                      ) : card.fatherOccupation ? (
-                        <Detail label="Father's Occupation" value={card.fatherOccupation} />
-                      ) : null}
-                      {card.motherName ? (
-                        <Detail label="Mother" value={`${card.motherName}${card.motherOccupation ? ` (${card.motherOccupation})` : ""}`} />
-                      ) : card.motherOccupation ? (
-                        <Detail label="Mother's Occupation" value={card.motherOccupation} />
-                      ) : null}
-                      {card.totalBrothers !== undefined && (
-                        <Detail label="Brothers" value={`${card.totalBrothers} total, ${card.marriedBrothers ?? 0} married`} />
-                      )}
-                      {card.totalSisters !== undefined && (
-                        <Detail label="Sisters" value={`${card.totalSisters} total, ${card.marriedSisters ?? 0} married`} />
-                      )}
-                    </div>
-
-                    {card.expectations && (
-                      <div className="mt-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Expectations</p>
-                        <p className="mt-1 text-sm text-neutral-700">{card.expectations}</p>
-                      </div>
-                    )}
-
-
-                    {/* Final Payment CTA — opens the full payment page, which shows every
-                        admin-configured method (UPI + QR code, phone, PayTm, bank). */}
-                    {canPay2nd && (
-                      <Link
-                        href={`/payment/second?id=${item.favoriteId}`}
-                        className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#7a1f2b] py-3 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors"
-                      >
-                        <CreditCard size={15} />
-                        Pay for Contact Details — ₹{(paymentAmounts[card.familyClass] ?? 500).toLocaleString("en-IN")}
-                      </Link>
-                    )}
+                {/* Final Payment — opens the full payment page, which shows every
+                    admin-configured method (UPI + QR code, phone, PayTm, bank). */}
+                {canPay2nd && (
+                  <div className="border-t border-neutral-100 dark:border-neutral-200 px-5 py-4">
+                    <Link
+                      href={`/payment/second?id=${item.favoriteId}`}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#7a1f2b] py-3 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors"
+                    >
+                      <CreditCard size={15} />
+                      Final Payment — ₹{(paymentAmounts[card.familyClass] ?? 500).toLocaleString("en-IN")}
+                    </Link>
+                    <p className="mt-1.5 text-center text-[11px] text-neutral-400">
+                      Unlocks the bride&apos;s name and contact details
+                    </p>
                   </div>
                 )}
               </div>
@@ -417,11 +358,3 @@ export default function InboxPage() {
   );
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">{label}</p>
-      <p className="mt-0.5 text-sm font-medium text-neutral-800">{value}</p>
-    </div>
-  );
-}
