@@ -76,7 +76,11 @@ export async function POST(req: Request) {
     if (!firstPayment || firstPayment.approvalStatus !== "APPROVED") {
       return Response.json({ error: "1st payment not yet approved by admin" }, { status: 400 });
     }
-    if (fav.secondPaidAt) return Response.json({ error: "2nd payment already submitted" }, { status: 400 });
+    if (fav.secondPaidAt) return Response.json({ error: "Final Payment already submitted" }, { status: 400 });
+    // The Final Payment is only for brides who have accepted the proposal
+    if (!fav.isAccepted) {
+      return Response.json({ error: "The bride has not accepted your proposal yet" }, { status: 400 });
+    }
 
     // Enforce the waiting period (inboxFreezeDays) before contact details can be unlocked
     if (fav.inboxFrozenUntil && new Date(fav.inboxFrozenUntil) > new Date()) {

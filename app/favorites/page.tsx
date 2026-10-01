@@ -422,7 +422,13 @@ export default function FavoritesPage() {
                     onSelect={() => {}}
                     hideName
                     badge={
-                      inboxFrozen ? (
+                      // The Final Payment is only possible once the bride has accepted
+                      !fav.isAccepted ? (
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-amber-700">
+                          <Clock size={10} />
+                          Waiting for bride&apos;s response
+                        </span>
+                      ) : inboxFrozen ? (
                         <span className="flex items-center gap-1 text-[10px] font-bold text-blue-700">
                           <Clock size={10} />
                           Details shown on{" "}
@@ -444,13 +450,16 @@ export default function FavoritesPage() {
                           Bride accepted your proposal
                         </p>
                       )}
-                      <Link
-                        href="/inbox"
-                        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#7a1f2b] py-2 text-xs font-bold text-white hover:bg-[#6b1823] transition-colors"
-                      >
-                        <Inbox size={13} />
-                        View in Inbox
-                      </Link>
+                      {/* Only accepted brides are listed in the Inbox */}
+                      {fav.isAccepted && (
+                        <Link
+                          href="/inbox"
+                          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#7a1f2b] py-2 text-xs font-bold text-white hover:bg-[#6b1823] transition-colors"
+                        >
+                          <Inbox size={13} />
+                          View in Inbox
+                        </Link>
+                      )}
                       </>
                     }
                   />
