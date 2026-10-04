@@ -18,12 +18,14 @@ export async function GET() {
     await connectToDatabase();
 
     const userId = toObjectId(session.user.id);
-    const notifications = await NotificationModel.find({ userId })
+    // Declining a proposal was removed — don't surface old "declined" notifications
+    const visible = { userId, type: { $ne: "INTEREST_DECLINED" } };
+    const notifications = await NotificationModel.find(visible)
       .sort({ createdAt: -1 })
       .limit(50)
       .lean<any[]>();
 
-    const unreadCount = await NotificationModel.countDocuments({ userId, isRead: false });
+    const unreadCount = await NotificationModel.countDocuments({ ...visible, isRead: false });
 
     return Response.json({
       notifications: notifications.map((n) => ({

@@ -766,7 +766,7 @@ export default function AdminSettingsPage() {
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
               />
               <p className="text-xs text-slate-500 mt-1">
-                After the 1st payment is approved, the bride&apos;s additional details — and her accept/decline response — stay locked in the groom&apos;s inbox for this many days (only her Profile ID is shown). A decline still shows immediately; only an accept is held back.
+                After the Initial Payment is approved, the bride&apos;s additional details stay locked in the groom&apos;s Inbox for this many days (only her Profile ID is shown). Her acceptance is shown to the groom straight away.
               </p>
             </div>
 

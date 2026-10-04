@@ -66,7 +66,7 @@ export async function runApprovalSideEffects(payment: any) {
         await NotificationModel.create({
           userId:  brideId,
           type:    "NEW_PROPOSAL",
-          message: "A groom family has expressed interest in your profile. Open your inbox to accept or decline.",
+          message: "A groom family has expressed interest in your profile. Open your Proposals to view and accept.",
           link:    "/bride-inbox",
         });
       } catch { /* non-critical */ }
