@@ -70,7 +70,9 @@
     transition: color var(--transition-fast);
   }
 
-  a:hover {
+  /* :where() keeps this at element-level specificity, so a utility colour on the
+     link (e.g. text-white on a maroon button) is not overridden on hover. */
+  a:where(:hover) {
     color: var(--color-primary-dark);
   }
 
