@@ -93,13 +93,19 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
 
   // Edit lock — once finalized, the user can no longer change their profile.
   // Enforced server-side so it can't be bypassed by hiding the UI.
-  const existing = await ProfileModel.findOne({ userId }).select("isLocked").lean<{ isLocked?: boolean }>();
+  const existing = await ProfileModel.findOne({ userId }).select("isLocked photos").lean<{ isLocked?: boolean; photos?: string[] }>();
   if (existing?.isLocked) {
     return {
       ok: false,
       locked: true,
       message: "Your profile is locked and can no longer be edited. Please contact the admin to make changes.",
     };
+  }
+
+  // A photo is mandatory before a profile can be submitted. Photos are uploaded
+  // separately (via /api/photos) and stored on the profile, so check what's saved.
+  if (finalize && !(existing?.photos?.length)) {
+    return { ok: false, message: "Please upload your photo before submitting your profile." };
   }
 
   // Strip photos (managed via /api/photos) and name (lives on UserModel, not ProfileModel)

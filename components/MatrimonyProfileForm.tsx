@@ -178,6 +178,12 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
   const pendingData = useRef<FormData | null>(null);
 
   const onSubmit = async (data: FormData) => {
+    // A photo is mandatory — send the user back to the Photo step if it's missing.
+    if (photos.length === 0) {
+      setStep(3);
+      setUploadError("Please upload your photo to continue.");
+      return;
+    }
     // The final submit permanently locks the profile — confirm first.
     pendingData.current = data;
     setConfirmFinalize(true);
@@ -765,6 +771,9 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
         {/* Step 4: Photos & Expectations */}
         <div className={step === 3 ? "space-y-4" : "hidden"}>
           <h3 className="text-lg font-semibold text-primary">Photo & Expectations</h3>
+          <p className="-mt-2 text-xs text-slate-500 dark:text-neutral-700">
+            Photo <span className="text-red-600">*</span> — required to continue.
+          </p>
 
             {/* Upload error banner */}
             {uploadError && (
@@ -1028,6 +1037,16 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                   ]);
                 } else if (step === 2) {
                   ok = await trigger(["contactPersonName", "contactNumber", "whatsappNo", "emailId"]);
+                } else if (step === 3) {
+                  // A photo is mandatory — can't continue without one
+                  if (uploadingPhoto) {
+                    setUploadError("Please wait for your photo to finish uploading.");
+                    return;
+                  }
+                  if (photos.length === 0) {
+                    setUploadError("Please upload your photo to continue.");
+                    return;
+                  }
                 }
                 if (!ok) return;
                 setStep(step + 1);
