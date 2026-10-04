@@ -102,9 +102,11 @@ function normalizeProfile(profile: any) {
     religion: profile.religion ?? "HINDU",
     maritalStatus: profile.maritalStatus ?? "SINGLE",
     familyStatus: profile.familyStatus ?? profile.familyClass ?? "MC",
-    contactNumber: profile.contactNumber ?? profile.phone ?? "",
-    whatsappNo: profile.whatsappNo ?? profile.phone ?? "",
-    emailId: profile.emailId ?? profile.email ?? "",
+    // Contact fields are never pre-filled from the registration phone/email —
+    // the user enters them. Only values they saved on the profile are shown.
+    contactNumber: profile.contactNumber ?? "",
+    whatsappNo: profile.whatsappNo ?? "",
+    emailId: profile.emailId ?? "",
     ...profile,
     dateOfBirth,
     monthlyIncome: profile.monthlyIncome ?? profile.income,
