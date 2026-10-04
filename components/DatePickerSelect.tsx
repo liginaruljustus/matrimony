@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 
+// Short names so the month always fits its dropdown on a phone
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
 function daysInMonth(month: number, year: number): number {
@@ -16,10 +17,14 @@ type Props = {
   value: string;          // YYYY-MM-DD or ""
   onChange: (v: string) => void;
   className?: string;
+  /** Latest year offered. For a date of birth, pass (this year − minimum age) so
+   *  the list starts at a sensible year instead of the current one. */
+  maxYear?: number;
 };
 
-export function DatePickerSelect({ value, onChange, className }: Props) {
+export function DatePickerSelect({ value, onChange, className, maxYear }: Props) {
   const currentYear = new Date().getFullYear();
+  const lastYear    = maxYear ?? currentYear;
 
   // Day/month/year live together in one state object so a batch of rapid
   // changes (e.g. quick keyboard selection across all three <select>s) is
@@ -66,17 +71,22 @@ export function DatePickerSelect({ value, onChange, className }: Props) {
 
   const maxDay = daysInMonth(Number(month), Number(year));
   const days   = Array.from({ length: maxDay }, (_, i) => i + 1);
-  const years  = Array.from({ length: currentYear - 1939 }, (_, i) => currentYear - i);
+  // Keep an already-saved year selectable even if it falls outside the offered range
+  const firstYear = Math.max(lastYear, Number(year) || 0);
+  const years  = Array.from({ length: firstYear - 1939 }, (_, i) => firstYear - i);
 
-  const sel = `${className ?? "input-field"} text-sm`;
+  // Sized for phones: 16px text (avoids iOS zoom-on-focus), a taller tap target and
+  // minimal side padding so the values fit even on a 320px-wide phone.
+  const sel = `${className ?? "input-field"} !h-11 !px-1 text-base sm:!h-10 sm:!px-3 sm:text-sm`;
 
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-[1fr_1.18fr_1.34fr] gap-1 sm:gap-2">
       {/* Day */}
       <select
         value={day}
         onChange={(e) => handleDay(e.target.value)}
         className={sel}
+        aria-label="Day"
       >
         <option value="">Day</option>
         {days.map((d) => (
@@ -89,6 +99,7 @@ export function DatePickerSelect({ value, onChange, className }: Props) {
         value={month}
         onChange={(e) => handleMonth(e.target.value)}
         className={sel}
+        aria-label="Month"
       >
         <option value="">Month</option>
         {MONTHS.map((name, i) => (
@@ -101,6 +112,7 @@ export function DatePickerSelect({ value, onChange, className }: Props) {
         value={year}
         onChange={(e) => handleYear(e.target.value)}
         className={sel}
+        aria-label="Year"
       >
         <option value="">Year</option>
         {years.map((y) => (

@@ -418,14 +418,19 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="label">Date of Birth *</label>
                 <Controller
                   name="dateOfBirth"
                   control={control}
                   render={({ field }) => (
-                    <DatePickerSelect value={field.value ?? ""} onChange={field.onChange} />
+                    // Youngest allowed age is 18, so the year list starts 18 years back
+                    <DatePickerSelect
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      maxYear={new Date().getFullYear() - 18}
+                    />
                   )}
                 />
                 {errors.dateOfBirth && <p className="text-xs text-red-600 mt-1">{errors.dateOfBirth.message as string}</p>}
