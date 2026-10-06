@@ -23,6 +23,10 @@ export function SearchDropdown({ value, onChange, options, placeholder, classNam
   useEffect(() => {
     if (!userEditedRef.current && (value ?? "") !== query) {
       setQuery(value ?? "");
+    } else if (userEditedRef.current && !value && query) {
+      // The form's value was cleared from outside while the user's text is still
+      // showing — hand the text back so the box and the form can never disagree.
+      onChange(query);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);

@@ -150,13 +150,21 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
     shouldUnregister: false,
   });
 
-  // Re-populate form whenever defaultProfile updates from server fetch
+  // Re-populate the form when the profile DATA from the server changes.
+  //
+  // The parent builds a fresh `defaultProfile` object on every render, and it
+  // re-renders whenever the session refreshes (e.g. each time the user switches
+  // back to this tab). Resetting on object identity therefore wiped everything
+  // the user had typed — so compare the contents and reset only on a real change.
+  const lastProfileSig = useRef<string | null>(null);
   useEffect(() => {
-    if (defaultProfile) {
-      reset(normalizeProfile(defaultProfile));
-      if (defaultProfile.photos && Array.isArray(defaultProfile.photos)) {
-        setPhotos(defaultProfile.photos);
-      }
+    if (!defaultProfile) return;
+    const sig = JSON.stringify(defaultProfile);
+    if (sig === lastProfileSig.current) return;
+    lastProfileSig.current = sig;
+    reset(normalizeProfile(defaultProfile));
+    if (defaultProfile.photos && Array.isArray(defaultProfile.photos)) {
+      setPhotos(defaultProfile.photos);
     }
   }, [defaultProfile, reset]);
 

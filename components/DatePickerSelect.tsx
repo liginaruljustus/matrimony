@@ -43,6 +43,15 @@ export function DatePickerSelect({ value, onChange, className, maxYear }: Props)
     }
   }, [value]);
 
+  // If the form's value is cleared from outside while a full date is still
+  // showing here, hand the shown date back so the two can never disagree.
+  useEffect(() => {
+    if (!value && day && month && year) {
+      onChange(`${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
   // Emit YYYY-MM-DD whenever the merged day/month/year state settles.
   useEffect(() => {
     if (day && month && year) {
