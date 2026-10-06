@@ -378,3 +378,19 @@
 aside a {
   color: #fff;
 }
+
+/* ── Home page motion ─────────────────────────────────────────────────────── */
+@keyframes lura-fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes lura-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.lura-fade-up    { animation: lura-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.lura-float      { animation: lura-float 6s ease-in-out infinite; }
+.lura-float-slow { animation: lura-float 8s ease-in-out infinite reverse; }
+@media (prefers-reduced-motion: reduce) {
+  .lura-fade-up, .lura-float, .lura-float-slow { animation: none; }
+}
