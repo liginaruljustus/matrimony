@@ -278,35 +278,27 @@ export default function MyProfilePage() {
           }}
         />
 
+        {/* The sections below list only what "Profile Details" above doesn't already show */}
         {/* Personal Details */}
         <Section icon={<User size={15} />} title="Personal Details">
-          <Field label="Age"              value={fmt(p.age)} />
-          <Field label="Gender"           value={p.gender === "MALE" ? "Male" : p.gender === "FEMALE" ? "Female" : fmt(p.gender)} />
           <Field label="Date of Birth"    value={p.dateOfBirth ? new Date(p.dateOfBirth).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) : undefined} />
-          <Field label="Marital Status"   value={fmt(p.maritalStatus)} />
           <Field label="Height"           value={fmtHeight(p.height)} />
           <Field label="Weight"           value={fmtWeight(p.weight)} />
           <Field label="Complexion"       value={fmt(p.complexion)} />
-          <Field label="Religion"         value={fmt(p.religion)} />
-          <Field label="Caste"            value={fmt(p.caste)} />
           <Field label="Sub-Caste"        value={fmt(p.subCaste)} />
-          <Field label="Physically Challenged" value={p.physicallyChallenge != null ? p.physicallyChallenge : undefined} />
         </Section>
 
         {/* Location */}
         <Section icon={<MapPin size={15} />} title="Location">
           <Field label="Place of Birth"   value={fmt(p.placeOfBirth)} />
           <Field label="Time of Birth"    value={fmt(p.timeOfBirth)} />
-          <Field label="Native District"  value={fmt(p.nativeDistrict)} />
           <Field label="Current Location" value={fmt(p.location)} />
           <Field label="Address"          value={fmt(p.address)} />
         </Section>
 
-        {/* Education & Career */}
-        <Section icon={<Briefcase size={15} />} title="Education & Career">
-          <Field label="Education"        value={fmt(p.education)} />
+        {/* Career (education and income are in Profile Details) */}
+        <Section icon={<Briefcase size={15} />} title="Career">
           <Field label="Current Job"      value={fmt(p.currentJob)} />
-          <Field label="Monthly Income"   value={fmtIncome(p.monthlyIncome ?? p.income)} />
         </Section>
 
         {/* Family Details */}
@@ -320,7 +312,6 @@ export default function MyProfilePage() {
           <Field label="Sisters (Total)"     value={fmt(p.totalSisters)} />
           <Field label="Sisters (Married)"   value={fmt(p.marriedSisters)} />
           <Field label="House Details"       value={fmt(p.houseDetails)} />
-          <Field label="Family Status"       value={p.familyStatus === "MC" ? "Middle Class" : p.familyStatus === "UC" ? "Upper Class" : p.familyStatus === "EC" ? "Elite Class" : fmt(p.familyStatus)} />
         </Section>
 
         {/* Astrology */}
