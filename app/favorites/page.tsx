@@ -631,8 +631,8 @@ function FavCard({
           {card.age} yrs · {card.maritalStatus?.replace("_", " ") ?? "Single"}
         </p>
         {inactive && (
-          <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-neutral-500">
-            <AlertCircle size={10} />
+          <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-800">
+            <AlertCircle size={14} className="shrink-0" />
             Profile currently inactive
           </p>
         )}
@@ -659,12 +659,15 @@ function FavCard({
           </p>
         )}
 
-        <Link
-          href={`/profiles/${fav.favoriteUserId}`}
-          className="mt-3 flex w-full items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-200 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
-        >
-          View Profile
-        </Link>
+        {/* An inactive profile can't be opened, so no "View Profile" for it */}
+        {!inactive && (
+          <Link
+            href={`/profiles/${fav.favoriteUserId}`}
+            className="mt-3 flex w-full items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-200 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
+          >
+            View Profile
+          </Link>
+        )}
 
         {actionButton}
       </div>
