@@ -5,9 +5,10 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Phone, MessageCircle, Mail, User, Copy,
+  Phone, MessageCircle, Mail, User, Users, Copy,
   CheckCircle, AlertCircle, CreditCard,
 } from "lucide-react";
+import { PhotoLightbox } from "@/components/PhotoLightbox";
 type Contact = {
   favoriteId: string;
   favoriteUserId: string;
@@ -15,6 +16,9 @@ type Contact = {
   name: string;
   profileId: string;
   photo: string | null;
+  photos?: string[];
+  fatherName?: string | null;
+  motherName?: string | null;
   cdCard: {
     profileId: string;
     contactPersonName?: string;
@@ -32,6 +36,8 @@ export default function ContactDetailsPage() {
   const [pending, setPending]     = useState(0);
   const [loading, setLoading]     = useState(true);
   const [copied, setCopied]       = useState("");
+  // Photo viewer: which contact's photos are open, and which photo
+  const [lightbox, setLightbox]   = useState<{ photos: string[]; index: number; name: string } | null>(null);
   const isBride = (session?.user as any)?.profileType === "BRIDE";
 
   const load = useCallback(async () => {
@@ -124,11 +130,26 @@ export default function ContactDetailsPage() {
                 {/* Top strip */}
                 <div className="flex items-center gap-4 bg-gradient-to-r from-[#7a1f2b]/5 to-[#d4af37]/5 p-4">
                   {contact.photo ? (
-                    <img
-                      src={contact.photo}
-                      alt={contact.name}
-                      className="h-14 w-14 rounded-full object-cover ring-2 ring-white"
-                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLightbox({
+                          photos: contact.photos?.length ? contact.photos : [contact.photo!],
+                          index: 0,
+                          name: contact.name,
+                        })
+                      }
+                      className="shrink-0 cursor-zoom-in rounded-full transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/40"
+                      aria-label={`View photo of ${contact.name}`}
+                      title="Click to view photo"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={contact.photo}
+                        alt={contact.name}
+                        className="h-14 w-14 rounded-full object-cover object-top ring-2 ring-white"
+                      />
+                    </button>
                   ) : (
                     <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#7a1f2b]/20 text-xl font-bold text-[#7a1f2b] ring-2 ring-white">
                       {contact.name.charAt(0)}
@@ -146,17 +167,31 @@ export default function ContactDetailsPage() {
 
                 {/* Contact rows */}
                 <div className="divide-y divide-neutral-100 dark:divide-neutral-200 p-4">
+                  {contact.fatherName && (
+                    <ContactRow
+                      icon={<Users size={15} className="text-[#7a1f2b]" />}
+                      label="Father's Name"
+                      value={contact.fatherName}
+                    />
+                  )}
+                  {contact.motherName && (
+                    <ContactRow
+                      icon={<Users size={15} className="text-[#7a1f2b]" />}
+                      label="Mother's Name"
+                      value={contact.motherName}
+                    />
+                  )}
                   {cd?.contactPersonName && (
                     <ContactRow
                       icon={<User size={15} className="text-[#7a1f2b]" />}
-                      label="Contact Person"
+                      label="Name of Contact Person"
                       value={cd.contactPersonName}
                     />
                   )}
                   {cd?.contactNumber && (
                     <ContactRow
                       icon={<Phone size={15} className="text-[#7a1f2b]" />}
-                      label="Phone"
+                      label="Contact No"
                       value={cd.contactNumber}
                       copyKey={`phone-${contact.favoriteId}`}
                       onCopy={() => copy(cd.contactNumber!, `phone-${contact.favoriteId}`)}
@@ -167,7 +202,7 @@ export default function ContactDetailsPage() {
                   {cd?.whatsappNo && (
                     <ContactRow
                       icon={<MessageCircle size={15} className="text-green-600" />}
-                      label="WhatsApp"
+                      label="WhatsApp No"
                       value={cd.whatsappNo}
                       copyKey={`wa-${contact.favoriteId}`}
                       onCopy={() => copy(cd.whatsappNo!, `wa-${contact.favoriteId}`)}
@@ -179,7 +214,7 @@ export default function ContactDetailsPage() {
                   {cd?.email && (
                     <ContactRow
                       icon={<Mail size={15} className="text-blue-600" />}
-                      label="Email"
+                      label="Email ID"
                       value={cd.email}
                       copyKey={`email-${contact.favoriteId}`}
                       onCopy={() => copy(cd.email!, `email-${contact.favoriteId}`)}
@@ -198,6 +233,15 @@ export default function ContactDetailsPage() {
             );
           })}
         </div>
+      )}
+      {lightbox && (
+        <PhotoLightbox
+          photos={lightbox.photos}
+          index={lightbox.index}
+          alt={lightbox.name}
+          onClose={() => setLightbox(null)}
+          onIndexChange={(i) => setLightbox((l) => (l ? { ...l, index: i } : l))}
+        />
       )}
       </div>
     </div>

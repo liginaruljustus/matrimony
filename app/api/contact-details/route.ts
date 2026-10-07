@@ -77,6 +77,10 @@ export async function GET() {
         name:           u?.name ?? "Unknown",
         profileId:      u?.profileId ?? uid,
         photo:          p?.photos?.[0] ?? null,
+        photos:         p?.photos ?? [],
+        // Parents' names unlock together with the contact details
+        fatherName:     p?.fatherName ?? null,
+        motherName:     p?.motherName ?? null,
       };
     });
 
