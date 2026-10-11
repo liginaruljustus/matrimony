@@ -55,6 +55,7 @@ export async function GET(request: Request) {
         verificationStatus: user.verificationStatus,
         lastLogin: user.lastLogin,
         createdAt: user.createdAt,
+        emailLog: user.emailLog ?? null,
         profile: profile
           ? {
               id: profile._id.toString(),

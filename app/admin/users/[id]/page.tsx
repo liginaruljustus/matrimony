@@ -1,5 +1,6 @@
 "use client";
 
+import { EmailBadge, type EmailLog } from "@/components/admin/EmailStatus";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import {
@@ -10,7 +11,7 @@ import {
   CheckCircle2, XCircle, AlertTriangle,
   FileText, Activity, ExternalLink,
   Snowflake, MapPin, Star, GraduationCap, Phone,
-  Image as ImageIcon, CheckCircle, Clipboard,
+  Image as ImageIcon, CheckCircle, Clipboard, Mail,
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/admin/StatusBadge";
@@ -44,6 +45,7 @@ type UserDetail = {
   profileType: string | null;
   familyClass: string | null;
   autoPassword: string | null;
+  emailLog?: EmailLog;
   status: string;
   verificationStatus: string;
   suspendReason: string | null;
@@ -198,6 +200,7 @@ export default function AdminUserDetailPage() {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("Account");
+  const [resending, setResending] = useState<"credentials" | "profileLive" | null>(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -250,6 +253,27 @@ export default function AdminUserDetailPage() {
       toast.error("Failed to save changes");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Re-send one of the two automatic emails and show the result
+  const resendEmail = async (kind: "credentials" | "profileLive") => {
+    setResending(kind);
+    try {
+      const res  = await fetch(`/api/admin/users/${userId}/resend-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error ?? "Could not send the email"); return; }
+      setUser((u) => (u ? { ...u, emailLog: data.emailLog } : u));
+      if (data.ok) toast.success("Email sent");
+      else toast.error(`Email failed: ${data.emailLog?.[kind]?.error ?? "unknown error"}`);
+    } catch {
+      toast.error("Could not send the email");
+    } finally {
+      setResending(null);
     }
   };
 
@@ -435,6 +459,53 @@ export default function AdminUserDetailPage() {
                 label="Terms Accepted"
                 value={user.termsAcceptedAt ? fmt(user.termsAcceptedAt) : "Not accepted"}
               />
+            </div>
+          </SectionCard>
+
+          {/* Emails — were the two automatic emails sent? */}
+          <SectionCard title="Emails" icon={Mail}>
+            <div className="space-y-3">
+              {([
+                { kind: "credentials", title: "Login details", desc: "Profile ID and password, sent at registration" },
+                { kind: "profileLive", title: "Profile is live", desc: "Full profile details, sent when the profile goes live" },
+              ] as const).map(({ kind, title, desc }) => {
+                const entry = user.emailLog?.[kind];
+                const canSend = kind === "credentials" || profile?.profileStatus === "APPROVED";
+                return (
+                  <div key={kind} className="rounded-lg border border-slate-200 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-900">{title}</p>
+                        <p className="text-xs text-slate-500">{desc}</p>
+                      </div>
+                      <button
+                        onClick={() => resendEmail(kind)}
+                        disabled={!canSend || resending !== null}
+                        title={canSend ? "Send this email again" : "The profile is not live yet"}
+                        className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {resending === kind ? "Sending…" : entry ? "Resend" : "Send"}
+                      </button>
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                      <EmailBadge
+                        label={entry?.status === "SENT" ? "Sent" : entry?.status === "FAILED" ? "Failed" : "No record"}
+                        entry={entry}
+                        notDue={!canSend}
+                      />
+                      {entry?.at && <span className="text-slate-500">{fmtDT(entry.at)}</span>}
+                      {entry?.to && <span className="text-slate-500">to {entry.to}</span>}
+                    </div>
+                    {entry?.status === "FAILED" && entry.error && (
+                      <p className="mt-2 rounded-md bg-red-50 px-2 py-1.5 text-xs text-red-700">{entry.error}</p>
+                    )}
+                  </div>
+                );
+              })}
+              <p className="text-[11px] leading-relaxed text-slate-400">
+                &ldquo;Sent&rdquo; means our mail server accepted it. If the user can&apos;t find it, ask them to check Spam.
+                Resending login details also resets the password to the system-generated one.
+              </p>
             </div>
           </SectionCard>
 

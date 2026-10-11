@@ -44,6 +44,7 @@ export async function GET(
         profileId: user.profileId ?? null,
         profileType: user.profileType ?? null,
         familyClass: user.familyClass ?? null,
+        emailLog: user.emailLog ?? null,
         // Plain-text auto-generated password (admin visibility only)
         autoPassword: user.autoPassword ?? null,
         // Status

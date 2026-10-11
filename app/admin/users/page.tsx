@@ -1,5 +1,6 @@
 "use client";
 
+import { EmailStatusPair, type EmailLog } from "@/components/admin/EmailStatus";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, RotateCcw, CheckCircle, X, XCircle } from "lucide-react";
@@ -34,6 +35,8 @@ type User = {
   verificationStatus: string;
   lastLogin: string;
   createdAt: string;
+  emailLog?: EmailLog;
+  profile?: { profileStatus?: string } | null;
 };
 
 const STATUS_TABS = [
@@ -156,6 +159,14 @@ export default function AdminUsersPage() {
       key: "verificationStatus",
       label: "Verification",
       render: (value) => <StatusBadge status={value} type="verification" />,
+    },
+    {
+      // Were the two automatic emails sent? (login details, and "profile is live")
+      key: "emailLog",
+      label: "Emails",
+      render: (_value, row) => (
+        <EmailStatusPair log={row.emailLog} profileLive={row.profile?.profileStatus === "APPROVED"} />
+      ),
     },
     {
       key: "lastLogin",
