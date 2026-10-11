@@ -34,6 +34,12 @@ const userSchema = new Schema(
     ],
     notes: { type: String },
     lastLogin: { type: Date },
+    // Result of the last send of each automatic email (see lib/emailLog.ts) —
+    // lets the admin see when a customer's email failed.
+    emailLog: {
+      credentials: { status: String, at: Date, to: String, error: String },
+      profileLive: { status: String, at: Date, to: String, error: String },
+    },
     lastActivity: { type: Date },
   },
   { timestamps: true },

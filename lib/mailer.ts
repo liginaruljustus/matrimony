@@ -45,3 +45,20 @@ export async function sendMailWithRetry(mailOptions: Record<string, any>, label:
     }
   }
 }
+
+/** Checks the mail login without sending anything. Used by the admin email check. */
+export async function checkMailHealth(): Promise<{ configured: boolean; sender: string | null; ok: boolean; error: string | null }> {
+  const sender = process.env.SMTP_USER ?? null;
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    return { configured: false, sender, ok: false, error: "SMTP_USER / SMTP_PASS are not set on the server" };
+  }
+  try {
+    cachedTransporter = null; // test a fresh login, not a cached connection
+    const transporter = await getTransporter();
+    await transporter.verify();
+    return { configured: true, sender, ok: true, error: null };
+  } catch (err: any) {
+    cachedTransporter = null;
+    return { configured: true, sender, ok: false, error: String(err?.response || err?.message || err).slice(0, 300) };
+  }
+}

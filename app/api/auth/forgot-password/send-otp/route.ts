@@ -13,6 +13,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel } from "@/lib/models";
 import { generatePassword } from "@/lib/profileIdGenerator";
 import { sendMailWithRetry } from "@/lib/mailer";
+import { sendAndRecord } from "@/lib/emailLog";
 
 export async function POST(request: Request) {
   try {
@@ -40,11 +41,9 @@ export async function POST(request: Request) {
 
     // Awaited (not fire-and-forget) — a detached promise can be killed before
     // it completes once this serverless function's response is returned.
-    try {
-      await sendCredentialsEmail(user.email, user.name, user.profileId, autoPassword);
-    } catch (err) {
-      console.error("[Resend Credentials] Email failed:", err);
-    }
+    await sendAndRecord(user._id, "credentials", user.email, () =>
+      sendCredentialsEmail(user.email, user.name, user.profileId, autoPassword),
+    );
 
     return Response.json({ ok: true });
   } catch (error) {

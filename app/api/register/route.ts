@@ -12,6 +12,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel } from "@/lib/models";
 import { sendOtpSchema } from "@/lib/validators";
 import { generateProfileId, generatePassword } from "@/lib/profileIdGenerator";
+import { sendAndRecord } from "@/lib/emailLog";
 import { sendCredentialsEmail } from "@/lib/sendCredentialsEmail";
 
 export async function POST(request: Request) {
@@ -85,11 +86,9 @@ export async function POST(request: Request) {
 
     // Awaited (not fire-and-forget) — a detached promise can be killed
     // before it completes once this serverless function's response is sent.
-    try {
-      await sendCredentialsEmail(user.email, user.name, user.profileId, autoPassword);
-    } catch (err) {
-      console.error("[register] Credentials email failed:", err);
-    }
+    const emailSent = await sendAndRecord(user._id, "credentials", user.email, () =>
+      sendCredentialsEmail(user.email, user.name, user.profileId, autoPassword),
+    );
 
     return Response.json({
       ok: true,
@@ -100,6 +99,7 @@ export async function POST(request: Request) {
         profileId:    user.profileId,
         autoPassword, // derived value, never stored in DB
       },
+      emailSent,
       message: "Registration successful! Save your credentials.",
     });
   } catch (error: any) {

@@ -8,6 +8,7 @@ import { ProfileModel, UserModel, SettingsModel } from "@/lib/models";
 import { toObjectId } from "@/lib/mongoUtils";
 import { buildFDCard } from "@/lib/cardGenerator";
 import { sendFDCardEmail } from "@/lib/sendFDCardEmail";
+import { sendAndRecord } from "@/lib/emailLog";
 
 type ProfileInput = {
   age: number;
@@ -195,13 +196,10 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
 
   // Profile is live — send the FD (full details) card
   if (goesLive && derivedEmail && updatedProfile && profileId) {
-    try {
+    await sendAndRecord(userId, "profileLive", derivedEmail, async () => {
       const fd = buildFDCard({ ...(user ?? {}), name: userName, email: derivedEmail, profileId }, updatedProfile);
       await sendFDCardEmail(derivedEmail, userName, fd);
-      console.log(`[FD Card Email] Sent to ${derivedEmail}`);
-    } catch (e) {
-      console.error("FD card build error:", e);
-    }
+    });
   }
 
   return {
