@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { SiteFooter } from "@/components/SiteFooter";
 import {
   Heart,
   PenTool,
@@ -9,7 +11,7 @@ import {
   HeartHandshake,
   ArrowRight,
   ShieldCheck,
-  BadgeCheck,
+  ShieldAlert,
   Lock,
   Star,
   MapPin,
@@ -17,6 +19,8 @@ import {
   Check,
   Sparkles,
   Users,
+  Phone,
+  MessageCircle,
 } from "lucide-react";
 
 // Brand colours used throughout: maroon #7a1f2b, gold #d4af37 (deep gold #9a7400
@@ -148,15 +152,29 @@ const steps = [
 const highlights = [
   "District, Age & Caste search",
   "Family-first matrimony",
-  "Verified profiles",
-  "Across Tamil Nadu",
+  "Privacy protected",
+  "For Tamil families across India",
 ];
 
-const testimonials = [
-  { name: "Priya & Karthik", district: "Chennai",    text: "We found each other through Lura within 3 months. The family-first approach made all the difference.", stars: 5 },
-  { name: "Meena & Suresh",  district: "Madurai",    text: "Verified profiles and district filters made it easy to find a compatible match close to home.", stars: 5 },
-  { name: "Kavya & Rajan",   district: "Coimbatore", text: "The family-first approach impressed our families. Highly recommended!", stars: 5 },
+// Fees are set in Admin Settings and loaded from /api/public/site-info.
+type SiteInfo = {
+  supportPhone: string;
+  firstPaymentAmounts: Record<string, number>;
+  secondPaymentAmounts: Record<string, number>;
+};
+
+const FAMILY_CLASSES = [
+  { code: "MC", label: "Middle Class" },
+  { code: "UC", label: "Upper Class" },
+  { code: "EC", label: "Elite Class" },
 ];
+
+const rupees = (n: number | undefined) => (n == null ? "—" : `₹${n.toLocaleString("en-IN")}`);
+
+function waLink(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+  return `https://wa.me/${digits.length === 10 ? `91${digits}` : digits}`;
+}
 
 function SectionHeading({ eyebrow, title, sub }: { eyebrow: string; title: string; sub: string }) {
   return (
@@ -174,6 +192,15 @@ function SectionHeading({ eyebrow, title, sub }: { eyebrow: string; title: strin
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function HomePage() {
+  const [info, setInfo] = useState<SiteInfo | null>(null);
+
+  useEffect(() => {
+    fetch("/api/public/site-info")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setInfo(d))
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#faf7f2] dark:bg-neutral-50">
       <HomeNavbar />
@@ -199,13 +226,13 @@ export default function HomePage() {
             </div>
 
             <h1 className="mt-6 text-[1.6rem] font-extrabold leading-[1.4] text-[#7a1f2b] sm:text-4xl sm:leading-[1.3] xl:text-[2.6rem] xl:leading-[1.3]">
-              Lura-வின் துணையுடன்
+              Lura-வின் துணையுடன்{" "}
               <span className="mt-1 block text-[#9a7400] dark:text-[#d4af37]">உங்கள் வாழ்க்கைத் துணை.</span>
             </h1>
 
             <p className="mx-auto mt-6 max-w-xl text-base text-neutral-600 sm:text-lg lg:mx-0">
-              Verified profiles, District, Age and Caste based search, and a
-              family-first matrimony experience across Tamil Nadu.
+              District, Age and Caste based search, and a family-first matrimony
+              experience for Tamil families across India.
             </p>
 
             {/* CTAs */}
@@ -296,7 +323,7 @@ export default function HomePage() {
       {/* ── Trust & Verification (bento grid) ── */}
       <section className="bg-white px-4 py-16 dark:bg-neutral-100 md:py-24">
         <div className="mx-auto max-w-5xl">
-          <SectionHeading eyebrow="Safe & Secure" title="Trust & Verification" sub="Your safety and privacy are our top priority" />
+          <SectionHeading eyebrow="Safe & Secure" title="Trust & Safety" sub="Your safety and privacy are our top priority" />
 
           <div className="grid gap-4 md:grid-cols-3">
             {/* Large feature card */}
@@ -329,10 +356,12 @@ export default function HomePage() {
 
             <div className="rounded-3xl border border-[#7a1f2b]/10 bg-[#faf7f2] p-7 transition-shadow hover:shadow-lg dark:bg-neutral-200">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#7a1f2b]/10">
-                <BadgeCheck size={22} className="text-[#7a1f2b]" />
+                <ShieldAlert size={22} className="text-[#7a1f2b]" />
               </div>
-              <h3 className="mt-5 text-lg font-bold text-[#7a1f2b]">ID Checked</h3>
-              <p className="mt-2 text-sm leading-relaxed text-neutral-500">Government ID verification enabled for safety.</p>
+              <h3 className="mt-5 text-lg font-bold text-[#7a1f2b]">Report a Concern</h3>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-500">
+                Seen a false profile, or been asked for money? Tell our team — we review every report and can suspend the account.
+              </p>
             </div>
 
             <div className="rounded-3xl border border-[#7a1f2b]/10 bg-[#faf7f2] p-7 transition-shadow hover:shadow-lg dark:bg-neutral-200">
@@ -366,37 +395,69 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Testimonials ── */}
-      <section className="px-4 py-16 md:py-24">
+      {/* ── Fees ── */}
+      <section id="fees" className="scroll-mt-20 px-4 py-16 md:py-24">
         <div className="mx-auto max-w-5xl">
-          <SectionHeading eyebrow="Success Stories" title="Happy Families" sub="Real couples who found their match on Lura" />
+          <SectionHeading eyebrow="Clear & Upfront" title="Fees" sub="Know what you pay before you register" />
 
-          <div className="grid gap-5 md:grid-cols-3">
-            {testimonials.map(({ name, district, text, stars }) => (
-              <figure
-                key={name}
-                className="relative flex flex-col rounded-3xl border border-[#7a1f2b]/10 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#7a1f2b]/10 dark:bg-neutral-100"
+          <div className="grid gap-4 md:grid-cols-[0.8fr_1.2fr]">
+            {/* Brides */}
+            <div className="flex flex-col rounded-3xl bg-gradient-to-br from-[#d4af37] to-[#e6c65c] p-8">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#7a1f2b]/70">For Brides</p>
+              <p className="mt-3 text-5xl font-extrabold text-[#7a1f2b]">Free</p>
+              <p className="mt-3 text-sm font-medium leading-relaxed text-[#7a1f2b]/85">
+                100% Free for Brides. Register, receive proposals and connect — at no cost.
+              </p>
+              <Link
+                href="/register"
+                className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-[#7a1f2b] px-6 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-[#6b1823] hover:shadow-lg"
               >
-                <span className="pointer-events-none absolute right-6 top-3 font-serif text-7xl leading-none text-[#d4af37]/30">&rdquo;</span>
-                <div className="flex gap-1">
-                  {Array.from({ length: stars }).map((_, i) => (
-                    <Star key={i} size={14} className="fill-[#d4af37] text-[#d4af37]" />
-                  ))}
-                </div>
-                <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-neutral-600">{text}</blockquote>
-                <figcaption className="mt-6 flex items-center gap-3 border-t border-[#7a1f2b]/10 pt-5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#7a1f2b] to-[#9b2535] text-sm font-bold text-white">
-                    {name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-[#7a1f2b]">{name}</p>
-                    <p className="flex items-center gap-1 text-xs text-neutral-400">
-                      <MapPin size={10} /> {district}
-                    </p>
-                  </div>
-                </figcaption>
-              </figure>
-            ))}
+                Register Free
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+
+            {/* Grooms */}
+            <div className="rounded-3xl border border-[#7a1f2b]/10 bg-white p-8 shadow-sm dark:bg-neutral-100">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#9a7400] dark:text-[#d4af37]">For Grooms</p>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+                Registration and browsing are free. You pay per bride profile, in two steps, based on
+                the bride&apos;s family class.
+              </p>
+
+              <div className="mt-5 overflow-hidden rounded-2xl border border-[#7a1f2b]/10">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-[#faf7f2] text-xs uppercase tracking-wide text-neutral-500 dark:bg-neutral-200">
+                    <tr>
+                      <th className="px-4 py-3 font-semibold">Bride&apos;s family class</th>
+                      <th className="px-4 py-3 text-right font-semibold">Initial Payment</th>
+                      <th className="px-4 py-3 text-right font-semibold">Final Payment</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#7a1f2b]/10">
+                    {FAMILY_CLASSES.map(({ code, label }) => (
+                      <tr key={code}>
+                        <td className="px-4 py-3 font-medium text-neutral-800">{label}</td>
+                        <td className="px-4 py-3 text-right font-bold text-[#7a1f2b]">{rupees(info?.firstPaymentAmounts?.[code])}</td>
+                        <td className="px-4 py-3 text-right font-bold text-[#7a1f2b]">{rupees(info?.secondPaymentAmounts?.[code])}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <ul className="mt-5 space-y-2 text-sm text-neutral-600">
+                <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#7a1f2b]" /><span><strong className="text-neutral-800">Initial Payment</strong> sends your proposal to the bride&apos;s family.</span></li>
+                <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#7a1f2b]" /><span><strong className="text-neutral-800">Final Payment</strong>, after she accepts, shares names and contact details with both families.</span></li>
+                <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#7a1f2b]" /><span>Pay by UPI, Google Pay, PayTm or bank transfer, then enter your transaction ID. Our team verifies every payment.</span></li>
+              </ul>
+
+              <p className="mt-5 rounded-2xl bg-[#faf7f2] px-4 py-3 text-xs leading-relaxed text-neutral-600 dark:bg-neutral-200">
+                Payments are non-refundable once approved. See our{" "}
+                <Link href="/refund-policy" className="font-semibold text-[#7a1f2b] underline">Refund Policy</Link>.
+                We never ask for your card number, UPI PIN or OTP.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -413,7 +474,7 @@ export default function HomePage() {
             </span>
             <h2 className="mt-6 text-3xl font-extrabold text-white md:text-4xl">Ready to Find Your Match?</h2>
             <p className="mt-4 text-base text-white/75 md:text-lg">
-              Join Lura&apos;s Lakhs of Tamil Families. Register free today and start your journey.
+              Join Tamil families on Lura. Register free today and start your journey.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
@@ -430,27 +491,22 @@ export default function HomePage() {
                 Already a Member? Login
               </Link>
             </div>
+            {info?.supportPhone && (
+              <p className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-white/75">
+                <span>Need help?</span>
+                <a href={`tel:+91${info.supportPhone.replace(/\D/g, "").slice(-10)}`} className="inline-flex items-center gap-1.5 font-semibold text-white hover:underline">
+                  <Phone size={14} /> {info.supportPhone}
+                </a>
+                <a href={waLink(info.supportPhone)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-semibold text-white hover:underline">
+                  <MessageCircle size={14} /> WhatsApp
+                </a>
+              </p>
+            )}
           </div>
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="bg-[#1a0a0d] px-4 py-10">
-        <div className="mx-auto max-w-5xl">
-          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.jpg" alt="Lura Matrimony Tamil" className="h-14 w-auto rounded-xl bg-white p-0.5" />
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
-              <Link href="/register" className="text-white/60 transition-colors hover:text-white">Register</Link>
-              <Link href="/login" className="text-white/60 transition-colors hover:text-white">Login</Link>
-            </div>
-            <p className="text-xs text-white/40">© 2026 Lura Tamil Matrimony. All rights reserved.</p>
-          </div>
-          <p className="mt-6 border-t border-white/10 pt-6 text-center font-serif text-sm italic text-white/40">
-            &ldquo;Lura-வின் துணையுடன் உங்கள் வாழ்க்கைத் துணை.&rdquo;
-          </p>
-        </div>
-      </footer>
+      <SiteFooter supportPhone={info?.supportPhone} />
     </div>
   );
 }

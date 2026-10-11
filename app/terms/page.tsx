@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { getServerSession } from "next-auth";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Clipboard } from "lucide-react";
-import { authOptions } from "@/lib/auth";
+import { TERMS_SECTIONS } from "@/components/legal/TermsContent";
 
 export default function TermsPage() {
   const router = useRouter();
@@ -42,87 +42,14 @@ export default function TermsPage() {
         <div className="card p-8 space-y-6">
           {/* Terms Content */}
           <div className="max-h-96 overflow-y-auto space-y-6 pr-4">
-            <section>
-              <h2 className="text-lg font-bold text-primary mb-3">1. Introduction</h2>
-              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
-                Welcome to Lura Tamil Matrimony (hereinafter &ldquo;the Platform&rdquo;). These Terms &amp; Conditions govern your use of our matrimony service. By registering and using our platform, you agree to comply with these terms.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold text-primary mb-3">2. User Eligibility</h2>
-              <ul className="space-y-2 text-slate-700 dark:text-neutral-800">
-                <li>• You must be 18 years or older to use this platform</li>
-                <li>• You must be a legal resident of the region where the platform operates</li>
-                <li>• You agree to provide truthful and accurate information</li>
-                <li>• You are responsible for maintaining the confidentiality of your account credentials</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold text-primary mb-3">3. Profile Information</h2>
-              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
-                You agree to provide accurate, complete, and genuine information in your profile. You are solely responsible for any false or misleading information. The Platform reserves the right to verify information and remove profiles found to be fraudulent.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold text-primary mb-3">4. Code of Conduct</h2>
-              <p className="text-slate-700 leading-relaxed mb-2">You agree NOT to:</p>
-              <ul className="space-y-2 text-slate-700 dark:text-neutral-800">
-                <li>• Engage in any form of harassment, abuse, or discrimination</li>
-                <li>• Use the platform for any illegal or unethical purposes</li>
-                <li>• Impersonate another person or entity</li>
-                <li>• Collect or misuse personal information of other users</li>
-                <li>• Spam or send unsolicited messages</li>
-                <li>• Share explicit, offensive, or inappropriate content</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold text-primary mb-3">5. Payment & Fees</h2>
-              <ul className="space-y-2 text-slate-700 dark:text-neutral-800">
-                <li>• Profile creation and basic browsing are free</li>
-                <li>• Premium features require payment as per fee structure</li>
-                <li>• All payments are non-refundable unless stated otherwise</li>
-                <li>• The Platform uses secure payment gateways for transactions</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold text-primary mb-3">6. Privacy & Data Protection</h2>
-              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
-                We are committed to protecting your personal information. Your data will be used only for matrimony matching purposes and as disclosed in our Privacy Policy. We implement industry-standard security measures to protect your information.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold text-primary mb-3">7. Limitation of Liability</h2>
-              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
-                The Platform is provided &ldquo;as is&rdquo; without any warranties. We are not responsible for any direct, indirect, or consequential damages arising from your use of the platform, including decisions made based on profile information.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold text-primary mb-3">8. Dispute Resolution</h2>
-              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
-                Any disputes arising from the use of this platform shall be governed by the laws of the jurisdiction where the platform operates. Users agree to resolve disputes through amicable negotiation or legal proceedings.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold text-primary mb-3">9. Termination</h2>
-              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
-                The Platform reserves the right to terminate or suspend your account if you violate these terms or engage in any prohibited activities.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold text-primary mb-3">10. Changes to Terms</h2>
-              <p className="text-slate-700 dark:text-neutral-800 leading-relaxed">
-                We may update these Terms & Conditions from time to time. Continued use of the platform constitutes your acceptance of the updated terms.
-              </p>
-            </section>
+            {TERMS_SECTIONS.map(({ title, body }) => (
+              <section key={title}>
+                <h2 className="text-lg font-bold text-primary mb-3">{title}</h2>
+                <div className="space-y-2 text-sm leading-relaxed text-slate-700 dark:text-neutral-800 [&_a]:font-semibold [&_a]:text-primary [&_a]:underline [&_li]:ml-5 [&_li]:list-disc [&_ul]:space-y-1.5">
+                  {body}
+                </div>
+              </section>
+            ))}
           </div>
 
           {/* Acceptance Section */}
@@ -149,6 +76,12 @@ export default function TermsPage() {
 
             <p className="text-center text-xs text-slate-500 dark:text-neutral-700 mt-4">
               By accepting these terms, you agree to join our matrimony community and follow our code of conduct.
+            </p>
+            <p className="text-center text-xs text-slate-500 dark:text-neutral-700 mt-2">
+              See also our{" "}
+              <Link href="/privacy-policy" target="_blank" className="font-semibold text-primary underline">Privacy Policy</Link>
+              {" "}and{" "}
+              <Link href="/refund-policy" target="_blank" className="font-semibold text-primary underline">Refund Policy</Link>.
             </p>
           </div>
         </div>

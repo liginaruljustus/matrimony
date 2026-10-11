@@ -23,7 +23,7 @@ export function MobileHeroSection() {
         </h1>
 
         <p className="text-lg md:text-xl text-white/80 leading-relaxed max-w-xl mx-auto">
-          Verified profiles, District, Age and Caste based search, and a family-first experience.
+          District, Age and Caste based search, and a family-first experience.
         </p>
 
         {/* CTA Buttons */}

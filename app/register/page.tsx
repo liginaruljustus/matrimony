@@ -131,7 +131,7 @@ export default function RegisterPage() {
         <div className="mb-8 text-center">
           <img src="/logo.jpg" alt="Lura Matrimony Tamil" className="mx-auto h-28 w-auto mix-blend-multiply" />
           <h1 className="mt-4 text-3xl font-bold text-[#7a1f2b]">Create Account</h1>
-          <p className="mt-1 text-sm text-neutral-500">Join Lura&apos;s Lakhs of Tamil Families</p>
+          <p className="mt-1 text-sm text-neutral-500">Join Tamil families on Lura</p>
         </div>
 
         {/* Form */}
@@ -234,6 +234,13 @@ export default function RegisterPage() {
               {loading ? "Creating account…" : "Create Account"}
             </button>
           </form>
+
+          <p className="mt-4 text-center text-[11px] leading-relaxed text-neutral-400">
+            By creating an account you agree to our{" "}
+            <Link href="/terms-of-use" target="_blank" className="font-semibold text-[#7a1f2b] hover:underline">Terms of Use</Link>
+            {" "}and{" "}
+            <Link href="/privacy-policy" target="_blank" className="font-semibold text-[#7a1f2b] hover:underline">Privacy Policy</Link>.
+          </p>
 
           <p className="mt-4 text-center text-xs text-neutral-400">
             Already have an account?{" "}
