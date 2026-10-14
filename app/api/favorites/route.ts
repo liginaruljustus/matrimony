@@ -67,10 +67,11 @@ export async function GET() {
 
       const isBrideFrozen = !!(u?.isFrozen || u?.isAutoFrozen || p?.isFrozen || p?.isAutoFrozen);
       const isBrideBanned = !u || u.status === "BANNED" || u.status === "INACTIVE";
-      // Once the groom has paid (profile is in his Inbox) it stays visible permanently,
-      // even if the bride later freezes. Unpaid frozen/banned targets hide card data —
-      // the record still exists so the groom knows they have a favorite there.
-      const cardVisible = !isBrideBanned && (!isBrideFrozen || !!fav.firstPaidAt);
+      // A frozen bride's details are withheld from the groom — paid or not — and only
+      // her Profile ID stays, until she unfreezes. The one exception is a profile whose
+      // Final Payment is approved: those contact details are already his.
+      const finalApproved = !!fav.secondPaymentId && approvedPaymentSet.has(String(fav.secondPaymentId));
+      const cardVisible = !isBrideBanned && (!isBrideFrozen || finalApproved);
 
       return {
         id:                    String(fav._id),
@@ -92,6 +93,8 @@ export async function GET() {
         // Bride's acceptance — shown to the groom straight away
         isAccepted:            fav.isAccepted ?? false,
         mdCard:                cardVisible && u && p ? buildMDCard(u, p) : null,
+        // Shown in place of the card while her details are hidden
+        brideProfileId:        isBrideBanned ? "" : u?.profileId ?? "",
         isBrideFrozen,
         isBrideBanned,
       };

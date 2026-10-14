@@ -26,6 +26,7 @@ type InboxItem = {
   isAccepted: boolean;
   acceptedAt: string | null;
   isBrideFrozen: boolean;
+  detailsHidden?: boolean;
   adCard: {
     profileId: string;
     name: string;
@@ -189,6 +190,36 @@ export default function InboxPage() {
           {inbox.map((item) => {
             const card = item.adCard;
 
+            // ── Bride's profile is frozen: nothing but her Profile ID ──
+            if (item.detailsHidden) {
+              return (
+                <div
+                  key={item.favoriteId}
+                  className="overflow-hidden rounded-2xl border border-amber-200 bg-white dark:bg-neutral-100 shadow-sm p-5"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-200">
+                      <Lock size={22} className="text-neutral-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-mono font-bold text-neutral-900 dark:text-neutral-900">
+                        {item.brideProfileId || "Profile"}
+                      </h3>
+                      <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
+                        <AlertCircle size={16} className="mt-0.5 shrink-0 text-amber-700" />
+                        <div>
+                          <p className="text-sm font-bold text-amber-800">Profile currently inactive</p>
+                          <p className="text-[11px] text-amber-800/80">
+                            Her details are hidden for now. They will be shown again when she reactivates her profile.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
             // ── Waiting period: AD locked, only Profile ID shows ──
             if (!card && item.adLocked) {
               const unlockDate = item.inboxFrozenUntil
@@ -253,7 +284,7 @@ export default function InboxPage() {
 
             if (!card) return null;
             // Profiles stay in the Inbox permanently — the Final Payment is allowed any time
-            // after the waiting period, even if the bride is currently inactive.
+            // after the waiting period (a frozen bride's card is handled above).
             const canPay2nd    = !item.inboxFrozen && !item.secondPaidAt;
             const days         = item.inboxFrozenUntil ? daysLeft(item.inboxFrozenUntil) : 0;
 

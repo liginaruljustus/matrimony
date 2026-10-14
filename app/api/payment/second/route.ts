@@ -14,7 +14,7 @@
  *
  * Rules:
  *  - 1st payment must already be admin-approved (firstPaidAt set)
- *  - The waiting period (inboxFreezeDays) must have passed. Allowed even if the bride is currently inactive.
+ *  - The waiting period (inboxFreezeDays) must have passed. Not allowed while the bride's profile is frozen.
  *  - 2nd payment amount = same as 1st (based on bride's familyClass)
  *  - Creates PaymentModel with tier=SECOND_PAYMENT
  *  - Admin approves → unlocks CD card for this profile
@@ -96,6 +96,16 @@ export async function POST(req: Request) {
     // Get bride's family class for amount
     const targetUser = await UserModel.findById(fav.favoriteUserId).lean() as any;
     if (!targetUser) return Response.json({ error: "Bride profile not found" }, { status: 404 });
+
+    // Her details are hidden while her profile is frozen, so the Final Payment waits too
+    const targetProfile = await ProfileModel.findOne({ userId: targetUser._id })
+      .select("isFrozen isAutoFrozen").lean() as any;
+    if (targetUser.isFrozen || targetUser.isAutoFrozen || targetProfile?.isFrozen || targetProfile?.isAutoFrozen) {
+      return Response.json(
+        { error: "This profile is currently inactive. The Final Payment will be available when the bride reactivates her profile." },
+        { status: 400 },
+      );
+    }
 
     const familyClass = targetUser.familyClass ?? "MC";
     const secondPaymentAmounts = await getPaymentAmounts("SECOND_PAYMENT");

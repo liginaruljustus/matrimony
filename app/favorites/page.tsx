@@ -34,6 +34,7 @@ type FavItem = {
   createdAt: string;
   isAccepted?: boolean;
   isBrideFrozen: boolean;
+  brideProfileId?: string;
   mdCard: {
     profileId: string;
     name: string;
@@ -133,7 +134,7 @@ export default function FavoritesPage() {
   // Both payments approved → contact unlocked
   const fullyPaid = favorites.filter((f) => f.secondPaidAt && f.secondPaymentApproved);
   // Only unpaid favourites move to "Frozen" — once paid, a profile stays in its
-  // Inbox/Contacts section permanently, with an "inactive" note if she has frozen.
+  // own section, showing just her Profile ID and an "inactive" note while she is frozen.
   const frozenFavs = favorites.filter((f) => f.isBrideFrozen && !f.firstPaidAt);
 
   const selectable = unpaid.filter((f) => !f.movedToPayment || f.lockExpired);
@@ -564,8 +565,35 @@ function FavCard({
   paymentAmt?: Record<string, number>;
 }) {
   const card = fav.mdCard;
+  // Frozen bride: her details are withheld, so the card is just her Profile ID
+  if (!card && fav.isBrideFrozen && fav.brideProfileId) {
+    return (
+      <div className="flex flex-col overflow-hidden rounded-2xl border border-amber-200 bg-white dark:bg-neutral-100 shadow-sm">
+        <div className="flex h-40 items-center justify-center bg-neutral-100 dark:bg-neutral-200">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-200 text-neutral-400">
+            <Lock size={22} />
+          </div>
+        </div>
+        <div className="flex flex-1 flex-col p-3">
+          <div className="flex items-center gap-1.5">
+            <Lock size={12} className="text-[#7a1f2b]" />
+            <h3 className="font-mono font-bold tracking-wide text-neutral-900 dark:text-neutral-900">
+              {fav.brideProfileId}
+            </h3>
+          </div>
+          <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-800">
+            <AlertCircle size={14} className="shrink-0" />
+            Profile currently inactive
+          </p>
+          <p className="mt-2 text-[11px] leading-relaxed text-neutral-500">
+            Her details are hidden for now. They will be shown again when she reactivates her profile.
+          </p>
+        </div>
+      </div>
+    );
+  }
   if (!card) return null;
-  // Paid profile whose bride has since frozen — still shown, just flagged.
+  // Fully paid profile whose bride has since frozen — still shown, just flagged.
   const inactive = fav.isBrideFrozen && !frozen;
 
   return (

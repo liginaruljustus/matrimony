@@ -90,6 +90,12 @@ export async function GET() {
       // 2nd payment is made) the AD card becomes visible.
       const adLocked = !!inboxFrozen && !fav.secondPaidAt;
 
+      // While the bride's profile is frozen her details are withheld — only her
+      // Profile ID stays. They come back when she unfreezes. Contact details the
+      // groom already unlocked with an approved Final Payment are not affected.
+      const finalApproved = !!fav.secondPaymentId && approvedSecondSet.has(String(fav.secondPaymentId));
+      const detailsHidden = isBrideFrozen && !finalApproved;
+
       return {
         favoriteId:       String(fav._id),
         favoriteUserId:   uid,
@@ -105,12 +111,13 @@ export async function GET() {
         acceptedAt:       fav.acceptedAt ?? null,
         // Whether the bride's profile is currently frozen (she may have frozen after groom paid)
         isBrideFrozen,
+        detailsHidden,
         // AD card is only served after the waiting period
         // The bride's name and her parents' names are contact-level details —
         // withheld until the Final Payment is approved.
-        adCard:           !(u && p) || adLocked
+        adCard:           !(u && p) || adLocked || detailsHidden
                             ? null
-                            : fav.secondPaymentId && approvedSecondSet.has(String(fav.secondPaymentId))
+                            : finalApproved
                               ? buildADCard(u, p)
                               : { ...buildADCard(u, p), name: "", fatherName: undefined, motherName: undefined },
       };
