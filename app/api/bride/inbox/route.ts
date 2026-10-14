@@ -47,13 +47,18 @@ export async function GET() {
       return Response.json({ error: "Only bride profiles can access this" }, { status: 403 });
     }
 
+    // Frozen brides can see their proposals but cannot accept until they unfreeze
+    const ownProfile = await ProfileModel.findOne({ userId: brideUser._id })
+      .select("isFrozen isAutoFrozen").lean() as any;
+    const isFrozen = !!(brideUser.isFrozen || brideUser.isAutoFrozen || ownProfile?.isFrozen || ownProfile?.isAutoFrozen);
+
     // Favorites where THIS bride is the target and 1st payment was submitted
     const favs = await FavoriteModel.find({
       favoriteUserId: session.user.id,
       firstPaidAt:    { $exists: true, $ne: null },
     }).sort({ isAccepted: -1, firstPaidAt: -1 }).lean() as any[];
 
-    if (!favs.length) return Response.json({ inbox: [], pendingApproval: 0 });
+    if (!favs.length) return Response.json({ inbox: [], pendingApproval: 0, isFrozen });
 
     // Filter to only admin-approved 1st payments
     const paymentIds = favs.map((f: any) => f.firstPaymentId).filter(Boolean);
@@ -68,7 +73,7 @@ export async function GET() {
     );
     const pendingApproval = favs.length - approvedFavs.length;
 
-    if (!approvedFavs.length) return Response.json({ inbox: [], pendingApproval });
+    if (!approvedFavs.length) return Response.json({ inbox: [], pendingApproval, isFrozen });
 
     // Fetch groom users + profiles
     const groomUserIds = approvedFavs.map((f: any) => f.userId);
@@ -116,7 +121,7 @@ export async function GET() {
       };
     });
 
-    return Response.json({ inbox, pendingApproval });
+    return Response.json({ inbox, pendingApproval, isFrozen });
   } catch (error) {
     console.error("GET /api/bride/inbox error:", error);
     return Response.json({ error: "Server error" }, { status: 500 });

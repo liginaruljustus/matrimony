@@ -15,7 +15,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
-import { UserModel, FavoriteModel, PaymentModel, NotificationModel } from "@/lib/models";
+import { UserModel, ProfileModel, FavoriteModel, PaymentModel, NotificationModel } from "@/lib/models";
 
 export async function POST(req: Request) {
   try {
@@ -36,6 +36,17 @@ export async function POST(req: Request) {
     const brideUser = await UserModel.findById(session.user.id).lean() as any;
     if (!brideUser || brideUser.profileType !== "BRIDE") {
       return Response.json({ error: "Only bride profiles can respond" }, { status: 403 });
+    }
+
+    // A frozen profile is hidden from grooms, so it can't take proposals forward.
+    // She can accept again as soon as she unfreezes it.
+    const brideProfile = await ProfileModel.findOne({ userId: brideUser._id })
+      .select("isFrozen isAutoFrozen").lean() as any;
+    if (brideUser.isFrozen || brideUser.isAutoFrozen || brideProfile?.isFrozen || brideProfile?.isAutoFrozen) {
+      return Response.json(
+        { error: "Your profile is frozen. Unfreeze it in Settings to accept proposals.", frozen: true },
+        { status: 403 },
+      );
     }
 
     // Find the favorite — this bride must be the target

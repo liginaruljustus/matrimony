@@ -7,7 +7,7 @@ import Link from "next/link";
 import {
   Inbox, Star, MapPin, GraduationCap, CheckCircle,
   XCircle, Clock, AlertCircle, Heart, Users,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, Snowflake,
 } from "lucide-react";
 import { PhotoLightbox } from "@/components/PhotoLightbox";
 import { DownloadADPdfButton } from "@/components/ADDetails";
@@ -65,6 +65,7 @@ export default function BrideInboxPage() {
   const [loading, setLoading]     = useState(true);
   const [responding, setResponding] = useState<string | null>(null);
   const [respondError, setRespondError] = useState("");
+  const [isFrozen, setIsFrozen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -74,6 +75,7 @@ export default function BrideInboxPage() {
       const data = await res.json();
       setInbox(data.inbox ?? []);
       setPending(data.pendingApproval ?? 0);
+      setIsFrozen(!!data.isFrozen);
     } catch {
       setInbox([]);
     } finally {
@@ -161,6 +163,20 @@ export default function BrideInboxPage() {
         </div>
       )}
 
+      {/* Frozen profile — proposals are visible but cannot be accepted */}
+      {isFrozen && (
+        <div className="mb-4 flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+          <Snowflake size={18} className="mt-0.5 shrink-0 text-amber-700" />
+          <div className="text-sm text-amber-900">
+            <p className="font-bold">Your profile is frozen</p>
+            <p className="mt-0.5">
+              You can&apos;t accept proposals while your profile is frozen.{" "}
+              <Link href="/settings" className="font-bold underline">Unfreeze it in Settings</Link> to accept.
+            </p>
+          </div>
+        </div>
+      )}
+
       {respondError && (
         <div className="mb-4 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           <AlertCircle size={15} className="shrink-0" />
@@ -205,6 +221,7 @@ export default function BrideInboxPage() {
                     item={item}
                     onAccept={() => respond(item.favoriteId, "accept")}
                     responding={responding === item.favoriteId}
+                    frozen={isFrozen}
                   />
                 ))}
               </div>
@@ -242,12 +259,13 @@ export default function BrideInboxPage() {
 
 // ── Groom Card ──────────────────────────────────────────────────────────────
 function GroomCard({
-  item, onAccept, responding, accepted = false,
+  item, onAccept, responding, accepted = false, frozen = false,
 }: {
   item: InboxItem;
   onAccept?: () => void;
   responding: boolean;
   accepted?: boolean;
+  frozen?: boolean;
 }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const card = item.mdCard;
@@ -344,12 +362,18 @@ function GroomCard({
         {!accepted && (
           <button
             onClick={onAccept}
-            disabled={responding}
-            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-green-600 py-2 text-xs font-bold text-white hover:bg-green-700 transition-colors disabled:opacity-50"
+            disabled={responding || frozen}
+            title={frozen ? "Unfreeze your profile in Settings to accept" : undefined}
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-green-600 py-2 text-xs font-bold text-white hover:bg-green-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             <CheckCircle size={13} />
             Accept
           </button>
+        )}
+        {!accepted && frozen && (
+          <p className="mt-1.5 text-center text-[11px] font-semibold text-amber-700">
+            Unfreeze your profile to accept
+          </p>
         )}
 
         {accepted && item.acceptedAt && (
