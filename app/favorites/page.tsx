@@ -10,6 +10,7 @@ import {
   ShoppingCart, Inbox, ChevronRight,
 } from "lucide-react";
 import { FAMILY_CLASS_COLORS as CLASS_COLOR, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 /** "today" / "tomorrow" / "in N days" — counted in calendar days. */
 function unlockWhen(iso: string): string {
   const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
@@ -577,8 +578,8 @@ function FavCard({
         <div className="flex flex-1 flex-col p-3">
           <div className="flex items-center gap-1.5">
             <Lock size={12} className="text-[#7a1f2b]" />
-            <h3 className="font-mono font-bold tracking-wide text-neutral-900 dark:text-neutral-900">
-              {fav.brideProfileId}
+            <h3>
+              <ProfileIdBadge id={fav.brideProfileId} size="md" />
             </h3>
           </div>
           <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-800">
@@ -645,14 +646,14 @@ function FavCard({
         {hideName ? (
           <div className="flex items-center gap-1.5">
             <Lock size={12} className="text-[#7a1f2b]" />
-            <h3 className="font-mono font-bold tracking-wide text-neutral-900 dark:text-neutral-900">
-              {card.profileId}
+            <h3>
+              <ProfileIdBadge id={card.profileId} size="md" />
             </h3>
           </div>
         ) : (
           <div className="flex items-start justify-between">
             <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{card.name}</h3>
-            <span className="ml-1 font-mono text-[10px] text-neutral-400">{card.profileId}</span>
+            <ProfileIdBadge id={card.profileId} size="xs" className="ml-1 shrink-0" />
           </div>
         )}
         <p className="mt-0.5 text-xs text-neutral-500">

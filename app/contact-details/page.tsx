@@ -9,6 +9,7 @@ import {
   CheckCircle, AlertCircle, CreditCard,
 } from "lucide-react";
 import { PhotoLightbox } from "@/components/PhotoLightbox";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 type Contact = {
   favoriteId: string;
   favoriteUserId: string;
@@ -157,7 +158,7 @@ export default function ContactDetailsPage() {
                   )}
                   <div>
                     <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{contact.name}</h3>
-                    <p className="font-mono text-xs text-neutral-400">{contact.profileId}</p>
+                    <p className="mt-0.5"><ProfileIdBadge id={contact.profileId} size="xs" /></p>
                     <p className="mt-0.5 flex items-center gap-1 text-[10px] text-green-700 font-semibold">
                       <CheckCircle size={10} />
                       Unlocked on {new Date(contact.secondPaidAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}

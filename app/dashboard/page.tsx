@@ -17,6 +17,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -611,9 +612,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
                     Profile ID
                   </p>
-                  <code className="block text-sm font-mono font-bold text-[#7a1f2b] bg-[#7a1f2b]/8 px-3 py-2 rounded-lg break-all">
-                    {userData.profileId}
-                  </code>
+                  <ProfileIdBadge id={userData.profileId} size="md" />
                 </div>
               )}
 

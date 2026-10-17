@@ -5,6 +5,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   PencilLine, Clock, CheckCircle, AlertCircle, User, Lock, Unlock,
 } from "lucide-react";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
 type EditRequest = {
   id: string;
@@ -128,7 +129,7 @@ export default function EditRequestsPage() {
                     </div>
                     <div>
                       <p className="font-bold text-slate-900">{r.user?.name ?? "Unknown"}</p>
-                      <p className="font-mono text-xs text-slate-400">{r.user?.profileId}</p>
+                      <p className="mt-0.5"><ProfileIdBadge id={r.user?.profileId} size="xs" /></p>
                       <p className="text-xs text-slate-400">{r.user?.email}</p>
                     </div>
                   </div>

@@ -15,6 +15,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { DataTable, Column } from "@/components/admin/DataTable";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -180,7 +181,7 @@ export default function AdminReportsPage() {
       render: (user) => (
         <div>
           <p className="text-sm font-semibold text-slate-900">{user?.name ?? "—"}</p>
-          <p className="text-xs text-slate-500 font-mono">{user?.profileId ?? ""}</p>
+          <p className="mt-0.5"><ProfileIdBadge id={user?.profileId} size="xs" /></p>
         </div>
       ),
     },
@@ -399,7 +400,7 @@ export default function AdminReportsPage() {
                   <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
                     <p className="font-semibold text-sm text-slate-900">{selectedReport.reporter?.name ?? "—"}</p>
                     <p className="text-xs text-slate-500">{selectedReport.reporter?.email}</p>
-                    <p className="text-xs text-slate-400 font-mono">{selectedReport.reporter?.profileId}</p>
+                    <p className="mt-0.5"><ProfileIdBadge id={selectedReport.reporter?.profileId} size="xs" /></p>
                   </div>
                 </div>
                 <div>
@@ -412,7 +413,7 @@ export default function AdminReportsPage() {
                       <div>
                         <p className="font-semibold text-sm text-slate-900">{selectedReport.reportedUser?.name ?? "—"}</p>
                         <p className="text-xs text-slate-500">{selectedReport.reportedUser?.email}</p>
-                        <p className="text-xs text-slate-400 font-mono">{selectedReport.reportedUser?.profileId}</p>
+                        <p className="mt-0.5"><ProfileIdBadge id={selectedReport.reportedUser?.profileId} size="xs" /></p>
                       </div>
                       <StatusBadge status={selectedReport.reportedUser?.status} type="user" />
                     </div>

@@ -8,6 +8,7 @@ import {
   Users, TrendingUp, AlertCircle, X,
   Smartphone, Building2, QrCode, ChevronDown, ChevronUp, Zap,
 } from "lucide-react";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
 type Receiver = {
   id: string;
@@ -322,9 +323,7 @@ function PaymentsContent() {
                         <span className="font-bold text-neutral-900">
                           {payment.payer?.name ?? "Unknown"}
                         </span>
-                        <span className="font-mono text-xs text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded">
-                          {payment.payer?.profileId}
-                        </span>
+                        <ProfileIdBadge id={payment.payer?.profileId} size="xs" />
                         {/* Tier badge */}
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
                           TIER_COLOR[payment.tier] ?? "bg-neutral-100 text-neutral-600"
@@ -441,7 +440,7 @@ function PaymentsContent() {
                             className="flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1"
                           >
                             <span className="text-xs font-semibold text-neutral-800">{r.name}</span>
-                            <span className="font-mono text-[10px] text-neutral-400">{r.profileId}</span>
+                            <ProfileIdBadge id={r.profileId} size="xs" />
                             <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
                               CLASS_COLOR[r.familyClass] ?? "bg-neutral-100 text-neutral-600"
                             }`}>

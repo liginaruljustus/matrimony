@@ -12,6 +12,7 @@ import {
 import { PhotoLightbox } from "@/components/PhotoLightbox";
 import { DownloadADPdfButton } from "@/components/ADDetails";
 import { FAMILY_CLASS_COLORS as CLASS_COLOR, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 type InboxItem = {
   favoriteId: string;
   groomUserId: string;
@@ -321,8 +322,12 @@ function GroomCard({
       {/* Info */}
       <div className="p-4">
         <div className="flex items-start justify-between">
-          <h3 className={`font-bold text-neutral-900 dark:text-neutral-900 ${card.name ? "" : "font-mono tracking-wide"}`}>{displayName}</h3>
-          {card.name && <span className="font-mono text-[10px] text-neutral-400">{card.profileId}</span>}
+          {card.name ? (
+            <h3 className="font-bold text-neutral-900 dark:text-neutral-900">{card.name}</h3>
+          ) : (
+            <h3><ProfileIdBadge id={card.profileId} size="md" /></h3>
+          )}
+          {card.name && <ProfileIdBadge id={card.profileId} size="xs" />}
         </div>
         <p className="mt-0.5 text-xs text-neutral-500">
           {card.age} yrs · {card.maritalStatus?.replace("_", " ") ?? "Single"}

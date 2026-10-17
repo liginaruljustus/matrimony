@@ -9,6 +9,7 @@ import {
   CreditCard, CheckCircle, Copy, AlertCircle,
   ArrowLeft, Smartphone, Wallet, Building2, QrCode, Phone, ChevronRight,
 } from "lucide-react";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
 type Method = "gpay" | "upi" | "paytm" | "bank";
 
@@ -247,7 +248,7 @@ function SecondPaymentContent() {
                 className="flex w-full items-center justify-between rounded-xl border border-neutral-200 bg-white px-4 py-3 text-left transition-colors hover:border-[#7a1f2b]/40 hover:bg-[#faf7f2]"
               >
                 <div>
-                  <p className="font-mono text-sm font-bold text-neutral-800">{f.profileId}</p>
+                  <p><ProfileIdBadge id={f.profileId} size="sm" /></p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
@@ -278,7 +279,7 @@ function SecondPaymentContent() {
 
       <h1 className="text-2xl font-bold text-[#7a1f2b]">Final Payment</h1>
       <p className="mt-1 text-sm text-neutral-500">
-        Unlock contact details for <strong>{selected.profileId}</strong>
+        Unlock contact details for <ProfileIdBadge id={selected.profileId} size="xs" />
       </p>
 
       {/* What you unlock */}

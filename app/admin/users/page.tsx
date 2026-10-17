@@ -8,6 +8,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { DataTable, Column } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 
@@ -128,9 +129,7 @@ export default function AdminUsersPage() {
       key: "profileId",
       label: "Profile ID",
       render: (value) => (
-        <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">
-          {value || "—"}
-        </span>
+        <ProfileIdBadge id={value} size="xs" />
       ),
     },
     {

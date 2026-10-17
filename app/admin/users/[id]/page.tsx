@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 
@@ -398,9 +399,7 @@ export default function AdminUserDetailPage() {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-xs text-slate-500">
               <span>
                 Profile ID:{" "}
-                <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-700">
-                  {user.profileId ?? "—"}
-                </code>
+                <ProfileIdBadge id={user.profileId} size="xs" />
               </span>
               <span>
                 Role: <span className="font-semibold text-slate-700">{user.role}</span>

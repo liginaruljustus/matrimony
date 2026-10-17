@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ProfileDetailsList } from "@/components/ProfileDetailsList";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
 type PublicProfile = {
   profileId: string;
@@ -185,7 +186,7 @@ export default function ProfileDetailPage() {
       <div className="flex items-start justify-between rounded-2xl bg-white dark:bg-neutral-100 p-4 shadow-sm ring-1 ring-neutral-100 dark:ring-neutral-200">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold font-mono text-neutral-900 dark:text-neutral-900">{profile.profileId}</h1>
+            <h1><ProfileIdBadge id={profile.profileId} size="xl" /></h1>
             <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${CLASS_COLOR[profile.familyClass] ?? "bg-neutral-100 text-neutral-700"}`}>
               {profile.familyClass}
             </span>

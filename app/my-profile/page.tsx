@@ -12,6 +12,7 @@ import {
   Phone, FileText, Pencil, ArrowLeft, Camera,
   CheckCircle, Clock, AlertCircle, XCircle, Flag, Download, Lock,
 } from "lucide-react";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
 // ── Status badge ──────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
@@ -164,7 +165,7 @@ export default function MyProfilePage() {
           <p className="mt-0.5 text-sm text-neutral-500">
             {userData?.name ?? (session?.user as any)?.name ?? ""}
             {userData?.profileId && (
-              <span className="ml-2 font-mono text-xs text-neutral-400">{userData.profileId}</span>
+              <ProfileIdBadge id={userData.profileId} size="xs" className="ml-2" />
             )}
           </p>
         </div>

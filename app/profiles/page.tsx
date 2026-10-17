@@ -13,6 +13,7 @@ import { SearchDropdown } from "@/components/SearchDropdown";
 import { CASTE_LIST } from "@/lib/casteData";
 import { DISTRICTS } from "@/lib/districts";
 import { FAMILY_CLASS_CARD_STYLE, FAMILY_CLASS_CARD_FALLBACK, FAMILY_CLASS_PLACEHOLDER_BG, FAMILY_CLASS_PLACEHOLDER_FALLBACK } from "@/lib/familyClass";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
 type MDProfile = {
   _id: string;
@@ -307,7 +308,7 @@ function MDProfileCard({
         {/* Profile ID overlaid on photo — highlighted */}
         <div className="absolute inset-x-0 bottom-0 px-3 pb-3">
           <div className="inline-block rounded-xl bg-[#7a1f2b]/85 px-3 py-1.5 backdrop-blur-sm shadow-md">
-            <h3 className="font-mono text-base font-extrabold text-white truncate">{profile.profileId}</h3>
+            <h3><ProfileIdBadge id={profile.profileId} size="md" tone="light" /></h3>
             <p className="text-xs font-semibold text-[#f5d98a]">
               {profile.age} yrs • {profile.maritalStatus?.replace("_", " ") ?? "Single"}
             </p>

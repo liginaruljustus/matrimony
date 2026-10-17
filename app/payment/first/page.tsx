@@ -9,6 +9,7 @@ import {
   CreditCard, CheckCircle, Copy, AlertCircle,
   ArrowLeft, Smartphone, Wallet, Building2, QrCode, Lock,
 } from "lucide-react";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
 type Method = "gpay" | "upi" | "paytm" | "bank";
 
@@ -256,7 +257,7 @@ function PaymentContent() {
               <div>
                 <div className="flex items-center gap-1.5">
                   <Lock size={11} className="text-[#7a1f2b]" />
-                  <p className="font-mono text-sm font-bold tracking-wide text-neutral-800">{f.profileId}</p>
+                  <p><ProfileIdBadge id={f.profileId} size="sm" /></p>
                 </div>
                 {f.paymentLockExpiresAt && (
                   <p className="mt-0.5 text-[10px] text-neutral-400">

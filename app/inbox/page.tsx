@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { DownloadADPdfButton } from "@/components/ADDetails";
 import { FAMILY_CLASS_COLORS, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 const DEFAULT_PAYMENT_AMOUNTS: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
 type InboxItem = {
@@ -202,8 +203,8 @@ export default function InboxPage() {
                       <Lock size={22} className="text-neutral-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-mono font-bold text-neutral-900 dark:text-neutral-900">
-                        {item.brideProfileId || "Profile"}
+                      <h3>
+                        <ProfileIdBadge id={item.brideProfileId} size="lg" />
                       </h3>
                       <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
                         <AlertCircle size={16} className="mt-0.5 shrink-0 text-amber-700" />
@@ -235,8 +236,8 @@ export default function InboxPage() {
                       <Lock size={22} className="text-neutral-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-mono font-bold text-neutral-900 dark:text-neutral-900">
-                        {item.brideProfileId || "Profile"}
+                      <h3>
+                        <ProfileIdBadge id={item.brideProfileId} size="lg" />
                       </h3>
                       {item.isAccepted && (
                         <div className="mt-2 flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
@@ -303,7 +304,7 @@ export default function InboxPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-mono font-bold tracking-wide text-neutral-900 dark:text-neutral-900">{card.profileId}</h3>
+                        <h3><ProfileIdBadge id={card.profileId} size="lg" /></h3>
                         <p className="text-xs text-neutral-500">{card.age} yrs · {card.district}</p>
                       </div>
                       <span

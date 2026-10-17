@@ -17,6 +17,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { DataTable, Column } from "@/components/admin/DataTable";
+import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -162,7 +163,7 @@ export default function AdminVerificationPage() {
         <div>
           <p className="font-semibold text-slate-900">{row.name}</p>
           <p className="text-xs text-slate-500">{row.email}</p>
-          <p className="text-xs text-slate-400 font-mono">{row.profileId}</p>
+          <p className="mt-0.5"><ProfileIdBadge id={row.profileId} size="xs" /></p>
         </div>
       ),
     },
@@ -352,7 +353,7 @@ export default function AdminVerificationPage() {
               <div>
                 <h3 className="font-bold text-slate-900">{docModal.user.name}</h3>
                 <p className="text-sm text-slate-500">{docModal.user.email}</p>
-                <p className="text-xs text-slate-400 font-mono">{docModal.user.profileId}</p>
+                <p className="mt-0.5"><ProfileIdBadge id={docModal.user.profileId} size="xs" /></p>
               </div>
               <button
                 onClick={() => { setDocModal(null); setModalAction(null); setRejectionReason(""); }}
