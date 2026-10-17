@@ -300,6 +300,7 @@ const settingsSchema = new Schema(
     // Auto-freeze thresholds (days of inactivity)
     groomFreezeDays:    { type: Number, default: 90 },
     brideFreezeDays:    { type: Number, default: 60 },
+    lastAutoFreezeRunAt: { type: Date },
     // PDF document settings
     pdfDownloadEnabled:    { type: Boolean, default: true },
     pdfCompanyName:        { type: String,  default: "Lura Matrimony" },

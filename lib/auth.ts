@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel } from "@/lib/models";
+import { runAutoFreezeIfDue } from "@/lib/autoFreeze";
 
 const STATUS_REFRESH_INTERVAL_MS = 5 * 60 * 1000; // re-read DB every 5 minutes
 
@@ -54,6 +55,7 @@ export const authOptions: NextAuthOptions = {
 
         // Update lastActivity on login
         await UserModel.findByIdAndUpdate(user._id, { $set: { lastActivity: new Date(), lastLogin: new Date() } });
+        await runAutoFreezeIfDue();
 
         return {
           id:          String(user._id),
@@ -89,7 +91,8 @@ export const authOptions: NextAuthOptions = {
       if (Date.now() - checkedAt > STATUS_REFRESH_INTERVAL_MS) {
         try {
           await connectToDatabase();
-          const fresh = await UserModel.findById(token.id)
+          // Also records that the user is still active (used by auto-freeze)
+          const fresh = await UserModel.findByIdAndUpdate(token.id, { $set: { lastActivity: new Date() } })
             .select("status role profileType familyClass profileId")
             .lean() as any;
           if (fresh) {
@@ -103,6 +106,7 @@ export const authOptions: NextAuthOptions = {
           // If DB is unreachable, keep the existing token values — don't break the session.
         }
         token.statusCheckedAt = Date.now();
+        await runAutoFreezeIfDue();
       }
 
       return token;
