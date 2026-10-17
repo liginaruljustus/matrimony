@@ -99,7 +99,7 @@ export function ProfileSwipeCard() {
           <img
             src={profile.image}
             alt={profile.name}
-            className="h-72 w-full object-cover"
+            className="h-72 w-full bg-neutral-100 object-contain"
           />
         </div>
 

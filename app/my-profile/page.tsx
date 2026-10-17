@@ -240,7 +240,7 @@ export default function MyProfilePage() {
                 key={i}
                 className={`relative overflow-hidden rounded-xl ${i === 0 ? "h-40 w-40" : "h-24 w-24"} border-2 ${i === 0 ? "border-[#7a1f2b]" : "border-neutral-200"}`}
               >
-                <Image src={url} alt={`Photo ${i + 1}`} fill className="object-cover" />
+                <Image src={url} alt={`Photo ${i + 1}`} fill className="bg-neutral-100 object-contain" />
                 {i === 0 && (
                   <span className="absolute bottom-1 left-1 rounded-md bg-[#7a1f2b]/80 px-1.5 py-0.5 text-[10px] font-bold text-white">
                     Main

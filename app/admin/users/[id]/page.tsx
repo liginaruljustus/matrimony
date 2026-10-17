@@ -940,7 +940,7 @@ export default function AdminUserDetailPage() {
                       <img
                         src={url}
                         alt={`Photo ${i + 1}`}
-                        className="w-full aspect-square object-cover rounded-lg border border-slate-200 hover:opacity-80 transition"
+                        className="w-full aspect-square object-contain bg-slate-100 rounded-lg border border-slate-200 hover:opacity-80 transition"
                       />
                     </a>
                   ))}

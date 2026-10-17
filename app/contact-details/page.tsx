@@ -139,7 +139,7 @@ export default function ContactDetailsPage() {
                           name: contact.name,
                         })
                       }
-                      className="shrink-0 cursor-zoom-in rounded-full transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/40"
+                      className="shrink-0 cursor-zoom-in rounded-xl transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/40"
                       aria-label={`View photo of ${contact.name}`}
                       title="Click to view photo"
                     >
@@ -147,7 +147,7 @@ export default function ContactDetailsPage() {
                       <img
                         src={contact.photo}
                         alt={contact.name}
-                        className="h-14 w-14 rounded-full object-cover object-top ring-2 ring-white"
+                        className="h-14 w-14 rounded-xl bg-white object-contain ring-2 ring-white"
                       />
                     </button>
                   ) : (

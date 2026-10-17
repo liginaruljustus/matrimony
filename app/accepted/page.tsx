@@ -156,14 +156,14 @@ function AcceptedGroomCard({ item }: { item: AcceptedItem }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-green-200 bg-white dark:bg-neutral-100 shadow-sm hover:shadow-md transition-all">
       {/* Photo */}
-      <div className="relative h-44 bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
+      <div className="relative h-64 bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
         {card.photo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={card.photo}
             alt={displayName}
             onClick={() => setLightboxIndex(Math.max(0, allPhotos.indexOf(card.photo!)))}
-            className="h-full w-full cursor-zoom-in object-cover object-top"
+            className="h-full w-full cursor-zoom-in bg-neutral-100 object-contain"
           />
         ) : null}
         {lightboxIndex !== null && allPhotos.length > 0 && (

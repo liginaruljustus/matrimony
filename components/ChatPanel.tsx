@@ -20,7 +20,7 @@ function formatTime(dateStr: string) {
 
 function Avatar({ photo, image, name, size = 10 }: { photo?: string | null; image?: string | null; name: string; size?: number }) {
   const src = photo ?? image ?? null;
-  const cls = `h-${size} w-${size} shrink-0 rounded-full object-cover`;
+  const cls = `h-${size} w-${size} shrink-0 rounded-lg bg-neutral-100 object-contain`;
   if (src) return <img src={src} alt={name} className={cls} />;
   return (
     <div className={`flex h-${size} w-${size} shrink-0 items-center justify-center rounded-full bg-[#fff9ef] text-base`}>

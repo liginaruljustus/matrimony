@@ -159,7 +159,7 @@ export default function AdminProfileDetailPage() {
                     className="relative aspect-square bg-slate-100 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#d4af37] transition"
                     onClick={() => setSelectedPhoto(photo)}
                   >
-                    <img src={photo} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                    <img src={photo} alt={`Photo ${i + 1}`} className="w-full h-full bg-slate-100 object-contain" />
                   </div>
                 ))}
               </div>

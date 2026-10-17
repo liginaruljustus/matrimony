@@ -280,13 +280,13 @@ function GroomCard({
       accepted ? "border-green-200" : "border-neutral-100 dark:border-neutral-200 hover:shadow-md"
     }`}>
       {/* Photo */}
-      <div className="relative h-44 bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
+      <div className="relative h-64 bg-gradient-to-br from-[#7a1f2b]/10 to-[#d4af37]/10">
         {card.photo ? (
           <img
             src={card.photo}
             alt={displayName}
             onClick={() => setLightboxIndex(Math.max(0, allPhotos.indexOf(card.photo!)))}
-            className="h-full w-full cursor-zoom-in object-cover object-top"
+            className="h-full w-full cursor-zoom-in bg-neutral-100 object-contain"
           />
         ) : null}
         {lightboxIndex !== null && allPhotos.length > 0 && (

@@ -31,7 +31,7 @@ export function ProfileCard(props: ProfileCardProps) {
             <img
               src={mainPhoto}
               alt={props.name}
-              className="h-full w-full object-cover transition-base group-hover:scale-125"
+              className="h-full w-full bg-neutral-100 object-contain"
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-neutral-100">

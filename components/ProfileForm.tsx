@@ -184,7 +184,7 @@ export function ProfileForm({ defaultProfile }: Props) {
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
             {photos.map((url, i) => (
               <div key={url} className="group relative aspect-square overflow-hidden rounded-[var(--radius-lg)]">
-                <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
+                <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full bg-neutral-100 object-contain" />
                 <button
                   type="button"
                   onClick={() => removePhoto(url)}

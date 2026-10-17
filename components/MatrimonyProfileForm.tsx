@@ -834,7 +834,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                         <img
                           src={uploadPreview}
                           alt="Uploading preview"
-                          className="h-full w-full object-cover opacity-70"
+                          className="h-full w-full bg-neutral-100 object-contain opacity-70"
                         />
                       )}
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -893,7 +893,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                     src={photos[0]}
                     alt="Profile photo"
                     fill
-                    className="object-cover"
+                    className="bg-neutral-100 object-contain"
                   />
                   <button
                     type="button"
@@ -948,7 +948,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-200">
                 {photos[0] ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={photos[0]} alt="Profile" className="h-full w-full object-cover" />
+                  <img src={photos[0]} alt="Profile" className="h-full w-full bg-neutral-100 object-contain" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-primary">
                     {(watch("name") || "?").charAt(0).toUpperCase()}
