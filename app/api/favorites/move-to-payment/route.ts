@@ -74,16 +74,16 @@ export async function POST(req: Request) {
 
       if (!u || !p) { errors.push(`Profile ${uid} not found`); continue; }
       if (u.isFrozen || u.isAutoFrozen || p.isFrozen || p.isAutoFrozen) {
-        errors.push(`${u.name ?? uid} profile is frozen`);
+        errors.push(`${u.profileId ?? uid} profile is inactive`);
         continue;
       }
       if (fav.firstPaidAt) {
-        errors.push(`${u.name ?? uid} already paid`);
+        errors.push(`${u.profileId ?? uid} is already paid`);
         continue;
       }
       // If lock still active — skip
       if (fav.movedToPayment && fav.paymentLockExpiresAt && new Date(fav.paymentLockExpiresAt) > now) {
-        errors.push(`${u.name ?? uid} already in payment lock`);
+        errors.push(`${u.profileId ?? uid} is already in Initial Payment`);
         continue;
       }
       toProcess.push({ fav, familyClass: u.familyClass ?? p.familyClass ?? "MC" });
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
     // Calculate total due
     const firstPaymentAmounts = await getPaymentAmounts("FIRST_PAYMENT");
     let totalAmount = 0;
-    const breakdown: { profileId: string; name: string; familyClass: string; amount: number }[] = [];
+    const breakdown: { profileId: string; familyClass: string; amount: number }[] = [];
     for (const { fav, familyClass } of toProcess) {
       const uid = String(fav.favoriteUserId);
       const u = userMap[uid];
@@ -123,7 +123,6 @@ export async function POST(req: Request) {
       totalAmount += amount;
       breakdown.push({
         profileId: u?.profileId ?? uid,
-        name:      u?.name ?? "Unknown",
         familyClass,
         amount,
       });
@@ -139,6 +138,43 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error("POST /api/favorites/move-to-payment error:", error);
+    return Response.json({ error: "Server error" }, { status: 500 });
+  }
+}
+
+/**
+ * DELETE /api/favorites/move-to-payment
+ *
+ * Body: { favoriteId: string } — takes an unpaid profile back out of the
+ * Initial Payment list; it returns to Favourites as an ordinary favourite.
+ */
+export async function DELETE(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { favoriteId } = await req.json() as { favoriteId?: string };
+    if (!favoriteId) {
+      return Response.json({ error: "favoriteId is required" }, { status: 400 });
+    }
+
+    await connectToDatabase();
+
+    const result = await FavoriteModel.updateOne(
+      { _id: favoriteId, userId: session.user.id, firstPaidAt: null },
+      {
+        $set:   { movedToPayment: false, status: "ACTIVE" },
+        $unset: { movedToPaymentAt: "", paymentLockExpiresAt: "" },
+      },
+    );
+    if (!result.matchedCount) {
+      return Response.json({ error: "Profile not found or already paid" }, { status: 404 });
+    }
+    return Response.json({ ok: true });
+  } catch (error) {
+    console.error("DELETE /api/favorites/move-to-payment error:", error);
     return Response.json({ error: "Server error" }, { status: 500 });
   }
 }

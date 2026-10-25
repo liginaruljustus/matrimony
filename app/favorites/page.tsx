@@ -7,7 +7,7 @@ import Link from "next/link";
 import {
   Heart, MapPin, GraduationCap, Star, CreditCard,
   Clock, CheckCircle, Lock, AlertCircle, User,
-  ShoppingCart, Inbox, ChevronRight,
+  ShoppingCart, Inbox, ChevronRight, X,
 } from "lucide-react";
 import { FAMILY_CLASS_COLORS as CLASS_COLOR, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 import { ProfileIdBadge } from "@/components/ProfileIdBadge";
@@ -77,12 +77,14 @@ export default function FavoritesPage() {
   const [moving, setMoving]       = useState(false);
   const [payingNowId, setPayingNowId] = useState<string | null>(null);
   const [error, setError]         = useState("");
+  // Popup shown after profiles are moved to Initial Payment
+  const [moved, setMoved] = useState<{ profileIds: string[]; notes: string[] } | null>(null);
   const [paymentAmt, setPaymentAmt] = useState<Record<string, number>>(DEFAULT_PAYMENT_AMT);
   // Tick every minute so payment-lock countdown displays update
   const [, setTick] = useState(0);
 
-  const loadFavorites = useCallback(async () => {
-    setLoading(true);
+  const loadFavorites = useCallback(async (showLoader = false) => {
+    if (showLoader) setLoading(true);
     try {
       const res = await fetch("/api/favorites");
       const data = await res.json();
@@ -96,7 +98,7 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/login"); return; }
-    if (status === "authenticated") loadFavorites();
+    if (status === "authenticated") loadFavorites(true);
   }, [status, loadFavorites, router]);
 
   useEffect(() => {
@@ -154,23 +156,34 @@ export default function FavoritesPage() {
     return acc + (paymentAmt[fc] ?? 500);
   }, 0);
 
+  // Moves profiles to Initial Payment and confirms with a popup. The groom stays
+  // on Favourites, so he can keep adding profiles; the Initial Payment page lists
+  // every profile he has moved there.
+  const moveToPayment = async (favoriteIds: string[]) => {
+    setError("");
+    const res = await fetch("/api/favorites/move-to-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ favoriteIds }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError([data.error ?? "Failed", ...(data.details ?? [])].join(" — "));
+      return;
+    }
+    setSelected(new Set());
+    setMoved({
+      profileIds: (data.breakdown ?? []).map((b: { profileId: string }) => b.profileId),
+      notes:      data.errors ?? [],
+    });
+    await loadFavorites();
+  };
+
   const handleMoveToPayment = async () => {
     if (!selected.size) return;
     setMoving(true);
-    setError("");
     try {
-      const selectedArr = Array.from(selected);
-      const res = await fetch("/api/favorites/move-to-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ favoriteIds: selectedArr }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Failed"); return; }
-      // Navigate to payment page with amount + ids
-      router.push(
-        `/payment/first?ids=${selectedArr.join(",")}&amount=${data.totalAmount}`,
-      );
+      await moveToPayment(Array.from(selected));
     } catch {
       setError("Network error");
     } finally {
@@ -178,20 +191,11 @@ export default function FavoritesPage() {
     }
   };
 
-  // Single-card "Pay Now" — moves just this one favorite to payment and
-  // jumps straight to the payment page, bypassing the bulk-select flow.
+  // Single card's "Move to Payment" button
   const handlePayNow = async (favId: string) => {
     setPayingNowId(favId);
-    setError("");
     try {
-      const res = await fetch("/api/favorites/move-to-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ favoriteIds: [favId] }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Failed"); return; }
-      router.push(`/payment/first?ids=${favId}&amount=${data.totalAmount}`);
+      await moveToPayment([favId]);
     } catch {
       setError("Network error");
     } finally {
@@ -294,21 +298,27 @@ export default function FavoritesPage() {
             </div>
           )}
 
+          {error && selectable.length === 0 && (
+            <p className="mb-5 flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+              <AlertCircle size={12} /> {error}
+            </p>
+          )}
+
           {/* ── Payment-locked banner ─────────────────────── */}
           {inPaymentLock.length > 0 && (
             <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
               <p className="flex items-center gap-1.5 text-sm font-semibold text-amber-800">
                 <Lock size={14} />
-                {inPaymentLock.length} profile{inPaymentLock.length > 1 ? "s" : ""} awaiting payment
+                {inPaymentLock.length} profile{inPaymentLock.length > 1 ? "s" : ""} in Initial Payment
               </p>
               <p className="mt-0.5 text-xs text-amber-700">
-                Complete payment before the lock expires, or it will reset.
+                You can keep adding profiles. Pay for all of them together on the Initial Payment page before the deadline.
               </p>
               <Link
                 href="/payment/first"
-                className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-amber-800 underline"
+                className="mt-3 inline-flex items-center gap-1 rounded-lg bg-amber-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-800"
               >
-                Go to Payment Page <ChevronRight size={12} />
+                Go to Initial Payment <ChevronRight size={12} />
               </Link>
             </div>
           )}
@@ -524,11 +534,93 @@ export default function FavoritesPage() {
         </>
       )}
       </div>
+
+      {moved && (
+        <MovedToPaymentModal
+          profileIds={moved.profileIds}
+          notes={moved.notes}
+          totalInPayment={inPaymentLock.length}
+          onClose={() => setMoved(null)}
+          onGoToPayment={() => router.push("/payment/first")}
+        />
+      )}
     </div>
   );
 }
 
-// ── Sub-components ──────────────────────────────────────────────────────────
+// ── Sub-components ──
+
+function MovedToPaymentModal({
+  profileIds, notes, totalInPayment, onClose, onGoToPayment,
+}: {
+  profileIds: string[];
+  notes: string[];
+  totalInPayment: number;
+  onClose: () => void;
+  onGoToPayment: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="moved-title"
+    >
+      <div
+        className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-neutral-100 p-6 text-center shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-3 top-3 rounded-full p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+        >
+          <X size={18} />
+        </button>
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
+          <CheckCircle size={30} className="text-green-600" />
+        </div>
+        <h2 id="moved-title" className="mt-4 text-lg font-bold text-neutral-900 dark:text-neutral-900">
+          {profileIds.length === 1 ? "Profile moved" : `${profileIds.length} profiles moved`} to Initial Payment
+        </h2>
+        <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+          {profileIds.map((id) => <ProfileIdBadge key={id} id={id} size="sm" />)}
+        </div>
+        <p className="mt-4 text-sm text-neutral-600">
+          You now have <strong>{totalInPayment}</strong> profile{totalInPayment !== 1 ? "s" : ""} in Initial Payment.
+          Add more from your Favourites, or pay for all of them together.
+        </p>
+        {notes.length > 0 && (
+          <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-left text-xs text-amber-800">
+            {notes.join(". ")}
+          </p>
+        )}
+        <div className="mt-5 flex flex-col gap-2">
+          <button
+            onClick={onGoToPayment}
+            className="flex items-center justify-center gap-1.5 rounded-lg bg-[#7a1f2b] py-2.5 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors"
+          >
+            <CreditCard size={15} />
+            Go to Initial Payment
+          </button>
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-neutral-200 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
+          >
+            Select More Profiles
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Section({
   title, count, children, muted = false,

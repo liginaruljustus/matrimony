@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { UpiQrCode } from "@/components/UpiQrCode";
@@ -47,9 +47,7 @@ const DEFAULT_PAYMENT_AMT: Record<string, number> = { MC: 500, UC: 2500, EC: 500
 function PaymentContent() {
   const router    = useRouter();
   const { status } = useSession();
-  const params    = useSearchParams();
 
-  const rawIds    = params.get("ids") ?? "";
 
   const [method, setMethod]         = useState<Method>("gpay");
   const [txnId, setTxnId]           = useState("");
@@ -97,15 +95,11 @@ function PaymentContent() {
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (!data?.favorites) return;
-        const urlIds = rawIds ? rawIds.split(",").filter(Boolean) : [];
-        let locked = (data.favorites as any[]).filter(
+        // Every profile the groom has moved to Initial Payment is listed here and
+        // paid for together — not just the ones from his latest selection.
+        const locked = (data.favorites as any[]).filter(
           (f) => f.movedToPayment && !f.firstPaidAt && !f.lockExpired && !f.isBrideFrozen,
         );
-        // If specific ids were passed (fresh redirect from favorites), honour them
-        if (urlIds.length) {
-          const subset = locked.filter((f) => urlIds.includes(f.id));
-          if (subset.length) locked = subset;
-        }
         setLockedFavs(locked.map((f) => {
           const fc = f.mdCard?.familyClass ?? "MC";
           return {
@@ -120,9 +114,33 @@ function PaymentContent() {
       })
       .catch(() => {})
       .finally(() => setLoadingFavs(false));
-  }, [status, rawIds, paymentAmt]);
+  }, [status, paymentAmt]);
 
   const favoriteIds = lockedFavs.map((f) => f.id);
+
+  // Take one profile back out of this payment (it returns to Favourites)
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const removeFromPayment = async (id: string) => {
+    setRemovingId(id);
+    setError("");
+    try {
+      const res = await fetch("/api/favorites/move-to-payment", {
+        method:  "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ favoriteId: id }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? "Could not remove the profile");
+        return;
+      }
+      setLockedFavs((prev) => prev.filter((f) => f.id !== id));
+    } catch {
+      setError("Network error — please try again");
+    } finally {
+      setRemovingId(null);
+    }
+  };
   const totalAmount = lockedFavs.reduce((acc, f) => acc + f.amount, 0);
 
   // Pre-fill the "amount paid" field with the due total once it's known, and
@@ -251,6 +269,10 @@ function PaymentContent() {
         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
           Profiles in this payment
         </p>
+        <p className="-mt-2 mb-3 text-[11px] text-neutral-400">
+          All profiles you moved to Initial Payment are paid together.{" "}
+          <Link href="/favorites" className="font-semibold text-[#7a1f2b] underline">Add more from Favourites</Link>
+        </p>
         <div className="space-y-2.5">
           {lockedFavs.map((f) => (
             <div key={f.id} className="flex items-center justify-between rounded-lg bg-neutral-50 dark:bg-neutral-200 px-3 py-2.5">
@@ -268,6 +290,14 @@ function PaymentContent() {
               <div className="text-right shrink-0">
                 <span className="rounded-full bg-[#7a1f2b]/10 px-2 py-0.5 text-[10px] font-bold text-[#7a1f2b]">{f.familyClass}</span>
                 <p className="mt-1 text-sm font-bold text-[#7a1f2b]">₹{f.amount.toLocaleString("en-IN")}</p>
+                <button
+                  type="button"
+                  onClick={() => removeFromPayment(f.id)}
+                  disabled={removingId !== null || submitting}
+                  className="mt-1 text-[11px] font-semibold text-neutral-500 underline hover:text-red-600 disabled:opacity-50"
+                >
+                  {removingId === f.id ? "Removing…" : "Remove"}
+                </button>
               </div>
             </div>
           ))}
