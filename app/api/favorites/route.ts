@@ -92,7 +92,12 @@ export async function GET() {
         createdAt:             fav.createdAt,
         // Bride's acceptance — shown to the groom straight away
         isAccepted:            fav.isAccepted ?? false,
-        mdCard:                cardVisible && u && p ? buildMDCard(u, p) : null,
+        // Name and photo are only sent once the Final Payment is approved
+        mdCard:                cardVisible && u && p
+                                 ? finalApproved
+                                   ? buildMDCard(u, p)
+                                   : { ...buildMDCard(u, p), name: "", photo: undefined }
+                                 : null,
         // Shown in place of the card while her details are hidden
         brideProfileId:        isBrideBanned ? "" : u?.profileId ?? "",
         isBrideFrozen,

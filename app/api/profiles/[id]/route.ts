@@ -52,6 +52,10 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ message: "Profile not found" }, { status: 404 });
   }
 
+  // Someone else's profile: no name and no photos (photos only go out in the
+  // paid PDF, and names after the Final Payment, through their own APIs).
+  const hidePersonal = !isOwn && session.user.role !== "ADMIN";
+
   // ── Response — MD-level fields only, NO contact details ───────────────────
   return NextResponse.json({
     profile: {
@@ -84,15 +88,15 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       monthlyIncome: profile.monthlyIncome ?? profile.income ?? null,
       // Content
       bio:          profile.bio ?? null,
-      photos:       profile.photos ?? [],
+      photos:       hidePersonal ? [] : profile.photos ?? [],
       // Freeze indicator for the detail page banner
       isFrozen:     userFrozen || profileFrozen,
       isAutoFrozen: !!(profile.userId?.isAutoFrozen || profile.isAutoFrozen),
       // User info
       user: {
         id:          String(profile.userId?._id ?? profile.userId),
-        name:        String(profile.userId?.name ?? "Unknown"),
-        image:       profile.userId?.image ?? null,
+        name:        hidePersonal ? "" : String(profile.userId?.name ?? "Unknown"),
+        image:       hidePersonal ? null : profile.userId?.image ?? null,
         familyClass: profile.userId?.familyClass ?? "MC",
       },
       // ── INTENTIONALLY OMITTED — gated behind 2nd payment: ──────────────────

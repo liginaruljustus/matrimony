@@ -124,6 +124,9 @@ export async function GET(req: Request) {
           userId:    String(p.userId),
           createdAt: p.createdAt,
           ...buildMDCard(u, p),
+          // Browsing is by Profile ID only: the name and photo stay on the server
+          name:      "",
+          photo:     undefined,
         };
       });
 

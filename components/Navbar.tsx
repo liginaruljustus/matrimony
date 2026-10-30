@@ -74,6 +74,7 @@ function NotificationBell() {
     PROFILE_APPROVED: "✅", PROFILE_REJECTED: "🚫",
     INTEREST_ACCEPTED: "💚", INTEREST_DECLINED: "💔",
     INTEREST_RECEIVED: "💌", NEW_MESSAGE: "💬",
+    NEW_PROPOSAL: "💌", CONTACT_UNLOCKED: "📞",
   };
 
   return (

@@ -356,14 +356,17 @@ function PaymentsContent() {
                         </div>
                         {payment.payerPhone && (
                           <div>
-                            <span className="text-xs text-neutral-400">Paid from: </span>
+                            <span className="text-xs text-neutral-400">Paid to: </span>
                             <span className="font-mono text-xs text-neutral-700">{payment.payerPhone}</span>
                           </div>
                         )}
                         {payment.paymentDate && (
                           <div>
                             <span className="text-xs text-neutral-400">Payment date: </span>
-                            <span className="text-xs text-neutral-700">{fmtDate(payment.paymentDate)}</span>
+                            {/* A date the groom picked (no time) — show the date only */}
+                            <span className="text-xs text-neutral-700">
+                              {new Date(payment.paymentDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
+                            </span>
                           </div>
                         )}
                         {typeof payment.reportedAmount === "number" && payment.reportedAmount !== payment.amount && (

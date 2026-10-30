@@ -392,7 +392,7 @@ const notificationSchema = new Schema(
         "PROFILE_APPROVED", "PROFILE_REJECTED",
         "INTEREST_ACCEPTED", "INTEREST_DECLINED",
         "INTEREST_RECEIVED", "NEW_MESSAGE", "NEW_PROPOSAL",
-        "EDIT_REQUEST_RESOLVED",
+        "EDIT_REQUEST_RESOLVED", "CONTACT_UNLOCKED",
       ],
       required: true,
     },

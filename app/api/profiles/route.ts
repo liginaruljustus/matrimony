@@ -76,11 +76,12 @@ export async function GET(request: Request) {
       // income intentionally included here (not a contact detail)
       income:    p.income,
       bio:       p.bio,
-      photos:    p.photos ?? [],
+      // Name and photos are never part of a browse result
+      photos:    [],
       user: {
         id:   String(p.userId?._id || p.userId),
-        name: String(p.userId?.name || "Unknown"),
-        image:p.userId?.image || null,
+        name: "",
+        image:null,
       },
       // contact fields intentionally excluded
     }));

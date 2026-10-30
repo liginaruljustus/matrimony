@@ -7,7 +7,7 @@
  * which path approved the payment (no drift between manual/auto approval).
  */
 import { connectToDatabase } from "@/lib/mongodb";
-import { PaymentModel, FavoriteModel, NotificationModel, SettingsModel } from "@/lib/models";
+import { PaymentModel, FavoriteModel, NotificationModel, SettingsModel, UserModel } from "@/lib/models";
 import { addDays } from "@/lib/cardGenerator";
 
 /**
@@ -47,12 +47,36 @@ export async function runApprovalSideEffects(payment: any) {
     await NotificationModel.create({
       userId:  payment.userId,
       type:    "PAYMENT_APPROVED",
+      // The Inbox only lists a bride once she accepts, so the Initial Payment
+      // message points to Favourites, where the waiting profiles are shown.
       message: isSecond
-        ? "Your 2nd payment has been approved! Contact details are now unlocked."
-        : "Your payment has been approved! Open your Inbox to view bride details.",
-      link:    isSecond ? "/contact-details" : "/inbox",
+        ? "Your Final Payment has been approved! The bride's contact details are now unlocked in Contacts."
+        : "Your Initial Payment has been approved! Your proposal has been sent. You'll be notified as soon as the bride accepts.",
+      link:    isSecond ? "/contact-details" : "/favorites",
     });
   } catch { /* non-critical */ }
+
+  // ── Final Payment: tell the bride the groom's contact details are now hers too ──
+  if (payment.tier === "SECOND_PAYMENT") {
+    const brideIds = payment.receiverIds?.length
+      ? payment.receiverIds
+      : payment.receiverId
+      ? [payment.receiverId]
+      : [];
+    if (brideIds.length) {
+      try {
+        const groom = await UserModel.findById(payment.userId).select("profileId").lean() as any;
+        for (const brideId of brideIds) {
+          await NotificationModel.create({
+            userId:  brideId,
+            type:    "CONTACT_UNLOCKED",
+            message: `Groom ${groom?.profileId ?? ""} has completed the Final Payment. His family's contact details are now in your Contacts.`,
+            link:    "/contact-details",
+          });
+        }
+      } catch { /* non-critical */ }
+    }
+  }
 
   // ── Notify each bride of the new proposal (1st payment only) ──────────
   if (payment.tier === "FIRST_PAYMENT") {
