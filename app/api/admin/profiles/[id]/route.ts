@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { buildMDCard, buildADCard, buildCDCard, buildFDCard } from "@/lib/cardGenerator";
 import { calculateAge } from "@/lib/age";
+import { sendAndRecord } from "@/lib/emailLog";
 import { sendFDCardEmail } from "@/lib/sendFDCardEmail";
 
 export async function GET(
@@ -158,8 +159,12 @@ export async function PUT(
         // Build FD card for email (fire-and-forget)
         try {
           const fd = buildFDCard(user, profile.toObject());
-          // Send email with FD card (non-blocking)
-          void sendFDCardEmail(user.email, user.name, fd).catch(console.error);
+          // Awaited and recorded (a detached send can be killed once the response returns)
+          if (user.email) {
+            await sendAndRecord(user._id, "profileLive", user.email, () =>
+              sendFDCardEmail(user.email, user.name, fd, user),
+            );
+          }
         } catch (e) {
           console.error("FD card build error:", e);
         }

@@ -145,7 +145,7 @@ export async function POST(request: Request) {
             const fd = buildFDCard(user, profile);
             // Awaited (not fire-and-forget) — a detached promise can be killed
             // mid-send once this serverless function's response is returned.
-            await sendFDCardEmail(user.email, user.name, fd);
+            await sendFDCardEmail(user.email, user.name, fd, user);
           } catch (e) {
             console.error("Bulk approve FD card error:", e);
           }

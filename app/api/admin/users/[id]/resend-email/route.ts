@@ -49,7 +49,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         return Response.json({ error: "This user's profile is not live yet" }, { status: 400 });
       }
       sent = await sendAndRecord(user._id, "profileLive", user.email, async () => {
-        await sendFDCardEmail(user.email, user.name, buildFDCard(user, profile));
+        await sendFDCardEmail(user.email, user.name, buildFDCard(user, profile), user);
       });
     }
 

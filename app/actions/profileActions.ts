@@ -153,9 +153,9 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
   ).lean<any>();
 
   const user = await UserModel.findById(userId)
-    .select("profileId name email phone createdAt profileType familyClass religion")
+    .select("profileId name email phone createdAt profileType familyClass religion passwordHash")
     .lean() as {
-      profileId?: string; name?: string; email?: string; phone?: string; createdAt?: Date;
+      profileId?: string; name?: string; email?: string; phone?: string; createdAt?: Date; passwordHash?: string;
       profileType?: "GROOM" | "BRIDE"; familyClass?: "MC" | "UC" | "EC"; religion?: string;
     } | null;
 
@@ -198,7 +198,8 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
   if (goesLive && derivedEmail && updatedProfile && profileId) {
     await sendAndRecord(userId, "profileLive", derivedEmail, async () => {
       const fd = buildFDCard({ ...(user ?? {}), name: userName, email: derivedEmail, profileId }, updatedProfile);
-      await sendFDCardEmail(derivedEmail, userName, fd);
+      // `user` is read before this save, so it still has the name/phone the password was made from
+      await sendFDCardEmail(derivedEmail, userName, fd, user);
     });
   }
 
