@@ -28,6 +28,7 @@ type ProfileDetail = {
   income: number;
   bio: string;
   nativeDistrict?: string;
+  state?: string;
   maritalStatus?: string;
   gender?: string;
   monthlyIncome?: number;
@@ -204,6 +205,7 @@ export default function AdminProfileDetailPage() {
           <ProfileDetailsList
             profile={{
               district:             profile.nativeDistrict ?? profile.location,
+              state:                profile.state,
               maritalStatus:        profile.maritalStatus,
               gender:               profile.gender,
               age:                  profile.age,

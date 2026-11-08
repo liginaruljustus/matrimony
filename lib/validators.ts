@@ -37,7 +37,8 @@ export const matrimonyProfileSchema = z.object({
   // Personal Details
   name: z.string().min(2).max(50),
   address: z.string().min(5).max(200),
-  nativeDistrict: z.string().min(2),
+  state: z.string().min(2, "State is required"),
+  nativeDistrict: z.string().min(2, "District is required"),
   maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "SEPARATED", "WIDOWED"]),
   gender: z.enum(["MALE", "FEMALE"]),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

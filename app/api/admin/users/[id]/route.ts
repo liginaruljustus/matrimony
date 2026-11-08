@@ -91,6 +91,7 @@ export async function GET(
             location: profile.location ?? null,
             address: profile.address ?? null,
             nativeDistrict: profile.nativeDistrict ?? null,
+            state:          profile.state ?? null,
             placeOfBirth: profile.placeOfBirth ?? null,
             timeOfBirth: profile.timeOfBirth ?? null,
             // Astrology

@@ -345,6 +345,7 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Location</Text>
             <View style={styles.grid}>
+              <Field label="State"             value={fmt(p.state)} />
               <Field label="Native District"   value={fmt(p.nativeDistrict)} />
               <Field label="Place of Birth"    value={fmt(p.placeOfBirth)} />
               <Field label="Time of Birth"     value={fmt(p.timeOfBirth)} />

@@ -21,6 +21,7 @@ type PublicProfile = {
   caste: string;
   subCaste?: string;
   district: string;
+  state?: string;
   education: string;
   currentJob?: string;
   height?: number;
@@ -107,6 +108,7 @@ export default function ProfileDetailPage() {
         caste:        p.caste ?? "",
         subCaste:     p.subCaste,
         district:     p.nativeDistrict ?? p.location ?? "",
+        state:        p.state ?? "",
         education:    p.education ?? "",
         currentJob:   p.currentJob,
         height:       p.height,
@@ -248,6 +250,7 @@ export default function ProfileDetailPage() {
       <ProfileDetailsList
         profile={{
           district:             profile.district,
+          state:                profile.state,
           maritalStatus:        profile.maritalStatus,
           gender:               profile.gender,
           age:                  profile.age,

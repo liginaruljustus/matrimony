@@ -9,6 +9,7 @@
  */
 
 import { calculateAge } from "@/lib/age";
+import { stateOfDistrict } from "@/lib/districts";
 
 export type CardType = "MD" | "AD" | "CD" | "FD";
 
@@ -21,6 +22,7 @@ export interface MDCard {
   caste: string;
   subCaste?: string;
   district: string;
+  state?: string;
   education: string;
   currentJob?: string;
   height?: number;
@@ -44,6 +46,7 @@ export interface ADCard {
   religion: string;
   caste: string;
   district: string;
+  state?: string;
   education: string;
   familyClass: string;
   // Personal details marked AD in the profile spec
@@ -105,6 +108,7 @@ export function buildMDCard(user: any, profile: any): MDCard {
     caste:        profile.caste ?? "",
     subCaste:     profile.subCaste,
     district:     profile.nativeDistrict ?? profile.location ?? "",
+    state:        profile.state ?? stateOfDistrict(profile.nativeDistrict) ?? "",
     education:    profile.education ?? "",
     currentJob:   profile.currentJob,
     height:       profile.height,
@@ -130,6 +134,7 @@ export function buildADCard(user: any, profile: any): ADCard {
     religion:        profile.religion ?? "",
     caste:           profile.caste ?? "",
     district:        profile.nativeDistrict ?? profile.location ?? "",
+    state:           profile.state ?? stateOfDistrict(profile.nativeDistrict) ?? "",
     education:       profile.education ?? "",
     familyClass:     user.familyClass ?? profile.familyClass ?? "",
     gender:          profile.gender,

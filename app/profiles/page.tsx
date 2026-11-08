@@ -11,7 +11,7 @@ import {
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { SearchDropdown } from "@/components/SearchDropdown";
 import { CASTE_LIST } from "@/lib/casteData";
-import { DISTRICTS } from "@/lib/districts";
+import { STATES, ALL_DISTRICTS, districtsOf, formatArea } from "@/lib/districts";
 import { FAMILY_CLASS_CARD_STYLE, FAMILY_CLASS_CARD_FALLBACK, FAMILY_CLASS_PLACEHOLDER_BG, FAMILY_CLASS_PLACEHOLDER_FALLBACK } from "@/lib/familyClass";
 import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 
@@ -24,6 +24,7 @@ type MDProfile = {
   religion: string;
   caste: string;
   subCaste?: string;
+  state: string;
   district: string;
   education: string;
   currentJob?: string;
@@ -76,6 +77,7 @@ export default function ProfilesPage() {
     minAge:        "",
     maxAge:        "",
     caste:         "",
+    state:         "",
     district:      "",
   });
 
@@ -88,6 +90,7 @@ export default function ProfilesPage() {
       if (filters.minAge)        params.set("minAge",         filters.minAge);
       if (filters.maxAge)        params.set("maxAge",         filters.maxAge);
       if (filters.caste)         params.set("caste",          filters.caste);
+      if (filters.state)         params.set("state",          filters.state);
       if (filters.district)      params.set("district",       filters.district);
 
       const res = await fetch(`/api/profiles/search?${params}`);
@@ -125,7 +128,7 @@ export default function ProfilesPage() {
 
   const [filterResetKey, setFilterResetKey] = useState(0);
   const resetFilters = () => {
-    setFilters({ profileId: "", minAge: "", maxAge: "", caste: "", district: "" });
+    setFilters({ profileId: "", minAge: "", maxAge: "", caste: "", state: "", district: "" });
     setClassTab("ALL");
     setFilterResetKey((k) => k + 1); // remount SearchDropdowns so their internal text clears too
   };
@@ -198,12 +201,26 @@ export default function ProfilesPage() {
               />
             </div>
             <div>
+              <label className="mb-1 block text-xs font-semibold text-neutral-600">State</label>
+              <SearchDropdown
+                key={`state-${filterResetKey}`}
+                value={filters.state}
+                onChange={(v) =>
+                  // Keep the district only if it belongs to the new state
+                  setFilters({ ...filters, state: v, district: districtsOf(v).includes(filters.district) ? filters.district : "" })
+                }
+                options={STATES}
+                placeholder="All India"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
+              />
+            </div>
+            <div>
               <label className="mb-1 block text-xs font-semibold text-neutral-600">District</label>
               <SearchDropdown
-                key={`district-${filterResetKey}`}
+                key={`district-${filterResetKey}-${filters.state}`}
                 value={filters.district}
                 onChange={(v) => setFilters({ ...filters, district: v })}
-                options={DISTRICTS}
+                options={filters.state ? districtsOf(filters.state) : ALL_DISTRICTS}
                 placeholder="e.g. Chennai"
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
               />
@@ -331,7 +348,7 @@ function MDProfileCard({
             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#7a1f2b]/10">
               <MapPin size={11} className="text-[#7a1f2b]" />
             </span>
-            <span className="pt-0.5">{profile.district}</span>
+            <span className="pt-0.5">{formatArea(profile.district, profile.state)}</span>
           </div>
           <div className="flex items-start gap-2 text-xs text-neutral-600 dark:text-neutral-700">
             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#7a1f2b]/10">

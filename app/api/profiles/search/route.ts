@@ -46,6 +46,7 @@ export async function GET(req: Request) {
     const minAge          = searchParams.get("minAge")  ? Number(searchParams.get("minAge"))  : null;
     const maxAge          = searchParams.get("maxAge")  ? Number(searchParams.get("maxAge"))  : null;
     const caste           = searchParams.get("caste")         ?? "";
+    const state           = searchParams.get("state")         ?? "";
     const district        = searchParams.get("district")      ?? "";
     const nakshatra       = searchParams.get("nakshatra")     ?? "";
     const maritalStatus   = searchParams.get("maritalStatus") ?? "";
@@ -69,6 +70,7 @@ export async function GET(req: Request) {
       if (maxAge !== null) profileQuery.age.$lte = maxAge;
     }
     if (caste)    profileQuery.caste = new RegExp(caste, "i");
+    if (state)    profileQuery.state = state;
     if (district) profileQuery.$or = [
       { nativeDistrict: new RegExp(district, "i") },
       { location:       new RegExp(district, "i") },

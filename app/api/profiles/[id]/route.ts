@@ -15,6 +15,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { ProfileModel, UserModel } from "@/lib/models";
 import { toObjectId } from "@/lib/mongoUtils";
 import { calculateAge } from "@/lib/age";
+import { stateOfDistrict } from "@/lib/districts";
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -79,6 +80,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       // Location
       location:     profile.location ?? null,
       nativeDistrict: profile.nativeDistrict ?? null,
+      state:        profile.state ?? stateOfDistrict(profile.nativeDistrict),
       // Astrology
       nakshatra:    profile.nakshatra ?? null,
       rashi:        profile.rashi ?? null,

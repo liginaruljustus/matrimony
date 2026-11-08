@@ -47,6 +47,7 @@ export async function GET(
         location: profile.location,
         address: profile.address,
         nativeDistrict: profile.nativeDistrict,
+        state:          profile.state,
         education: profile.education,
         income: profile.income,
         monthlyIncome: profile.monthlyIncome,

@@ -7,7 +7,7 @@ import { DatePickerSelect } from "@/components/DatePickerSelect";
 import { PhoneInput } from "@/components/PhoneInput";
 import { CASTE_LIST, SUBCASTE_LIST } from "@/lib/casteData";
 import { OCCUPATION_LIST } from "@/lib/occupationData";
-import { DISTRICTS } from "@/lib/districts";
+import { STATES, DEFAULT_STATE, districtsOf, stateOfDistrict } from "@/lib/districts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { matrimonyProfileSchema } from "@/lib/validators";
 import { z } from "zod";
@@ -17,7 +17,7 @@ import { X, ImagePlus, AlertCircle, CheckCircle } from "lucide-react";
 
 const FIELD_LABELS: Record<string, string> = {
   name: "Full Name", gender: "Gender", age: "Age", dateOfBirth: "Date of Birth",
-  maritalStatus: "Marital Status", nativeDistrict: "Native District",
+  maritalStatus: "Marital Status", state: "State", nativeDistrict: "Native District",
   religion: "Religion", caste: "Caste", subCaste: "Sub Caste",
   education: "Education", address: "Address", motherTongue: "Mother Tongue",
   height: "Height", complexion: "Complexion", currentJob: "Current Job",
@@ -109,6 +109,8 @@ function normalizeProfile(profile: any) {
     emailId: profile.emailId ?? "",
     ...profile,
     dateOfBirth,
+    // Profiles saved before the State field existed are all Tamil Nadu / Puducherry
+    state: profile.state || stateOfDistrict(profile.nativeDistrict) || DEFAULT_STATE,
     monthlyIncome: profile.monthlyIncome ?? profile.income,
     physicallyChallenge: profile.physicallyChallenge ? "true" : "",
   };
@@ -140,6 +142,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
     formState: { errors },
     watch,
     setValue,
+    getValues,
     trigger,
     control,
     reset,
@@ -444,10 +447,33 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                 {errors.dateOfBirth && <p className="text-xs text-red-600 mt-1">{errors.dateOfBirth.message as string}</p>}
               </div>
               <div>
+                <label className="label">State *</label>
+                <select
+                  {...register("state", {
+                    // A new state has different districts — clear the old pick
+                    onChange: (e) => {
+                      if (!districtsOf(e.target.value).includes(getValues("nativeDistrict"))) {
+                        setValue("nativeDistrict", "", { shouldValidate: false });
+                      }
+                    },
+                  })}
+                  className="input-field"
+                >
+                  <option value="">Select State</option>
+                  {STATES.map((st) => (
+                    <option key={st} value={st}>{st}</option>
+                  ))}
+                </select>
+                {errors.state && <p className="text-xs text-red-600 mt-1">{errors.state.message as string}</p>}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
                 <label className="label">Native District *</label>
-                <select {...register("nativeDistrict")} className="input-field">
-                  <option value="">Select District</option>
-                  {DISTRICTS.map((d) => (
+                <select {...register("nativeDistrict")} className="input-field" disabled={!watch("state")}>
+                  <option value="">{watch("state") ? "Select District" : "Select a State first"}</option>
+                  {districtsOf(watch("state")).map((d) => (
                     <option key={d} value={d}>{d}</option>
                   ))}
                 </select>
@@ -979,6 +1005,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                 ["Caste", watch("caste")],
                 ["Sub-Caste", watch("subCaste")],
                 ["Mother Tongue", watch("motherTongue")],
+                ["State", watch("state")],
                 ["Native District", watch("nativeDistrict")],
                 ["Address", watch("address")],
                 ["Education", watch("education")],
@@ -1039,7 +1066,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                 let ok = true;
                 if (step === 0) {
                   ok = await trigger([
-                    "name", "gender", "age", "dateOfBirth", "maritalStatus", "nativeDistrict",
+                    "name", "gender", "age", "dateOfBirth", "maritalStatus", "state", "nativeDistrict",
                     "religion", "caste", "education", "address", "subCaste", "motherTongue",
                     "height", "complexion", "currentJob", "monthlyIncome",
                     "placeOfBirth", "timeOfBirth", "rashi", "nakshatra", "lagnam",

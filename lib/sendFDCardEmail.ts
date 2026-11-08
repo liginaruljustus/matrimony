@@ -45,6 +45,7 @@ export async function sendFDCardEmail(
           ${fieldRow("Religion",         fdCard.religion)}
           ${fieldRow("Caste",            fdCard.caste)}
           ${fieldRow("District",         fdCard.district)}
+          ${fieldRow("State",            fdCard.state)}
           ${fieldRow("Education",        fdCard.education)}
           ${fieldRow("Nakshatra",        fdCard.nakshatra)}
           ${fieldRow("Rashi",            fdCard.rashi)}

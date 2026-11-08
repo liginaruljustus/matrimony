@@ -36,6 +36,7 @@ export function ADDetailsGrid({ card }: { card: any }) {
   return (
     <div className="space-y-3">
       <Group title="Personal Details">
+        <Field label="State"            value={fmt(card.state)} />
         <Field label="Native District"  value={fmt(card.district)} />
         <Field label="Marital Status"   value={fmt(card.maritalStatus?.replace("_", " "))} />
         <Field label="Gender"           value={gender} />

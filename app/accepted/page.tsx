@@ -12,6 +12,7 @@ import { PhotoLightbox } from "@/components/PhotoLightbox";
 import { DownloadADPdfButton } from "@/components/ADDetails";
 import { FAMILY_CLASS_COLORS as CLASS_COLOR, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 import { ProfileIdBadge } from "@/components/ProfileIdBadge";
+import { formatArea } from "@/lib/districts";
 
 type AcceptedItem = {
   favoriteId: string;
@@ -27,6 +28,7 @@ type AcceptedItem = {
     caste: string;
     subCaste?: string;
     district: string;
+    state?: string;
     education: string;
     currentJob?: string;
     height?: number;
@@ -215,7 +217,7 @@ function AcceptedGroomCard({ item }: { item: AcceptedItem }) {
           </p>
           <p className="flex items-center gap-1 text-[11px] text-neutral-500">
             <MapPin size={10} className="text-[#7a1f2b]" />
-            {card.district}
+            {formatArea(card.district, card.state)}
           </p>
           <p className="flex items-center gap-1 text-[11px] text-neutral-500">
             <GraduationCap size={10} className="text-[#7a1f2b]" />

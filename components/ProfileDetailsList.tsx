@@ -1,5 +1,7 @@
+import { formatArea } from "@/lib/districts";
 type ProfileDetailsInput = {
   district?: string | null;
+  state?: string | null;
   maritalStatus?: string | null;
   gender?: string | null;
   age?: number | null;
@@ -14,7 +16,7 @@ type ProfileDetailsInput = {
 /** The numbered 10-field "Profile Details" summary, shared across every profile view. */
 export function ProfileDetailsList({ profile }: { profile: ProfileDetailsInput }) {
   const rows = [
-    { label: "Native District", value: profile.district || "—" },
+    { label: "Native District", value: formatArea(profile.district, profile.state) || "—" },
     { label: "Marital status", value: profile.maritalStatus ? profile.maritalStatus.replace("_", " ") : "—" },
     { label: "Gender", value: profile.gender === "MALE" ? "Male" : profile.gender === "FEMALE" ? "Female" : "—" },
     { label: "Age", value: profile.age ? String(profile.age) : "—" },

@@ -60,6 +60,7 @@ const profileSchema = new Schema(
     // Matrimony Profile Fields
     // Personal Details
     address: { type: String },
+    state: { type: String, index: true },   // State / UT
     nativeDistrict: { type: String },
     maritalStatus: { type: String, enum: ["SINGLE", "MARRIED", "DIVORCED", "SEPARATED", "WIDOWED"] },
     gender: { type: String, enum: ["MALE", "FEMALE"] },

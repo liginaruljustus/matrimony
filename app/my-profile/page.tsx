@@ -267,6 +267,7 @@ export default function MyProfilePage() {
         <ProfileDetailsList
           profile={{
             district:             p.nativeDistrict ?? p.location,
+            state:                p.state,
             maritalStatus:        p.maritalStatus,
             gender:               p.gender,
             age:                  p.age,

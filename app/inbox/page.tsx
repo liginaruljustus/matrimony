@@ -12,6 +12,7 @@ import {
 import { DownloadADPdfButton } from "@/components/ADDetails";
 import { FAMILY_CLASS_COLORS, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 import { ProfileIdBadge } from "@/components/ProfileIdBadge";
+import { formatArea } from "@/lib/districts";
 const DEFAULT_PAYMENT_AMOUNTS: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
 type InboxItem = {
@@ -35,6 +36,7 @@ type InboxItem = {
     religion: string;
     caste: string;
     district: string;
+    state?: string;
     education: string;
     familyClass: string;
     fatherName?: string;
@@ -305,7 +307,7 @@ export default function InboxPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <h3><ProfileIdBadge id={card.profileId} size="lg" /></h3>
-                        <p className="text-xs text-neutral-500">{card.age} yrs · {card.district}</p>
+                        <p className="text-xs text-neutral-500">{card.age} yrs · {formatArea(card.district, card.state)}</p>
                       </div>
                       <span
                         className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${

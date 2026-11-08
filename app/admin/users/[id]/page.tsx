@@ -84,6 +84,7 @@ type ProfileDetail = {
   location: string | null;
   address: string | null;
   nativeDistrict: string | null;
+  state?: string | null;
   placeOfBirth: string | null;
   timeOfBirth: string | null;
   rashi: string | null;
@@ -788,6 +789,7 @@ export default function AdminUserDetailPage() {
               <SectionCard title="Location & Birth" icon={MapPin}>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                   <Field label="Current Location" value={profile.location} />
+                  <Field label="State" value={profile.state ?? null} />
                   <Field label="Native District" value={profile.nativeDistrict} />
                   <Field label="Address" value={profile.address} />
                   <Field label="Place of Birth" value={profile.placeOfBirth} />
