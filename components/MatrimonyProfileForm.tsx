@@ -563,7 +563,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               {errors.timeOfBirth && <p className="text-xs text-red-600 mt-1">{errors.timeOfBirth.message}</p>}
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <label className="label">Rashi</label>
                 <Controller
@@ -612,18 +612,14 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                 />
                 {errors.lagnam && <p className="text-xs text-red-600 mt-1">{errors.lagnam.message}</p>}
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
-                <label className="label">Manglik *</label>
+                <label className="label">Manglik</label>
                 <select {...register("manglik")} className="input-field">
                   <option value="">Select</option>
                   {MANGLIK_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
-                {errors.manglik && <p className="text-xs text-red-600 mt-1">{errors.manglik.message as string}</p>}
               </div>
             </div>
 

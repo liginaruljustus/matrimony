@@ -54,7 +54,8 @@ export const matrimonyProfileSchema = z.object({
   rashi: z.string().optional(),
   nakshatra: z.string().optional(),
   lagnam: z.string().optional(),
-  manglik: z.enum(MANGLIK_VALUES, { message: "Select Manglik status" }),
+  // Optional (no star), like the rest of the astrology details
+  manglik: z.union([z.enum(MANGLIK_VALUES), z.literal("")]).optional(),
   motherTongue: z.string().min(2, "Mother Tongue is required"),
   height: z.coerce.number().positive("Height must be positive"),
   weight: z.coerce.number().positive("Weight must be positive"),
