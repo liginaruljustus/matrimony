@@ -18,6 +18,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import { ProfileIdBadge } from "@/components/ProfileIdBadge";
+import { religionLabel } from "@/lib/religions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -273,7 +274,7 @@ function AdminDashboard({ stats, charts }: { stats: DashboardStats; charts: Char
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 9, fill: "#94a3b8" }} allowDecimals={false} />
                 <YAxis type="category" dataKey="religion" tick={{ fontSize: 10, fill: "#475569" }} width={60}
-                  tickFormatter={(v) => v === "CHRISTIAN" ? "Christian" : v === "MUSLIM" ? "Muslim" : v === "HINDU" ? "Hindu" : v === "OTHER" ? "Other" : v}
+                  tickFormatter={(v) => religionLabel(v)}
                 />
                 <Tooltip content={<ChartTooltip />} />
                 <Bar dataKey="count" name="Profiles" radius={[0, 4, 4, 0]}>

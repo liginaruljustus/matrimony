@@ -1,4 +1,5 @@
 import { formatArea } from "@/lib/districts";
+import { religionLabel } from "@/lib/religions";
 type ProfileDetailsInput = {
   district?: string | null;
   state?: string | null;
@@ -20,7 +21,7 @@ export function ProfileDetailsList({ profile }: { profile: ProfileDetailsInput }
     { label: "Marital status", value: profile.maritalStatus ? profile.maritalStatus.replace("_", " ") : "—" },
     { label: "Gender", value: profile.gender === "MALE" ? "Male" : profile.gender === "FEMALE" ? "Female" : "—" },
     { label: "Age", value: profile.age ? String(profile.age) : "—" },
-    { label: "Religion", value: profile.religion || "—" },
+    { label: "Religion", value: religionLabel(profile.religion) || "—" },
     { label: "Caste", value: profile.caste || "—" },
     { label: "Education", value: profile.education || "—" },
     {

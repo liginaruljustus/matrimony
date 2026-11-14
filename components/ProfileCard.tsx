@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FavoriteButton } from "./FavoriteButton";
 import { User } from "lucide-react";
+import { religionLabel } from "@/lib/religions";
 
 type ProfileCardProps = {
   id: string;
@@ -77,7 +78,7 @@ export function ProfileCard(props: ProfileCardProps) {
             {props.education}
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent border border-accent/20">
-            {props.religion}
+            {religionLabel(props.religion)}
           </span>
         </div>
 

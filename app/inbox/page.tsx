@@ -13,6 +13,7 @@ import { DownloadADPdfButton } from "@/components/ADDetails";
 import { FAMILY_CLASS_COLORS, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 import { formatArea } from "@/lib/districts";
+import { religionLabel } from "@/lib/religions";
 const DEFAULT_PAYMENT_AMOUNTS: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
 type InboxItem = {
@@ -321,7 +322,7 @@ export default function InboxPage() {
                     <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
                       <span className="flex items-center gap-1 text-[11px] text-neutral-500">
                         <Star size={10} className="text-[#d4af37]" />
-                        {card.religion} · {card.caste}
+                        {religionLabel(card.religion)} · {card.caste}
                       </span>
                       <span className="flex items-center gap-1 text-[11px] text-neutral-500">
                         <GraduationCap size={10} className="text-[#7a1f2b]" />

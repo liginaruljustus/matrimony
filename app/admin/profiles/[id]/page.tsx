@@ -8,6 +8,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ProfileDetailsList } from "@/components/ProfileDetailsList";
+import { religionLabel } from "@/lib/religions";
 
 type ProfileDetail = {
   id: string;
@@ -173,7 +174,7 @@ export default function AdminProfileDetailPage() {
             <div className="grid grid-cols-2 gap-4">
               {[
                 { label: "Age", value: profile.age },
-                { label: "Religion", value: profile.religion },
+                { label: "Religion", value: religionLabel(profile.religion) },
                 { label: "Caste", value: profile.caste },
                 { label: "Location", value: profile.location },
                 { label: "Education", value: profile.education },

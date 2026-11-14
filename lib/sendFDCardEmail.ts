@@ -1,5 +1,6 @@
 import { sendMailWithRetry } from "./mailer";
 import { recoverAutoPassword } from "./loginPassword";
+import { religionLabel } from "@/lib/religions";
 
 /**
  * Emails a user's full profile details (FD card) once their profile is approved/live,
@@ -42,7 +43,7 @@ export async function sendFDCardEmail(
           ${fieldRow("Profile ID",       fdCard.profileId)}
           ${fieldRow("Name",             fdCard.name)}
           ${fieldRow("Age",              fdCard.age ? `${fdCard.age} years` : null)}
-          ${fieldRow("Religion",         fdCard.religion)}
+          ${fieldRow("Religion",         religionLabel(fdCard.religion))}
           ${fieldRow("Caste",            fdCard.caste)}
           ${fieldRow("District",         fdCard.district)}
           ${fieldRow("State",            fdCard.state)}

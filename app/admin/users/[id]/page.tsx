@@ -16,6 +16,7 @@ import {
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ProfileIdBadge } from "@/components/ProfileIdBadge";
+import { religionLabel } from "@/lib/religions";
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 
@@ -765,7 +766,7 @@ export default function AdminUserDetailPage() {
                     value={profile.dateOfBirth ? fmt(profile.dateOfBirth) : null}
                   />
                   <Field label="Marital Status" value={profile.maritalStatus} />
-                  <Field label="Religion" value={profile.religion} />
+                  <Field label="Religion" value={religionLabel(profile.religion)} />
                   <Field label="Caste" value={profile.caste} />
                   <Field label="Sub-Caste" value={profile.subCaste} />
                   <Field label="Mother Tongue" value={profile.motherTongue} />

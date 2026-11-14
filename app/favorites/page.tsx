@@ -12,6 +12,7 @@ import {
 import { FAMILY_CLASS_COLORS as CLASS_COLOR, FAMILY_CLASS_FALLBACK } from "@/lib/familyClass";
 import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 import { formatArea } from "@/lib/districts";
+import { religionLabel } from "@/lib/religions";
 /** "today" / "tomorrow" / "in N days" — counted in calendar days. */
 function unlockWhen(iso: string): string {
   const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
@@ -763,7 +764,7 @@ function FavCard({
         <div className="mt-2 space-y-1">
           <p className="flex items-center gap-1 text-[11px] text-neutral-500">
             <Star size={10} className="text-[#d4af37]" />
-            {card.religion} · {card.caste}
+            {religionLabel(card.religion)} · {card.caste}
           </p>
           <p className="flex items-center gap-1 text-[11px] text-neutral-500">
             <MapPin size={10} className="text-[#7a1f2b]" />

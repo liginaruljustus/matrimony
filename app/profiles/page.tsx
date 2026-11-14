@@ -14,6 +14,7 @@ import { CASTE_LIST } from "@/lib/casteData";
 import { STATES, ALL_DISTRICTS, districtsOf, formatArea } from "@/lib/districts";
 import { FAMILY_CLASS_CARD_STYLE, FAMILY_CLASS_CARD_FALLBACK, FAMILY_CLASS_PLACEHOLDER_BG, FAMILY_CLASS_PLACEHOLDER_FALLBACK } from "@/lib/familyClass";
 import { ProfileIdBadge } from "@/components/ProfileIdBadge";
+import { religionLabel } from "@/lib/religions";
 
 type MDProfile = {
   _id: string;
@@ -341,7 +342,7 @@ function MDProfileCard({
               <Star size={11} className="text-[#d4af37]" />
             </span>
             <span className="pt-0.5">
-              {profile.religion} • {profile.caste}
+              {religionLabel(profile.religion)} • {profile.caste}
             </span>
           </div>
           <div className="flex items-start gap-2 text-xs text-neutral-600 dark:text-neutral-700">

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useState, useRef } from "react";
 import { signIn } from "next-auth/react";
 import { AlertCircle, Phone } from "lucide-react";
+import { RELIGIONS, type Religion } from "@/lib/religions";
 
 type RegisterForm = {
   name: string;
@@ -14,7 +15,7 @@ type RegisterForm = {
   phone: string;
   profileType: "BRIDE" | "GROOM";
   familyClass: "MC" | "UC" | "EC";
-  religion: "HINDU" | "MUSLIM" | "CHRISTIAN" | "OTHER";
+  religion: Religion;
 };
 
 export default function RegisterPage() {
@@ -211,10 +212,9 @@ export default function RegisterPage() {
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-[#7a1f2b] focus:ring-2 focus:ring-[#7a1f2b]/20"
               >
                 <option value="">Select...</option>
-                <option value="HINDU">Hindu</option>
-                <option value="MUSLIM">Muslim</option>
-                <option value="CHRISTIAN">Christian</option>
-                <option value="OTHER">Other</option>
+                {RELIGIONS.map((r) => (
+                  <option key={r.value} value={r.value}>{r.label}</option>
+                ))}
               </select>
             </div>
 

@@ -1,11 +1,5 @@
 import { CounterModel, UserModel } from "./models";
-
-const RELIGION_MAP: Record<string, string> = {
-  "HINDU": "H",
-  "MUSLIM": "M",
-  "CHRISTIAN": "C",
-  "OTHER": "O",
-};
+import { religionCode } from "@/lib/religions";
 
 const DAY_INITIALS = ["S", "M", "T", "W", "T", "F", "S"]; // Sun, Mon, Tue, ...
 const MONTH_INITIALS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
@@ -22,7 +16,8 @@ export async function generateProfileId(
     timeZone: "Asia/Kolkata", month: "2-digit", year: "2-digit",
   }).format(new Date()).split("/");
   const monthYear = `${mm}${yy}`;
-  const religionCode = RELIGION_MAP[religion] || "O";
+  // First letter of the religion (Hindu H, Muslim M, Christian C, Sikh S, Buddhism B, Jainism J, Others O)
+  const religionLetter = religionCode(religion);
 
   // The serial number restarts every month: one counter per month, so the first
   // registration of a month gets 000001.
@@ -52,7 +47,7 @@ export async function generateProfileId(
   ).lean() as any;
   const sequence = String(counter.seq).padStart(6, "0");
 
-  return `${genderCode}${monthYear}${religionCode}${sequence}${familyClass}`;
+  return `${genderCode}${monthYear}${religionLetter}${sequence}${familyClass}`;
 }
 
 export function generatePassword(

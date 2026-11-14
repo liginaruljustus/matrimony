@@ -17,6 +17,7 @@ import {
   BarChart3, AlertCircle, CheckCircle,
   Database, Lock, HardDrive, ChevronRight,
 } from "lucide-react";
+import { religionLabel } from "@/lib/religions";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -301,12 +302,7 @@ export default function AdminPage() {
                     dataKey="religion"
                     tick={{ fontSize: 10, fill: "#475569" }}
                     width={60}
-                    tickFormatter={(v) =>
-                      v === "CHRISTIAN" ? "Christian" :
-                      v === "MUSLIM"    ? "Muslim"    :
-                      v === "HINDU"     ? "Hindu"     :
-                      v === "OTHER"     ? "Other"     : v
-                    }
+                    tickFormatter={(v) => religionLabel(v)}
                   />
                   <Tooltip content={<ChartTooltip />} />
                   <Bar dataKey="count" name="Profiles" radius={[0, 4, 4, 0]}>

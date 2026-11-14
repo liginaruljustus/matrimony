@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Download } from "lucide-react";
+import { religionLabel } from "@/lib/religions";
 
 /**
  * Additional Details (AD) — every field marked "AD" in the profile spec,
@@ -41,7 +42,7 @@ export function ADDetailsGrid({ card }: { card: any }) {
         <Field label="Marital Status"   value={fmt(card.maritalStatus?.replace("_", " "))} />
         <Field label="Gender"           value={gender} />
         <Field label="Age"              value={card.age ? `${card.age} yrs` : "—"} />
-        <Field label="Religion"         value={fmt(card.religion)} />
+        <Field label="Religion"         value={fmt(religionLabel(card.religion))} />
         <Field label="Caste"            value={fmt(card.caste)} />
         <Field label="Sub Caste"        value={fmt(card.subCaste)} />
         <Field label="Place of Birth"   value={fmt(card.placeOfBirth)} />

@@ -1,4 +1,5 @@
 import { Schema, model, models, InferSchemaType } from "mongoose";
+import { RELIGION_VALUES } from "@/lib/religions";
 
 const userSchema = new Schema(
   {
@@ -12,7 +13,7 @@ const userSchema = new Schema(
     // autoPassword intentionally removed — derived on-demand from phone/createdAt/name.
     profileType: { type: String, enum: ["BRIDE", "GROOM"] },
     familyClass: { type: String, enum: ["MC", "UC", "EC"] },
-    religion:    { type: String, enum: ["HINDU", "MUSLIM", "CHRISTIAN", "OTHER"] },
+    religion:    { type: String, enum: RELIGION_VALUES },
     termsAcceptedAt: { type: Date },
     // Freeze system (on user level too)
     isFrozen:     { type: Boolean, default: false, index: true },
@@ -358,7 +359,7 @@ const pendingRegistrationSchema = new Schema({
   phone:       { type: String, required: true },
   profileType: { type: String, enum: ["BRIDE", "GROOM"], required: true },
   familyClass: { type: String, enum: ["MC", "UC", "EC"], required: true },
-  religion:    { type: String, enum: ["HINDU", "MUSLIM", "CHRISTIAN", "OTHER"], required: true },
+  religion:    { type: String, enum: RELIGION_VALUES, required: true },
   otpHash:     { type: String, required: true },  // bcrypt-hashed 6-digit OTP
   attempts:    { type: Number, default: 0 },       // wrong guesses, max 5
   expiresAt:   { type: Date, required: true, index: { expireAfterSeconds: 0 } },

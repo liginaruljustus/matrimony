@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CODES_BY_LENGTH } from "./countryCodes";
+import { RELIGION_VALUES } from "@/lib/religions";
 
 function validate10DigitPhone(v: string): boolean {
   if (!v || typeof v !== "string") return false;
@@ -44,7 +45,7 @@ export const matrimonyProfileSchema = z.object({
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   // Minimum age is enforced per-gender in the superRefine below (Male 21, Female 18).
   age: z.coerce.number().min(1, "Date of Birth is required").max(80),
-  religion: z.enum(["HINDU", "MUSLIM", "CHRISTIAN", "OTHER"]),
+  religion: z.enum(RELIGION_VALUES),
   caste: z.string().min(2, "Caste is required"),
   subCaste: z.string().min(1, "Sub Caste is required"),
   placeOfBirth: z.string().optional(),
@@ -116,7 +117,7 @@ export const sendOtpSchema = z.object({
   phone:       z.string().length(10, "Phone number must be 10 digits").regex(/^\d{10}$/, "Enter a valid 10-digit phone number"),
   profileType: z.enum(["BRIDE", "GROOM"],                           { message: "Select Bride or Groom" }),
   familyClass: z.enum(["MC", "UC", "EC"],                           { message: "Select family class" }),
-  religion:    z.enum(["HINDU", "MUSLIM", "CHRISTIAN", "OTHER"],    { message: "Select your religion" }),
+  religion:    z.enum(RELIGION_VALUES,    { message: "Select your religion" }),
 });
 
 export const verifyOtpSchema = z.object({

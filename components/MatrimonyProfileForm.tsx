@@ -15,6 +15,7 @@ import { z } from "zod";
 import { updateMatrimonyProfileAction } from "@/app/actions/profileActions";
 import Image from "next/image";
 import { X, ImagePlus, AlertCircle, CheckCircle } from "lucide-react";
+import { RELIGIONS } from "@/lib/religions";
 
 const FIELD_LABELS: Record<string, string> = {
   name: "Full Name", gender: "Gender", age: "Age", dateOfBirth: "Date of Birth",
@@ -443,10 +444,9 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               <div>
                 <label className="label">Religion *</label>
                 <select {...register("religion")} className="input-field">
-                  <option value="HINDU">Hindu</option>
-                  <option value="MUSLIM">Muslim</option>
-                  <option value="CHRISTIAN">Christian</option>
-                  <option value="OTHER">Other</option>
+                  {RELIGIONS.map((r) => (
+                    <option key={r.value} value={r.value}>{r.label}</option>
+                  ))}
                 </select>
                 {errors.religion && <p className="text-xs text-red-600 mt-1">{errors.religion.message}</p>}
               </div>

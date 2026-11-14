@@ -4,6 +4,7 @@ import {
   Document, Page, View, Text, StyleSheet, Font, Image,
   pdf,
 } from "@react-pdf/renderer";
+import { religionLabel } from "@/lib/religions";
 
 // ── Styles ──────────────────────────────────────────────────────────────────
 
@@ -302,7 +303,7 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
               Profile ID: {profileId}
               {p.age ? `  ·  ${p.age} yrs` : ""}
               {p.gender ? `  ·  ${p.gender === "MALE" ? "Groom" : "Bride"}` : ""}
-              {p.religion ? `  ·  ${p.religion}` : ""}
+              {p.religion ? `  ·  ${religionLabel(p.religion)}` : ""}
               {p.caste ? `  ·  ${p.caste}` : ""}
               {p.subCaste ? ` (${p.subCaste})` : ""}
             </Text>
@@ -328,7 +329,7 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
               <Field label="Weight"            value={fmtW(p.weight)} />
               <Field label="Complexion"        value={fmt(p.complexion)} />
               <Field label="Physically Challenged" value={p.physicallyChallenge != null ? (p.physicallyChallenge ? "Yes" : "No") : "—"} />
-              <Field label="Religion"          value={fmt(p.religion)} />
+              <Field label="Religion"          value={fmt(religionLabel(p.religion))} />
               <Field label="Caste"             value={fmt(p.caste)} bold />
               <Field label="Sub-Caste"         value={fmt(p.subCaste)} />
               <Field label="Mother Tongue"     value={fmt(p.motherTongue)} />
