@@ -69,6 +69,8 @@ export default function ProfilesPage() {
 
   const [profiles, setProfiles]     = useState<MDProfile[]>([]);
   const [loading, setLoading]        = useState(true);
+  // Set when the member's own profile isn't live yet (Dashboard go-live steps)
+  const [activation, setActivation]  = useState<{ liveAt: string | null } | null>(null);
   const [classTab, setClassTab]      = useState("ALL");
   const [showFilters, setShowFilters]= useState(false);
   const [favoritedIds, setFavoritedIds] = useState<Set<string>>(new Set());
@@ -96,6 +98,7 @@ export default function ProfilesPage() {
 
       const res = await fetch(`/api/profiles/search?${params}`);
       const data = await res.json();
+      setActivation(data.activationRequired ? { liveAt: data.liveAt ?? null } : null);
       setProfiles(data.profiles ?? []);
     } catch {
       setProfiles([]);
@@ -252,6 +255,17 @@ export default function ProfilesPage() {
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="h-72 animate-pulse rounded-2xl bg-neutral-200" />
           ))}
+        </div>
+      ) : activation ? (
+        <div className="mx-auto max-w-md rounded-2xl border-2 border-[#d4af37]/60 bg-white p-6 text-center dark:bg-neutral-100">
+          <h3 className="text-lg font-bold text-[#7a1f2b]">Make your profile live to start browsing</h3>
+          <p className="mt-2 text-sm text-neutral-600">
+            Your profile goes live{activation.liveAt ? ` on ${new Date(activation.liveAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}` : " soon"}.
+            Complete the 3 quick steps on your Dashboard to make it live sooner.
+          </p>
+          <Link href="/dashboard" className="mt-4 inline-block rounded-lg bg-[#7a1f2b] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#6b1823]">
+            Go to Dashboard
+          </Link>
         </div>
       ) : profiles.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">

@@ -81,6 +81,7 @@ export async function POST(req: Request) {
         frozenReason: null,
         frozenBy:     null,
         lastActivity: new Date(),
+        shareClockFrom: new Date(),   // a fresh share period after unfreezing
       },
     });
     await ProfileModel.findOneAndUpdate({ userId: session.user.id }, {

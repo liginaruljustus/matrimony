@@ -178,22 +178,17 @@ export function Navbar() {
     { href: "/inbox",            label: "Inbox" },
     { href: "/payment/second",   label: "Final Payment" },
     { href: "/contact-details",  label: "Contacts" },
-    { href: "/payment/history",  label: "Payments" },
-    { href: "/my-profile",       label: "My Profile" },
-    { href: "/settings",         label: "Settings" },
   ];
 
   const brideLinks = [
     { href: "/bride-inbox",  label: "Proposals" },
     { href: "/accepted",     label: "Accepted" },
     { href: "/contact-details", label: "Contacts" },
-    { href: "/my-profile",   label: "My Profile" },
-    { href: "/settings",     label: "Settings" },
   ];
 
-  const commonLinks = [
-    { href: "/dashboard", label: "Dashboard" },
-  ];
+  // Dashboard, My Profile, Settings and Payments live inside the Dashboard
+  // (quick links there); the logo opens the Dashboard for signed-in members.
+  const commonLinks: { href: string; label: string }[] = [];
 
   // Admins already have the admin sidebar (Dashboard, etc.), so no top links.
   const navLinks = isAdmin
@@ -208,7 +203,7 @@ export function Navbar() {
     <nav className="sticky top-0 z-40 border-b border-neutral-200 bg-white/95 dark:bg-neutral-100/95 shadow-sm backdrop-blur-sm">
       <div className="flex w-full items-center justify-between px-4 py-3">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 shrink-0">
+        <Link href={session?.user && !isAdmin ? "/dashboard" : "/"} className="flex items-center gap-2 shrink-0" title={session?.user ? "Dashboard" : "Home"}>
 <img src="/logo.jpg" alt="Lura Matrimony Tamil" className="h-12 w-auto sm:h-16 mix-blend-multiply" />
         </Link>
 

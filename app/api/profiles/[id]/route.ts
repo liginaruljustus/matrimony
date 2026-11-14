@@ -16,6 +16,7 @@ import { ProfileModel, UserModel } from "@/lib/models";
 import { toObjectId } from "@/lib/mongoUtils";
 import { calculateAge } from "@/lib/age";
 import { stateOfDistrict } from "@/lib/districts";
+import { isLive } from "@/lib/activation";
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -37,7 +38,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 
   // Only show APPROVED profiles (unless the owner is viewing their own)
   const isOwn = session.user.id === String(profile.userId?._id ?? profile.userId);
-  if (!isOwn && profile.profileStatus !== "APPROVED") {
+  if (!isOwn && !isLive(profile)) {
     return NextResponse.json({ message: "Profile not found" }, { status: 404 });
   }
 

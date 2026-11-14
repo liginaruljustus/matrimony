@@ -13,7 +13,15 @@ export async function sendFDCardEmail(
   name: string,
   fdCard: any,
   account?: { passwordHash?: string; phone?: string; createdAt?: Date | string; name?: string } | null,
+  /** Set when the profile is submitted but not live yet (go-live activation). */
+  pendingLiveAt?: Date | null,
 ) {
+  const liveDate = pendingLiveAt
+    ? new Date(pendingLiveAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
+    : null;
+  const intro = liveDate
+    ? `Your profile has been submitted successfully. It will go live on <strong>${liveDate}</strong> — or much sooner if you complete the 3 simple steps on your Dashboard (join Lura NCS, follow our channels, share our post).`
+    : "Your profile is now live. Below are your login details and your complete profile details for your records.";
   const password = await recoverAutoPassword(account);
   const loginUrl = `${process.env.NEXTAUTH_URL ?? "https://matrimony-two-drab.vercel.app"}/login`;
   const loginBox = `
@@ -38,7 +46,7 @@ export async function sendFDCardEmail(
       </div>
       <div style="padding:24px;">
         <p style="color:#374151;">Dear <strong>${name}</strong>,</p>
-        <p style="color:#374151;font-size:14px;">Your profile is now live. Below are your login details and your complete profile details for your records.</p>
+        <p style="color:#374151;font-size:14px;">${intro}</p>
         ${loginBox}
         <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;margin:16px 0;">
           ${fieldRow("Profile ID",       fdCard.profileId)}
@@ -70,12 +78,16 @@ export async function sendFDCardEmail(
   await sendMailWithRetry({
     from:    process.env.SMTP_FROM ?? `"Lura Tamil Matrimony" <${process.env.SMTP_USER}>`,
     to:      email,
-    subject: "Your Lura Tamil Matrimony Profile Is Live — Full Details",
+    subject: liveDate
+      ? "Your Lura Tamil Matrimony Profile Is Submitted — Login & Full Details"
+      : "Your Lura Tamil Matrimony Profile Is Live — Full Details",
     html,
     text: [
       `Dear ${name},`,
       "",
-      "Your Lura Tamil Matrimony profile is now live.",
+      liveDate
+        ? `Your Lura Tamil Matrimony profile has been submitted. It goes live on ${liveDate}, or sooner once you complete the 3 steps on your Dashboard.`
+        : "Your Lura Tamil Matrimony profile is now live.",
       "",
       `Profile ID: ${fdCard.profileId ?? ""}`,
       `Password:   ${password ?? "the password from your registration email (use \"Forgot password\" on the login page if needed)"}`,

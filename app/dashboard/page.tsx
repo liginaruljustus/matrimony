@@ -11,13 +11,14 @@ import { RequestEditButton } from "@/components/RequestEditButton";
 import {
   Users, UserCheck, User, Heart, CreditCard, BarChart3,
   CheckCircle, Eye, EyeOff, AlertCircle, Database, Lock,
-  HardDrive, MessageCircle, Home, Snowflake, ChevronDown, Settings,
+  HardDrive, MessageCircle, Home, Snowflake, ChevronDown, Settings, Phone,
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import { ProfileIdBadge } from "@/components/ProfileIdBadge";
+import { ActivationPanel, GoLiveNote } from "@/components/ActivationPanel";
 import { religionLabel } from "@/lib/religions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -400,6 +401,7 @@ const PROFILE_STATUS: Record<string, { label: string; color: string; bg: string;
   DRAFT:            { label: "Draft",        color: "text-slate-600",  bg: "bg-slate-100",  desc: "Complete your profile to start connecting" },
   PENDING_APPROVAL: { label: "Under Review", color: "text-amber-700",  bg: "bg-amber-100",  desc: "Our team is reviewing your profile" },
   APPROVED:         { label: "Live",         color: "text-green-700",  bg: "bg-green-100",  desc: "Your profile is visible to families" },
+  WAITING:          { label: "Submitted",    color: "text-amber-700",  bg: "bg-amber-100",  desc: "Complete the 3 steps above to make your profile live sooner" },
   REJECTED:         { label: "Rejected",     color: "text-red-700",    bg: "bg-red-100",    desc: "Your profile needs changes — see feedback below" },
   FLAGGED:          { label: "Flagged",      color: "text-orange-700", bg: "bg-orange-100", desc: "Your profile has been flagged for review" },
 };
@@ -415,7 +417,9 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
   const [formOpen, setFormOpen] = useState(!profile);
 
   const isGroom = userData.profileType === "GROOM";
-  const profileStatus = (profile?.profileStatus as string) ?? "DRAFT";
+  // Approved but still in the go-live waiting period (lib/activation.ts)
+  const waitingToGoLive = profile?.profileStatus === "APPROVED" && !!profile?.liveAt && new Date(profile.liveAt) > new Date();
+  const profileStatus = waitingToGoLive ? "WAITING" : (profile?.profileStatus as string) ?? "DRAFT";
   const st = PROFILE_STATUS[profileStatus] ?? PROFILE_STATUS.DRAFT;
   const isFrozen = !!(userData.isFrozen || userData.isAutoFrozen);
 
@@ -450,6 +454,28 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
             )}
           </div>
         )}
+
+        {/* ── Go-live steps / regular share reminder ───────────────────────── */}
+        <ActivationPanel />
+
+        {/* ── Quick links (kept here instead of the top menu) ──────────────── */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { href: "/my-profile", label: "My Profile", icon: User },
+            { href: "/settings", label: "Settings", icon: Settings },
+            ...(isGroom ? [{ href: "/payment/history", label: "Payments", icon: CreditCard }] : []),
+            { href: "/contact-details", label: "Contacts", icon: Phone },
+          ].map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#7a1f2b]/40 hover:text-[#7a1f2b] dark:border-neutral-200 dark:bg-neutral-100"
+            >
+              <Icon size={16} className="text-[#7a1f2b]" />
+              {label}
+            </Link>
+          ))}
+        </div>
 
         {/* ── Profile locked notice (replaces the edit form) ─────────────────── */}
         {profile?.isLocked ? (
@@ -572,6 +598,7 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
                 {st.label}
               </span>
               <p className="text-sm text-slate-500 dark:text-neutral-700 mt-2 leading-relaxed">{st.desc}</p>
+              <GoLiveNote liveAt={profile?.liveAt} />
 
               {/* Rejection reason */}
               {profileStatus === "REJECTED" && profile?.rejectionReason && (

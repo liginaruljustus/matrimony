@@ -15,6 +15,7 @@ import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ProfileModel, UserModel } from "@/lib/models";
 import { toObjectId } from "@/lib/mongoUtils";
+import { liveFilter } from "@/lib/activation";
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
@@ -40,6 +41,7 @@ export async function GET(request: Request) {
   const query: Record<string, unknown> = {
     userId:        { $ne: userId },
     profileStatus: "APPROVED",          // approved only
+    ...liveFilter(),                    // and live now
     isFrozen:      { $ne: true },       // not manually frozen
     isAutoFrozen:  { $ne: true },       // not auto-frozen
     age: { $gte: minAge, $lte: maxAge },

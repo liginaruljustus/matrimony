@@ -68,6 +68,16 @@ export async function GET() {
       bankIfsc:              settings.bankIfsc              ?? "",
       bankAccountHolder:     settings.bankAccountHolder     ?? DEFAULTS.bankAccountHolder,
       groomFreezeDays:       settings.groomFreezeDays       ?? 90,
+      activationEnabled:     settings.activationEnabled     ?? true,
+      activationDays:        settings.activationDays        ?? 60,
+      activationNcsDays:     settings.activationNcsDays     ?? 45,
+      activationAllDoneDays: settings.activationAllDoneDays ?? 0,
+      ncsSiteUrl:            settings.ncsSiteUrl            ?? "https://loorancsc.in",
+      socialLinks:           settings.socialLinks           ?? [],
+      promoItems:            settings.promoItems            ?? [],
+      promoRotateDays:       settings.promoRotateDays       ?? 5,
+      shareReminderDays:     settings.shareReminderDays     ?? 10,
+      shareFreezeDays:       settings.shareFreezeDays       ?? 60,
       brideFreezeDays:       settings.brideFreezeDays       ?? 60,
       pdfDownloadEnabled:    settings.pdfDownloadEnabled    ?? true,
       pdfCompanyName:        settings.pdfCompanyName        ?? DEFAULTS.pdfCompanyName,
@@ -132,6 +142,37 @@ export async function PUT(request: Request) {
     if ("bankAccountHolder" in body) allowed.bankAccountHolder = String(body.bankAccountHolder ?? "");
     if ("groomFreezeDays"   in body) allowed.groomFreezeDays   = Math.max(1, Number(body.groomFreezeDays) || 90);
     if ("brideFreezeDays"   in body) allowed.brideFreezeDays   = Math.max(1, Number(body.brideFreezeDays) || 60);
+    // Go-live activation & sharing
+    const days = (v: unknown, def: number, min = 1) => Math.max(min, Math.min(3650, Math.round(Number(v)) || def));
+    if ("activationEnabled"     in body) allowed.activationEnabled     = Boolean(body.activationEnabled);
+    if ("activationDays"        in body) allowed.activationDays        = days(body.activationDays, 60);
+    if ("activationNcsDays"     in body) allowed.activationNcsDays     = days(body.activationNcsDays, 45, 0);
+    if ("activationAllDoneDays" in body) allowed.activationAllDoneDays = days(body.activationAllDoneDays, 0, 0);
+    if ("promoRotateDays"       in body) allowed.promoRotateDays       = days(body.promoRotateDays, 5);
+    if ("shareReminderDays"     in body) allowed.shareReminderDays     = days(body.shareReminderDays, 10);
+    if ("shareFreezeDays"       in body) allowed.shareFreezeDays       = days(body.shareFreezeDays, 60);
+    if ("ncsSiteUrl"            in body) allowed.ncsSiteUrl            = String(body.ncsSiteUrl ?? "").trim().slice(0, 200);
+    const cleanUrl = (u: unknown) => {
+      const v = String(u ?? "").trim().slice(0, 500);
+      return /^https?:\/\//i.test(v) ? v : "";
+    };
+    if (Array.isArray(body.socialLinks)) {
+      allowed.socialLinks = body.socialLinks
+        .map((l: any) => ({ name: String(l?.name ?? "").trim().slice(0, 60), url: cleanUrl(l?.url) }))
+        .filter((l: any) => l.name && l.url)
+        .slice(0, 20);
+    }
+    if (Array.isArray(body.promoItems)) {
+      allowed.promoItems = body.promoItems
+        .map((it: any) => ({
+          category:  String(it?.category ?? "").trim().slice(0, 30),
+          title:     String(it?.title ?? "").trim().slice(0, 120),
+          mediaUrl:  cleanUrl(it?.mediaUrl),
+          shareText: String(it?.shareText ?? "").trim().slice(0, 500),
+        }))
+        .filter((it: any) => it.mediaUrl || it.title)
+        .slice(0, 50);
+    }
     if ("pdfDownloadEnabled"    in body) allowed.pdfDownloadEnabled    = Boolean(body.pdfDownloadEnabled);
     if ("pdfShowContactDetails" in body) allowed.pdfShowContactDetails = Boolean(body.pdfShowContactDetails);
     if ("pdfShowAstrology"      in body) allowed.pdfShowAstrology      = Boolean(body.pdfShowAstrology);

@@ -9,6 +9,7 @@ import { toObjectId } from "@/lib/mongoUtils";
 import { buildFDCard } from "@/lib/cardGenerator";
 import { sendFDCardEmail } from "@/lib/sendFDCardEmail";
 import { sendAndRecord } from "@/lib/emailLog";
+import { getActivationSettings } from "@/lib/activation";
 
 type ProfileInput = {
   age: number;
@@ -94,7 +95,7 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
 
   // Edit lock — once finalized, the user can no longer change their profile.
   // Enforced server-side so it can't be bypassed by hiding the UI.
-  const existing = await ProfileModel.findOne({ userId }).select("isLocked photos").lean<{ isLocked?: boolean; photos?: string[] }>();
+  const existing = await ProfileModel.findOne({ userId }).select("isLocked photos approvalDate liveAt").lean<{ isLocked?: boolean; photos?: string[]; approvalDate?: Date; liveAt?: Date }>();
   if (existing?.isLocked) {
     return {
       ok: false,
@@ -142,6 +143,19 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
           : { profileStatus: "PENDING_APPROVAL" }),
       }
     : {};
+
+  // A first-time submission is not listed straight away: it goes live after the
+  // activation period, or sooner once the member completes the Dashboard tasks.
+  // (A profile that was already live before — e.g. resubmitted after an admin
+  // unlock — keeps its status.)
+  let pendingLiveAt: Date | null = null;
+  if (finalize && !existing?.approvalDate && !existing?.liveAt) {
+    const act = await getActivationSettings();
+    if (act.activationEnabled) {
+      pendingLiveAt = new Date(Date.now() + act.activationDays * 24 * 3600 * 1000);
+      (lockFields as any).liveAt = pendingLiveAt;
+    }
+  }
 
   const updatedProfile = await ProfileModel.findOneAndUpdate(
     { userId },
@@ -199,7 +213,7 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
     await sendAndRecord(userId, "profileLive", derivedEmail, async () => {
       const fd = buildFDCard({ ...(user ?? {}), name: userName, email: derivedEmail, profileId }, updatedProfile);
       // `user` is read before this save, so it still has the name/phone the password was made from
-      await sendFDCardEmail(derivedEmail, userName, fd, user);
+      await sendFDCardEmail(derivedEmail, userName, fd, user, pendingLiveAt);
     });
   }
 
@@ -207,7 +221,9 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
     ok: true,
     locked: finalize,
     message: finalize
-      ? "Profile submitted successfully. It is now locked — contact the admin for any changes."
+      ? pendingLiveAt
+        ? "Profile submitted successfully. Complete the 3 steps on your Dashboard to make it live sooner."
+        : "Profile submitted successfully. It is now locked — contact the admin for any changes."
       : "Profile saved successfully",
     profileId,
   };

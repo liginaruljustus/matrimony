@@ -42,6 +42,10 @@ const userSchema = new Schema(
       profileLive: { status: String, at: Date, to: String, error: String },
     },
     lastActivity: { type: Date },
+    // Sharing rule (lib/activation.ts): last time they shared our poster/video, and
+    // the date the share clock counts from (a share, going live, or unfreezing).
+    lastSharedAt:   { type: Date },
+    shareClockFrom: { type: Date },
   },
   { timestamps: true },
 );
@@ -105,6 +109,15 @@ const profileSchema = new Schema(
     // them. Only an admin can change it afterwards (via /api/admin/profiles/[id]).
     isLocked: { type: Boolean, default: false, index: true },
     lockedAt: { type: Date },
+    // Go-live activation (lib/activation.ts): listed only from liveAt (none = live).
+    liveAt: { type: Date, index: true },
+    activation: {
+      ncsUserId:  { type: String },
+      ncsAt:      { type: Date },
+      followed:   [{ type: String }],
+      followedAt: { type: Date },
+      sharedAt:   { type: Date },
+    },
     // Admin moderation fields
     profileStatus: { type: String, enum: ["DRAFT", "PENDING_APPROVAL", "APPROVED", "REJECTED", "FLAGGED"], default: "DRAFT", index: true },
     approvedBy: { type: Schema.Types.ObjectId, ref: "User" },
@@ -302,6 +315,17 @@ const settingsSchema = new Schema(
     bankAccountHolder:  { type: String, default: "Lura Matrimony Services" },
     // Auto-freeze thresholds (days of inactivity)
     groomFreezeDays:    { type: Number, default: 90 },
+    // Go-live activation and sharing (lib/activation.ts)
+    activationEnabled:     { type: Boolean, default: true },
+    activationDays:        { type: Number, default: 60 },
+    activationNcsDays:     { type: Number, default: 45 },
+    activationAllDoneDays: { type: Number, default: 0 },
+    ncsSiteUrl:            { type: String, default: "https://loorancsc.in" },
+    socialLinks:           [{ name: String, url: String, _id: false }],
+    promoItems:            [{ category: String, title: String, mediaUrl: String, shareText: String, _id: false }],
+    promoRotateDays:       { type: Number, default: 5 },
+    shareReminderDays:     { type: Number, default: 10 },
+    shareFreezeDays:       { type: Number, default: 60 },
     brideFreezeDays:    { type: Number, default: 60 },
     lastAutoFreezeRunAt: { type: Date },
     // PDF document settings

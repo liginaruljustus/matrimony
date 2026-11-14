@@ -42,9 +42,20 @@ type Settings = {
   bankAccountNo: string;
   bankIfsc: string;
   bankAccountHolder: string;
-  // Auto-freeze thresholds
+  // Auto-freeze thresholds (replaced by the share rule; kept for old data)
   groomFreezeDays: number;
   brideFreezeDays: number;
+  // Go-live activation & sharing
+  activationEnabled: boolean;
+  activationDays: number;
+  activationNcsDays: number;
+  activationAllDoneDays: number;
+  ncsSiteUrl: string;
+  socialLinks: { name: string; url: string }[];
+  promoItems: { category: string; title: string; mediaUrl: string; shareText?: string }[];
+  promoRotateDays: number;
+  shareReminderDays: number;
+  shareFreezeDays: number;
   // PDF document settings
   pdfDownloadEnabled: boolean;
   pdfCompanyName: string;
@@ -151,6 +162,29 @@ function NumberInput({
         />
         {suffix && <span className="text-sm text-slate-500 shrink-0">{suffix}</span>}
       </div>
+    </div>
+  );
+}
+
+/** A multi-line list, edited as text — one item per line. */
+function ListEditor({
+  label, description, value, placeholder, onChange,
+}: {
+  label: string; description?: string; value: string; placeholder?: string; onChange: (text: string) => void;
+}) {
+  // Keep the raw text while typing, so a half-typed line isn't dropped
+  const [text, setText] = useState(value);
+  return (
+    <div>
+      <label className="mb-1 block text-xs font-semibold text-slate-900">{label}</label>
+      {description && <p className="mb-2 text-xs text-slate-500">{description}</p>}
+      <textarea
+        value={text}
+        rows={4}
+        placeholder={placeholder}
+        onChange={(e) => { setText(e.target.value); onChange(e.target.value); }}
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-xs focus:border-[#7a1f2b] focus:outline-none focus:ring-1 focus:ring-[#7a1f2b]/30"
+      />
     </div>
   );
 }
@@ -351,6 +385,16 @@ export default function AdminSettingsPage() {
         bankAccountHolder: "Lura Matrimony Services",
         groomFreezeDays: 90,
         brideFreezeDays: 60,
+        activationEnabled: true,
+        activationDays: 60,
+        activationNcsDays: 45,
+        activationAllDoneDays: 0,
+        ncsSiteUrl: "https://loorancsc.in",
+        socialLinks: [],
+        promoItems: [],
+        promoRotateDays: 5,
+        shareReminderDays: 10,
+        shareFreezeDays: 60,
         pdfDownloadEnabled: true,
         pdfCompanyName: "Lura Matrimony",
         pdfFooterText: "Confidential — For Family Use Only",
@@ -658,28 +702,104 @@ export default function AdminSettingsPage() {
           </div>
         </SectionCard>
 
-        {/* ── Auto-Freeze Thresholds ─────────────────────────────────────── */}
+        {/* ── Go-Live & Sharing ─────────────────────────────────────────── */}
         <SectionCard>
-          <SectionTitle icon={Snowflake} title="Auto-Freeze Thresholds" />
+          <SectionTitle icon={Snowflake} title="Go-Live & Sharing" />
           <p className="text-xs text-slate-500 mb-4 -mt-2">
-            Profiles inactive for this many days are automatically frozen by the nightly cron job.
+            A new profile goes live after the waiting period below, or sooner when the member completes
+            the 3 Dashboard steps: join Lura NCS, follow our channels, share our post. Once live, they are
+            asked to share our post regularly; with no share for the freeze period the profile is auto-frozen.
+            Existing live profiles are not affected.
           </p>
-          <div className="grid grid-cols-2 gap-6">
-            <NumberInput
-              label="Groom Inactivity"
-              description="Default: 90 days"
-              value={settings.groomFreezeDays}
-              suffix="days"
-              min={1}
-              onChange={(v) => set("groomFreezeDays", v)}
+          <div className="space-y-5">
+            <Toggle
+              checked={settings.activationEnabled}
+              onChange={(v) => set("activationEnabled", v)}
+              label="New profiles wait to go live"
+              description="Off = a submitted profile goes live straight away (as before)"
             />
-            <NumberInput
-              label="Bride Inactivity"
-              description="Default: 60 days"
-              value={settings.brideFreezeDays}
-              suffix="days"
-              min={1}
-              onChange={(v) => set("brideFreezeDays", v)}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+              <NumberInput
+                label="Live after (no steps done)"
+                description="Default: 60 days"
+                value={settings.activationDays}
+                suffix="days"
+                min={1}
+                onChange={(v) => set("activationDays", v)}
+              />
+              <NumberInput
+                label="Live after (joined Lura NCS)"
+                description="Default: 45 days"
+                value={settings.activationNcsDays}
+                suffix="days"
+                min={0}
+                onChange={(v) => set("activationNcsDays", v)}
+              />
+              <NumberInput
+                label="Live after (all 3 steps)"
+                description="0 = straight away"
+                value={settings.activationAllDoneDays}
+                suffix="days"
+                min={0}
+                onChange={(v) => set("activationAllDoneDays", v)}
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+              <NumberInput
+                label="Change the poster/video every"
+                description="Default: 5 days"
+                value={settings.promoRotateDays}
+                suffix="days"
+                min={1}
+                onChange={(v) => set("promoRotateDays", v)}
+              />
+              <NumberInput
+                label="Ask to share again every"
+                description="Default: 10 days (members may skip)"
+                value={settings.shareReminderDays}
+                suffix="days"
+                min={1}
+                onChange={(v) => set("shareReminderDays", v)}
+              />
+              <NumberInput
+                label="Auto-freeze after no share for"
+                description="Default: 60 days"
+                value={settings.shareFreezeDays}
+                suffix="days"
+                min={1}
+                onChange={(v) => set("shareFreezeDays", v)}
+              />
+            </div>
+            <TextInput
+              label="Lura NCS website (step 1)"
+              description="Members join here, then enter their Lura NCS user ID on the Dashboard"
+              value={settings.ncsSiteUrl}
+              placeholder="https://loorancsc.in"
+              onChange={(v) => set("ncsSiteUrl", v)}
+            />
+            <ListEditor
+              label="Channels to follow (step 2)"
+              description="WhatsApp channel and social media pages. One per line: Name | Link"
+              placeholder={"Lura NCS WhatsApp Channel | https://whatsapp.com/channel/...\nInstagram | https://instagram.com/..."}
+              value={settings.socialLinks.map((l) => `${l.name} | ${l.url}`).join("\n")}
+              onChange={(text) =>
+                set("socialLinks", text.split("\n").map((line) => {
+                  const [name, url] = line.split("|").map((x) => x.trim());
+                  return { name: name ?? "", url: url ?? "" };
+                }).filter((l) => l.name || l.url))
+              }
+            />
+            <ListEditor
+              label="Posters / videos to share (step 3 and the regular share)"
+              description="Shown in this order, one at a time, changing every few days. One per line: Category | Title | Image or video link | Message to share (optional)"
+              placeholder={"Matrimony | Find your match on Lura | https://.../matrimony-poster.jpg | Register free at ...\nJobs | Lura Jobs | https://.../jobs.mp4 |"}
+              value={settings.promoItems.map((p) => [p.category, p.title, p.mediaUrl, p.shareText ?? ""].join(" | ")).join("\n")}
+              onChange={(text) =>
+                set("promoItems", text.split("\n").map((line) => {
+                  const [category, title, mediaUrl, ...rest] = line.split("|").map((x) => x.trim());
+                  return { category: category ?? "", title: title ?? "", mediaUrl: mediaUrl ?? "", shareText: rest.join(" | ") };
+                }).filter((p) => p.title || p.mediaUrl))
+              }
             />
           </div>
         </SectionCard>

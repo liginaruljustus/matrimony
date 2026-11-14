@@ -16,6 +16,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel, FavoriteModel, PaymentModel } from "@/lib/models";
 import { buildMDCard, isPaymentLockExpired } from "@/lib/cardGenerator";
 import { autoApproveDuePayments } from "@/lib/paymentApproval";
+import { isLive } from "@/lib/activation";
 
 export async function GET() {
   try {
@@ -128,6 +129,15 @@ export async function POST(req: Request) {
     }
 
     await connectToDatabase();
+
+    // Only members whose own profile is live can favourite / pay (Dashboard tasks)
+    const ownProfile = await ProfileModel.findOne({ userId: session.user.id }).select("profileStatus liveAt").lean() as any;
+    if (!isLive(ownProfile)) {
+      return Response.json(
+        { error: "Complete the steps on your Dashboard to make your profile live first.", activationRequired: true },
+        { status: 403 },
+      );
+    }
 
     // Block suspended / banned accounts
     const [groomUser, targetUser] = await Promise.all([

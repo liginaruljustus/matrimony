@@ -1,12 +1,12 @@
 /**
- * Auto-freeze: hide profiles whose owners have been inactive too long.
+ * Auto-freeze: hide profiles whose owners stopped sharing our poster/video.
  *
- *  - GROOM inactive for more than Settings.groomFreezeDays (default 90)
- *  - BRIDE inactive for more than Settings.brideFreezeDays (default 60)
- *
- * "Inactive" = no lastActivity in that many days (lastActivity is stamped on
- * login and while the user is using the site). Someone who has never been
- * active counts from the day they registered.
+ * Every Settings.shareReminderDays (10) a live member is asked on the Dashboard
+ * to share the current poster/video; they may skip it. With no share for
+ * Settings.shareFreezeDays (60) — counted from their last share, the day they
+ * went live, or the day they unfroze — the profile is auto-frozen. As before,
+ * an auto-frozen profile can be unfrozen within 90 days, after that it stays off.
+ * Profiles still waiting to go live are never frozen.
  *
  * It runs from the daily cron (/api/cron/auto-freeze) and also, at most once a
  * day, from normal site traffic — so it keeps working even if the scheduler
@@ -14,41 +14,44 @@
  */
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel, SettingsModel } from "@/lib/models";
+import { getActivationSettings } from "@/lib/activation";
 
 const DAY_MS = 24 * 3600 * 1000;
-
-function inactiveSince(cutoff: Date) {
-  return {
-    $or: [
-      { lastActivity: { $lt: cutoff } },
-      { lastActivity: null, createdAt: { $lt: cutoff } },
-    ],
-  };
-}
 
 export async function runAutoFreeze({ dryRun = false } = {}) {
   await connectToDatabase();
 
-  const settings  = await SettingsModel.findOne().select("groomFreezeDays brideFreezeDays").lean() as any;
-  const groomDays = settings?.groomFreezeDays ?? 90;
-  const brideDays = settings?.brideFreezeDays ?? 60;
-  const now       = new Date();
+  const s      = await getActivationSettings();
+  const days   = s.shareFreezeDays;
+  const now    = new Date();
+  const cutoff = new Date(now.getTime() - days * DAY_MS);
 
   // Only ACTIVE, not-yet-frozen accounts — leave SUSPENDED / BANNED / INACTIVE alone
-  const base = { status: "ACTIVE", isFrozen: { $ne: true }, isAutoFrozen: { $ne: true } };
-  const [grooms, brides] = await Promise.all([
-    UserModel.find({ ...base, profileType: "GROOM", ...inactiveSince(new Date(now.getTime() - groomDays * DAY_MS)) })
-      .select("_id profileId").lean() as Promise<any[]>,
-    UserModel.find({ ...base, profileType: "BRIDE", ...inactiveSince(new Date(now.getTime() - brideDays * DAY_MS)) })
-      .select("_id profileId").lean() as Promise<any[]>,
-  ]);
+  const candidates = await UserModel.find({
+    status: "ACTIVE",
+    role: { $ne: "ADMIN" },                       // never the admin account
+    profileType: { $in: ["BRIDE", "GROOM"] },      // members only
+    isFrozen: { $ne: true },
+    isAutoFrozen: { $ne: true },
+    $or: [
+      { shareClockFrom: { $lt: cutoff } },
+      { shareClockFrom: null, createdAt: { $lt: cutoff } },
+    ],
+  }).select("_id profileId profileType").lean() as any[];
 
-  const ids = [...grooms, ...brides].map((u) => u._id);
+  // Skip profiles that are not live yet — they aren't listed anyway
+  const waiting = await ProfileModel.find({
+    userId: { $in: candidates.map((u) => u._id) },
+    liveAt: { $gt: now },
+  }).select("userId").lean() as any[];
+  const waitingSet = new Set(waiting.map((p) => String(p.userId)));
+  const toFreeze = candidates.filter((u) => !waitingSet.has(String(u._id)));
+
+  const ids = toFreeze.map((u) => u._id);
   const result = {
-    groomDays,
-    brideDays,
-    groomsFrozen: grooms.map((u) => u.profileId as string),
-    bridesFrozen: brides.map((u) => u.profileId as string),
+    shareFreezeDays: days,
+    groomsFrozen: toFreeze.filter((u) => u.profileType === "GROOM").map((u) => u.profileId as string),
+    bridesFrozen: toFreeze.filter((u) => u.profileType !== "GROOM").map((u) => u.profileId as string),
     dryRun,
     ranAt: now.toISOString(),
   };
@@ -58,7 +61,7 @@ export async function runAutoFreeze({ dryRun = false } = {}) {
   await UserModel.updateMany({ _id: { $in: ids } }, { $set: { isAutoFrozen: true, autoFrozenAt: now } });
   await ProfileModel.updateMany({ userId: { $in: ids } }, { $set: { isAutoFrozen: true, autoFrozenAt: now } });
 
-  console.log(`[auto-freeze] Froze ${grooms.length} grooms (>${groomDays}d) and ${brides.length} brides (>${brideDays}d)`);
+  console.log(`[auto-freeze] Froze ${ids.length} profiles with no share for over ${days} days`);
   return result;
 }
 

@@ -14,6 +14,7 @@ import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UserModel, ProfileModel } from "@/lib/models";
 import { buildMDCard } from "@/lib/cardGenerator";
+import { isLive, liveFilter } from "@/lib/activation";
 
 export async function GET(req: Request) {
   try {
@@ -37,7 +38,14 @@ export async function GET(req: Request) {
     // restrict matches to the same religion (e.g. a Christian groom sees only
     // Christian brides). Fall back to the User field if a profile isn't set yet.
     const groomProfile = await ProfileModel.findOne({ userId: session.user.id })
-      .select("religion").lean() as any;
+      .select("religion profileStatus liveAt").lean() as any;
+    // Browsing opens once the member's own profile is live (Dashboard tasks)
+    if (!isLive(groomProfile)) {
+      return Response.json(
+        { error: "Complete the steps on your Dashboard to make your profile live and start browsing.", activationRequired: true, liveAt: groomProfile?.liveAt ?? null },
+        { status: 403 },
+      );
+    }
     const groomReligion = groomProfile?.religion ?? groomUser.religion ?? null;
 
     const { searchParams } = new URL(req.url);
@@ -71,6 +79,8 @@ export async function GET(req: Request) {
     }
     if (caste)    profileQuery.caste = new RegExp(caste, "i");
     if (state)    profileQuery.state = state;
+    // Only profiles that are live now
+    profileQuery.$and = [liveFilter()];
     if (district) profileQuery.$or = [
       { nativeDistrict: new RegExp(district, "i") },
       { location:       new RegExp(district, "i") },
