@@ -5,6 +5,7 @@ import {
   pdf,
 } from "@react-pdf/renderer";
 import { religionLabel } from "@/lib/religions";
+import { manglikLabel } from "@/lib/astroData";
 
 // ── Styles ──────────────────────────────────────────────────────────────────
 
@@ -377,6 +378,7 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
                 <Field label="Rashi"             value={fmt(p.rashi)} />
                 <Field label="Nakshatra"         value={fmt(p.nakshatra)} />
                 <Field label="Lagnam"            value={fmt(p.lagnam)} />
+                <Field label="Manglik"           value={fmt(manglikLabel(p.manglik))} />
               </View>
             </View>
           )}

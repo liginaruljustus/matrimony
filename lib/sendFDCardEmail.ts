@@ -1,6 +1,7 @@
 import { sendMailWithRetry } from "./mailer";
 import { recoverAutoPassword } from "./loginPassword";
 import { religionLabel } from "@/lib/religions";
+import { manglikLabel } from "@/lib/astroData";
 
 /**
  * Emails a user's full profile details (FD card) once their profile is approved/live,
@@ -50,6 +51,7 @@ export async function sendFDCardEmail(
           ${fieldRow("Education",        fdCard.education)}
           ${fieldRow("Nakshatra",        fdCard.nakshatra)}
           ${fieldRow("Rashi",            fdCard.rashi)}
+          ${fieldRow("Manglik",          manglikLabel(fdCard.manglik))}
           ${fieldRow("Monthly Income",   fdCard.monthlyIncome ? `₹${fdCard.monthlyIncome}` : null)}
           ${fieldRow("Father Name",      fdCard.fatherName)}
           ${fieldRow("Mother Name",      fdCard.motherName)}

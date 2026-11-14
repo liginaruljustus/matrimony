@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Download } from "lucide-react";
 import { religionLabel } from "@/lib/religions";
+import { manglikLabel } from "@/lib/astroData";
 
 /**
  * Additional Details (AD) — every field marked "AD" in the profile spec,
@@ -50,6 +51,7 @@ export function ADDetailsGrid({ card }: { card: any }) {
         <Field label="Rashi"            value={fmt(card.rashi)} />
         <Field label="Nakshatra"        value={fmt(card.nakshatra)} />
         <Field label="Lagnam"           value={fmt(card.lagnam)} />
+        <Field label="Manglik"          value={fmt(manglikLabel(card.manglik))} />
         <Field label="Mother Tongue"    value={fmt(card.motherTongue)} />
         <Field label="Height"           value={card.height ? `${card.height} cm` : "—"} />
         <Field label="Weight"           value={card.weight ? `${card.weight} kg` : "—"} />

@@ -98,6 +98,7 @@ export async function GET(
             rashi: profile.rashi ?? null,
             nakshatra: profile.nakshatra ?? null,
             lagnam: profile.lagnam ?? null,
+            manglik: profile.manglik ?? null,
             // Education & Career
             education: profile.education ?? null,
             currentJob: profile.currentJob ?? null,

@@ -6,7 +6,7 @@ import { SearchDropdown } from "@/components/SearchDropdown";
 import { DatePickerSelect } from "@/components/DatePickerSelect";
 import { PhoneInput } from "@/components/PhoneInput";
 import { CASTE_LIST, SUBCASTE_LIST } from "@/lib/casteData";
-import { RASHI_LIST, LAGNAM_LIST, NAKSHATRA_LIST } from "@/lib/astroData";
+import { RASHI_LIST, LAGNAM_LIST, NAKSHATRA_LIST, MANGLIK_OPTIONS, manglikLabel } from "@/lib/astroData";
 import { OCCUPATION_LIST } from "@/lib/occupationData";
 import { STATES, DEFAULT_STATE, districtsOf, stateOfDistrict } from "@/lib/districts";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,7 +25,7 @@ const FIELD_LABELS: Record<string, string> = {
   height: "Height", complexion: "Complexion", currentJob: "Current Job",
   monthlyIncome: "Monthly Income", placeOfBirth: "Place of Birth",
   timeOfBirth: "Time of Birth", rashi: "Rashi", nakshatra: "Nakshatra",
-  lagnam: "Lagnam", fatherName: "Father's Name", fatherOccupation: "Father's Occupation",
+  lagnam: "Lagnam", manglik: "Manglik", fatherName: "Father's Name", fatherOccupation: "Father's Occupation",
   motherName: "Mother's Name", motherOccupation: "Mother's Occupation",
   totalBrothers: "Total Brothers", marriedBrothers: "Married Brothers",
   totalSisters: "Total Sisters", marriedSisters: "Married Sisters",
@@ -614,6 +614,19 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               </div>
             </div>
 
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <label className="label">Manglik *</label>
+                <select {...register("manglik")} className="input-field">
+                  <option value="">Select</option>
+                  {MANGLIK_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+                {errors.manglik && <p className="text-xs text-red-600 mt-1">{errors.manglik.message as string}</p>}
+              </div>
+            </div>
+
             <div>
               <label className="label">Other Details</label>
               <textarea {...register("otherDetails")} className="input-field" rows={3} />
@@ -977,6 +990,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                 ["Rashi", watch("rashi")],
                 ["Nakshatra", watch("nakshatra")],
                 ["Lagnam", watch("lagnam")],
+                ["Manglik", manglikLabel(watch("manglik"))],
               ]} />
 
               <PreviewSection title="Family Details" rows={[
@@ -1027,7 +1041,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                     "name", "gender", "age", "dateOfBirth", "maritalStatus", "state", "nativeDistrict",
                     "religion", "caste", "education", "address", "subCaste", "motherTongue",
                     "height", "complexion", "currentJob", "monthlyIncome",
-                    "placeOfBirth", "timeOfBirth", "rashi", "nakshatra", "lagnam",
+                    "placeOfBirth", "timeOfBirth", "rashi", "nakshatra", "lagnam", "manglik",
                   ]);
                 } else if (step === 1) {
                   ok = await trigger([

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { CODES_BY_LENGTH } from "./countryCodes";
 import { RELIGION_VALUES } from "@/lib/religions";
+import { MANGLIK_VALUES } from "@/lib/astroData";
 
 function validate10DigitPhone(v: string): boolean {
   if (!v || typeof v !== "string") return false;
@@ -53,6 +54,7 @@ export const matrimonyProfileSchema = z.object({
   rashi: z.string().optional(),
   nakshatra: z.string().optional(),
   lagnam: z.string().optional(),
+  manglik: z.enum(MANGLIK_VALUES, { message: "Select Manglik status" }),
   motherTongue: z.string().min(2, "Mother Tongue is required"),
   height: z.coerce.number().positive("Height must be positive"),
   weight: z.coerce.number().positive("Weight must be positive"),

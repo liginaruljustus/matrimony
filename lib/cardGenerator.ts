@@ -75,6 +75,7 @@ export interface ADCard {
   placeOfBirth?: string;
   timeOfBirth?: string;
   lagnam?: string;
+  manglik?: string;
   nakshatra?: string;
   rashi?: string;
   photos?: string[];
@@ -161,6 +162,7 @@ export function buildADCard(user: any, profile: any): ADCard {
     placeOfBirth:    profile.placeOfBirth,
     timeOfBirth:     profile.timeOfBirth,
     lagnam:          profile.lagnam,
+    manglik:         profile.manglik,
     nakshatra:       profile.nakshatra,
     rashi:           profile.rashi,
     photos:          profile.photos,

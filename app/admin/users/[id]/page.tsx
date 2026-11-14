@@ -17,6 +17,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ProfileIdBadge } from "@/components/ProfileIdBadge";
 import { religionLabel } from "@/lib/religions";
+import { manglikLabel } from "@/lib/astroData";
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 
@@ -91,6 +92,7 @@ type ProfileDetail = {
   rashi: string | null;
   nakshatra: string | null;
   lagnam: string | null;
+  manglik?: string | null;
   education: string | null;
   currentJob: string | null;
   income: number | null;
@@ -804,6 +806,7 @@ export default function AdminUserDetailPage() {
                   <Field label="Rashi" value={profile.rashi} />
                   <Field label="Nakshatra" value={profile.nakshatra} />
                   <Field label="Lagnam" value={profile.lagnam} />
+                  <Field label="Manglik" value={manglikLabel(profile.manglik) || null} />
                 </div>
               </SectionCard>
 

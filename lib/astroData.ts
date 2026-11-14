@@ -49,3 +49,18 @@ export const NAKSHATRA_LIST: readonly string[] = [
   "Uththirattaadhi / Uttar Bhadrapad / Uttara Bhadrapada",
   "Revathi / Revati / Revati"
 ];
+
+/** Manglik (Chevvai Dosham) status. */
+export const MANGLIK_OPTIONS = [
+  { value: "FULL",    label: "Full - Manglik" },
+  { value: "PARTIAL", label: "Partial (Anshik Manglik)" },
+  { value: "NON",     label: "Non-Manglik" },
+] as const;
+
+export const MANGLIK_VALUES = MANGLIK_OPTIONS.map((o) => o.value) as ["FULL", "PARTIAL", "NON"];
+
+/** "PARTIAL" → "Partial (Anshik Manglik)"; empty when not set. */
+export function manglikLabel(value?: string | null): string {
+  if (!value) return "";
+  return MANGLIK_OPTIONS.find((o) => o.value === value)?.label ?? value;
+}

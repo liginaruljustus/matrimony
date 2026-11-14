@@ -72,6 +72,7 @@ const profileSchema = new Schema(
     rashi: { type: String },
     nakshatra: { type: String },
     lagnam: { type: String },
+    manglik: { type: String, enum: ["FULL", "PARTIAL", "NON"] },
     motherTongue: { type: String },
     height: { type: Number }, // cm
     weight: { type: Number }, // kg
