@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
-import { UserModel, ProfileModel, PaymentModel, ReportModel, ProfileEditRequestModel } from "@/lib/models";
+import { UserModel, ProfileModel, PaymentModel, ReportModel, ProfileEditRequestModel, ShareProofModel } from "@/lib/models";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -13,7 +13,7 @@ export async function GET() {
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  const [newUsers, pendingProfiles, pendingVerification, openReports, pendingPayments, pendingEditRequests] =
+  const [newUsers, pendingProfiles, pendingVerification, openReports, pendingPayments, pendingEditRequests, pendingShares] =
     await Promise.all([
       UserModel.countDocuments({ role: "USER", createdAt: { $gte: sevenDaysAgo } }),
       ProfileModel.countDocuments({ profileStatus: "PENDING_APPROVAL" }),
@@ -21,7 +21,8 @@ export async function GET() {
       ReportModel.countDocuments({ status: { $in: ["OPEN", "INVESTIGATING"] } }),
       PaymentModel.countDocuments({ approvalStatus: "PENDING_ADMIN_REVIEW" }),
       ProfileEditRequestModel.countDocuments({ status: "PENDING" }),
+      ShareProofModel.countDocuments({ status: "PENDING" }),
     ]);
 
-  return Response.json({ newUsers, pendingProfiles, pendingVerification, openReports, pendingPayments, pendingEditRequests });
+  return Response.json({ newUsers, pendingProfiles, pendingVerification, openReports, pendingPayments, pendingEditRequests, pendingShares });
 }

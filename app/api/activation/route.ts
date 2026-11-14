@@ -4,8 +4,8 @@
  * POST /api/activation — complete a task:
  *        { task: "ncs",    ncsUserId }      joined Lura NCS
  *        { task: "follow", followed: [...] } followed every listed channel/page
- *        { task: "share" }                  shared the current poster/video
- *      "share" also counts as the regular share (resets the reminder / freeze clock).
+ *      Sharing the poster/video is confirmed separately (POST /api/share-proof,
+ *      then a click on the member's personal link or an admin review).
  */
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
@@ -14,17 +14,19 @@ import { ProfileModel, UserModel } from "@/lib/models";
 import {
   getActivationSettings, computeLiveAt, currentPromo, isLive, shareDue, tasksDone,
 } from "@/lib/activation";
+import { latestShareProof } from "@/lib/shareProof";
 
 async function load(userId: string) {
-  const [profile, user, settings] = await Promise.all([
+  const [profile, user, settings, proof] = await Promise.all([
     ProfileModel.findOne({ userId }).select("profileStatus isLocked lockedAt approvalDate liveAt activation").lean() as Promise<any>,
-    UserModel.findById(userId).select("shareClockFrom lastSharedAt").lean() as Promise<any>,
+    UserModel.findById(userId).select("profileId shareClockFrom lastSharedAt").lean() as Promise<any>,
     getActivationSettings(),
+    latestShareProof(userId),
   ]);
-  return { profile, user, settings };
+  return { profile, user, settings, proof };
 }
 
-function view({ profile, user, settings }: Awaited<ReturnType<typeof load>>) {
+function view({ profile, user, settings, proof }: Awaited<ReturnType<typeof load>>) {
   const now = new Date();
   const submitted = !!profile?.isLocked || profile?.profileStatus === "APPROVED" || profile?.profileStatus === "PENDING_APPROVAL";
   const live = isLive(profile, now);
@@ -38,6 +40,10 @@ function view({ profile, user, settings }: Awaited<ReturnType<typeof load>>) {
     followed: profile?.activation?.followed ?? [],
     lastSharedAt: user?.lastSharedAt ?? null,
     shareDue: live && shareDue(user?.shareClockFrom ?? profile?.liveAt ?? profile?.approvalDate, settings, now),
+    profileId: user?.profileId ?? null,
+    shareProof: proof
+      ? { status: proof.status, rejectReason: proof.rejectReason ?? null, createdAt: proof.createdAt, clicks: proof.clicks ?? 0 }
+      : null,
     promo: currentPromo(settings, now),
     ncsSiteUrl: settings.ncsSiteUrl,
     socialLinks: settings.socialLinks,
@@ -64,8 +70,8 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => ({}));
   const task = String(body?.task ?? "");
-  if (!["ncs", "follow", "share"].includes(task)) {
-    return Response.json({ error: "task must be ncs, follow or share" }, { status: 400 });
+  if (!["ncs", "follow"].includes(task)) {
+    return Response.json({ error: "task must be ncs or follow (shares are confirmed via /api/share-proof)" }, { status: 400 });
   }
 
   await connectToDatabase();
@@ -92,9 +98,6 @@ export async function POST(req: Request) {
     }
     set["activation.followed"] = names;
     set["activation.followedAt"] = now;
-  } else {
-    set["activation.sharedAt"] = profile.activation?.sharedAt ?? now;
-    await UserModel.updateOne({ _id: session.user.id }, { $set: { lastSharedAt: now, shareClockFrom: now } });
   }
 
   // Bring the go-live date forward for a profile still waiting to go live

@@ -419,7 +419,7 @@ const notificationSchema = new Schema(
         "PROFILE_APPROVED", "PROFILE_REJECTED",
         "INTEREST_ACCEPTED", "INTEREST_DECLINED",
         "INTEREST_RECEIVED", "NEW_MESSAGE", "NEW_PROPOSAL",
-        "EDIT_REQUEST_RESOLVED", "CONTACT_UNLOCKED",
+        "EDIT_REQUEST_RESOLVED", "CONTACT_UNLOCKED", "SHARE_CONFIRMED", "SHARE_REJECTED",
       ],
       required: true,
     },
@@ -459,6 +459,30 @@ const counterSchema = new Schema({
 });
 export const CounterModel =
   (models && models["Counter"]) || model("Counter", counterSchema);
+
+// ── Share proof — a member's share of our poster/video, waiting to be confirmed ─
+// Confirmed automatically when someone opens the member's personal link
+// (/r/<profileId>), or by an admin from the screenshot (Admin → Shares).
+const shareProofSchema = new Schema(
+  {
+    userId:        { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    profileId:     { type: String, index: true },
+    purpose:       { type: String, enum: ["ACTIVATION", "REGULAR"], default: "REGULAR" },
+    promo:         { category: String, title: String, mediaUrl: String },
+    screenshotUrl: { type: String },
+    status:        { type: String, enum: ["PENDING", "AUTO_CONFIRMED", "APPROVED", "REJECTED"], default: "PENDING", index: true },
+    clicks:        { type: Number, default: 0 },
+    firstClickAt:  { type: Date },
+    confirmedAt:   { type: Date },
+    reviewedBy:    { type: Schema.Types.ObjectId, ref: "User" },
+    rejectReason:  { type: String },
+  },
+  { timestamps: true },
+);
+shareProofSchema.index({ userId: 1, createdAt: -1 });
+
+export const ShareProofModel =
+  (models && models["ShareProof"]) || model("ShareProof", shareProofSchema);
 
 export type UserDoc = InferSchemaType<typeof userSchema>;
 export type ProfileDoc = InferSchemaType<typeof profileSchema>;

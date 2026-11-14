@@ -18,6 +18,7 @@ import {
   CreditCard,
   Heart,
   PencilLine,
+  Share2,
 } from "lucide-react";
 
 type Badges = {
@@ -27,6 +28,7 @@ type Badges = {
   openReports: number;
   pendingPayments: number;
   pendingEditRequests: number;
+  pendingShares: number;
 };
 
 type NavItem = {
@@ -45,6 +47,7 @@ const navItems: NavItem[] = [
   { icon: AlertCircle,     label: "Reports",      href: "/admin/reports",       badgeKey: "openReports" },
   { icon: CreditCard,      label: "Payments",     href: "/admin/payments",      badgeKey: "pendingPayments" },
   { icon: PencilLine,      label: "Edit Requests", href: "/admin/edit-requests", badgeKey: "pendingEditRequests" },
+  { icon: Share2,          label: "Shares",        href: "/admin/shares",        badgeKey: "pendingShares" },
   { icon: Settings,        label: "Settings",     href: "/admin/settings" },
 ];
 
@@ -81,6 +84,7 @@ export function AdminSidebar({
     openReports: 0,
     pendingPayments: 0,
     pendingEditRequests: 0,
+    pendingShares: 0,
   });
 
   useEffect(() => {
