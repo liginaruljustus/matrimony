@@ -6,6 +6,7 @@ import { SearchDropdown } from "@/components/SearchDropdown";
 import { DatePickerSelect } from "@/components/DatePickerSelect";
 import { PhoneInput } from "@/components/PhoneInput";
 import { CASTE_LIST, SUBCASTE_LIST } from "@/lib/casteData";
+import { RASHI_LIST, LAGNAM_LIST, NAKSHATRA_LIST } from "@/lib/astroData";
 import { OCCUPATION_LIST } from "@/lib/occupationData";
 import { STATES, DEFAULT_STATE, districtsOf, stateOfDistrict } from "@/lib/districts";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,50 +44,7 @@ const STEPS = [
   "Review",
 ];
 
-const RASHI_LIST = [
-  "Aries / மேஷம்",
-  "Taurus / ரிஷபம்",
-  "Gemini / மிதுனம்",
-  "Cancer / கடகம்",
-  "Leo / சிம்மம்",
-  "Virgo / கன்னி",
-  "Libra / துலாம்",
-  "Scorpio / விருச்சிகம்",
-  "Sagittarius / தனுசு",
-  "Capricorn / மகரம்",
-  "Aquarius / கும்பம்",
-  "Pisces / மீனம்",
-] as const;
-
-const NAKSHATRA_LIST = [
-  "Ashvini / அஸ்வினி",
-  "Bharani / பரணி",
-  "Karthikai / கார்த்திகை",
-  "Rohini / ரோகிணி",
-  "Mrigashira / மிருகசீரிடம்",
-  "Thiruvathirai / திருவாதிரை",
-  "Punarpoosam / புனர்பூசம்",
-  "Pusam / பூசம்",
-  "Ayilyam / ஆயிலியம்",
-  "Magam / மகம்",
-  "Puram / பூரம்",
-  "Uthram / உத்தரம்",
-  "Hastham / அஸ்தம்",
-  "Chitrai / சித்திரை",
-  "Swati / சுவாதி",
-  "Visakam / விசாகம்",
-  "Anusham / அனுசம்",
-  "Kettai / கேட்டை",
-  "Moolam / மூலம்",
-  "Pooradam / பூராடம்",
-  "Uttaradam / உத்திராடம்",
-  "Thiruvonam / திருவோணம்",
-  "Avittam / அவிட்டம்",
-  "Sadayam / சதயம்",
-  "Poorattathi / பூரட்டாதி",
-  "Uthirattathi / உத்திரட்டாதி",
-  "Revati / ரேவதி",
-] as const;
+// Rashi, Lagnam and Nakshatra options come from lib/astroData.ts
 
 function normalizeProfile(profile: any) {
   if (!profile) return { gender: "MALE", religion: "HINDU", maritalStatus: "SINGLE", familyStatus: "MC" };
@@ -605,7 +563,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
               {errors.timeOfBirth && <p className="text-xs text-red-600 mt-1">{errors.timeOfBirth.message}</p>}
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <label className="label">Rashi</label>
                 <Controller
@@ -647,7 +605,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                     <SearchDropdown
                       value={field.value ?? ""}
                       onChange={field.onChange}
-                      options={RASHI_LIST}
+                      options={LAGNAM_LIST}
                       placeholder="Search lagnam…"
                     />
                   )}
