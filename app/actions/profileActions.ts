@@ -110,6 +110,19 @@ export async function updateMatrimonyProfileAction(payload: any, finalize = fals
     return { ok: false, message: "Please upload your photo before submitting your profile." };
   }
 
+  // Details given at registration can't be changed afterwards — the registered
+  // values always win over what the form sends.
+  const registered = await UserModel.findById(userId).select("name profileType familyClass religion").lean<{
+    name?: string; profileType?: "BRIDE" | "GROOM"; familyClass?: "MC" | "UC" | "EC"; religion?: string;
+  }>();
+  if (registered) {
+    const data = parsed.data as any;
+    if (registered.name) data.name = registered.name;
+    if (registered.profileType) data.gender = registered.profileType === "BRIDE" ? "FEMALE" : "MALE";
+    if (registered.familyClass) data.familyStatus = registered.familyClass;
+    if (registered.religion) data.religion = registered.religion;
+  }
+
   // Strip photos (managed via /api/photos) and name (lives on UserModel, not ProfileModel)
   const { photos: _photos, name, ...profileFields } = parsed.data as any;
 

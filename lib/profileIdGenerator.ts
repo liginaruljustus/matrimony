@@ -1,53 +1,45 @@
-import { CounterModel, UserModel } from "./models";
+import { CounterModel } from "./models";
 import { religionCode } from "@/lib/religions";
 
 const DAY_INITIALS = ["S", "M", "T", "W", "T", "F", "S"]; // Sun, Mon, Tue, ...
 const MONTH_INITIALS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
 
+/** Largest 6-digit serial; the next registration starts a new series. */
+export const SERIAL_MAX = 999_999;
+
+/**
+ * Profile ID:  G SS YY R NNNNNN CC   e.g. M 01 27 H 000001 MC
+ *   G  gender (M / F)
+ *   SS series: 01 for the first 9,99,999 registrations of the year, 02 for the
+ *      next 9,99,999, and so on (replaces the month, so the ID never runs out)
+ *   YY year (India time) — a new year starts again at series 01, serial 000001
+ *   R  religion letter (H, M, C, S, B, J, O)
+ *   NNNNNN serial 000001–999999 within the series
+ *   CC family class (MC / UC / EC)
+ * IDs issued before this change kept the month in the SS place and are unchanged.
+ */
 export async function generateProfileId(
   gender: "MALE" | "FEMALE",
   religion: string,
   familyClass: "MC" | "UC" | "EC"
 ): Promise<string> {
   const genderCode = gender === "MALE" ? "M" : "F";
-  // Month/year in India time, so the monthly reset happens at midnight IST
-  // regardless of the server's timezone.
-  const [mm, yy] = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Kolkata", month: "2-digit", year: "2-digit",
-  }).format(new Date()).split("/");
-  const monthYear = `${mm}${yy}`;
+  // Year in India time, so the yearly reset happens at midnight IST
+  const yy = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "2-digit" }).format(new Date());
   // First letter of the religion (Hindu H, Muslim M, Christian C, Sikh S, Buddhism B, Jainism J, Others O)
   const religionLetter = religionCode(religion);
 
-  // The serial number restarts every month: one counter per month, so the first
-  // registration of a month gets 000001.
-  const counterId = `profileId-${monthYear}`;
-
-  // First use of a month's counter: start it from the highest serial already issued
-  // for that month (0 for a new month). This only matters for the month in which the
-  // per-month counter was introduced — it keeps that month's numbers from repeating.
-  if (!(await CounterModel.exists({ _id: counterId }))) {
-    const issued = await UserModel.find({ profileId: new RegExp(`^[MF]${monthYear}`) })
-      .select("profileId").lean() as any[];
-    const highest = issued.reduce(
-      (max, u) => Math.max(max, Number(String(u.profileId).slice(6, 12)) || 0), 0,
-    );
-    await CounterModel.updateOne(
-      { _id: counterId },
-      { $setOnInsert: { seq: highest } },
-      { upsert: true },
-    );
-  }
-
-  // Atomic increment — prevents duplicate sequence numbers under concurrent registrations.
+  // One counter per year. Atomic increment — no duplicate numbers under concurrent registrations.
   const counter = await CounterModel.findOneAndUpdate(
-    { _id: counterId },
+    { _id: `profileId-series-${yy}` },
     { $inc: { seq: 1 } },
     { upsert: true, new: true },
   ).lean() as any;
-  const sequence = String(counter.seq).padStart(6, "0");
+  const n = Number(counter.seq);
+  const series = String(Math.floor((n - 1) / SERIAL_MAX) + 1).padStart(2, "0");
+  const serial = String(((n - 1) % SERIAL_MAX) + 1).padStart(6, "0");
 
-  return `${genderCode}${monthYear}${religionLetter}${sequence}${familyClass}`;
+  return `${genderCode}${series}${yy}${religionLetter}${serial}${familyClass}`;
 }
 
 export function generatePassword(

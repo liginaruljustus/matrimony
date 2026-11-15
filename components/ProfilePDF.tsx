@@ -306,7 +306,6 @@ function ProfileDocument({ profile, user, pdfSettings }: { profile: any; user: a
               {p.gender ? `  ·  ${p.gender === "MALE" ? "Groom" : "Bride"}` : ""}
               {p.religion ? `  ·  ${religionLabel(p.religion)}` : ""}
               {p.caste ? `  ·  ${p.caste}` : ""}
-              {p.subCaste ? ` (${p.subCaste})` : ""}
             </Text>
           </View>
           <View style={styles.headerBadge}>

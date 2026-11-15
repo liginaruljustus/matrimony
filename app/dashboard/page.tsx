@@ -48,6 +48,7 @@ type UserData = {
   autoPassword?: string;
   profileType: "GROOM" | "BRIDE";
   familyClass?: string;
+  religion?: string;
   isFrozen?: boolean;
   isAutoFrozen?: boolean;
   frozenAt?: string | null;
@@ -532,6 +533,13 @@ function UserDashboard({ userData, profile, loadError, onRetry }: { userData: Us
           {formOpen && (
             <div className="border-t border-slate-100 dark:border-neutral-200 px-6 pt-5 pb-6">
               <MatrimonyProfileForm
+                // Registration details stay as registered (name, gender, religion, family class)
+                locked={{
+                  name: userData.name,
+                  gender: userData.profileType === "BRIDE" ? "FEMALE" : userData.profileType === "GROOM" ? "MALE" : undefined,
+                  religion: userData.religion,
+                  familyStatus: userData.familyClass as "MC" | "UC" | "EC" | undefined,
+                }}
                 defaultProfile={
                   profile
                     ? { ...userData, ...profile, name: profile.name ?? userData?.name }

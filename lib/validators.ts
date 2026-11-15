@@ -48,7 +48,7 @@ export const matrimonyProfileSchema = z.object({
   age: z.coerce.number().min(1, "Date of Birth is required").max(80),
   religion: z.enum(RELIGION_VALUES),
   caste: z.string().min(2, "Caste is required"),
-  subCaste: z.string().min(1, "Sub Caste is required"),
+  subCaste: z.string().max(80).optional(),   // typed freely, optional
   placeOfBirth: z.string().optional(),
   timeOfBirth: z.string().optional(),
   rashi: z.string().optional(),

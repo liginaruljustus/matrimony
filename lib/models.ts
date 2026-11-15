@@ -49,6 +49,8 @@ const userSchema = new Schema(
   },
   { timestamps: true },
 );
+// Daily auto-freeze: active members by share date
+userSchema.index({ status: 1, profileType: 1, shareClockFrom: 1 });
 
 const profileSchema = new Schema(
   {
@@ -149,6 +151,10 @@ const profileSchema = new Schema(
   },
   { timestamps: true },
 );
+// Browse Brides: type + status + religion (+ state / district), newest first.
+// Keeps the search fast as the number of profiles grows into the lakhs/crores.
+profileSchema.index({ profileType: 1, profileStatus: 1, religion: 1, createdAt: -1 });
+profileSchema.index({ profileType: 1, profileStatus: 1, religion: 1, state: 1, nativeDistrict: 1 });
 
 const interestSchema = new Schema(
   {
@@ -205,6 +211,8 @@ const favoriteSchema = new Schema(
   { timestamps: true },
 );
 favoriteSchema.index({ userId: 1, favoriteUserId: 1 }, { unique: true });
+// Bride's Proposals: favourites pointing at her that have an Initial Payment
+favoriteSchema.index({ favoriteUserId: 1, firstPaidAt: 1 });
 
 const paymentSchema = new Schema(
   {

@@ -5,7 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { SearchDropdown } from "@/components/SearchDropdown";
 import { DatePickerSelect } from "@/components/DatePickerSelect";
 import { PhoneInput } from "@/components/PhoneInput";
-import { CASTE_LIST, SUBCASTE_LIST } from "@/lib/casteData";
+import { CASTE_LIST } from "@/lib/casteData";
 import { RASHI_LIST, LAGNAM_LIST, NAKSHATRA_LIST, MANGLIK_OPTIONS, manglikLabel } from "@/lib/astroData";
 import { OCCUPATION_LIST } from "@/lib/occupationData";
 import { STATES, DEFAULT_STATE, districtsOf, stateOfDistrict } from "@/lib/districts";
@@ -75,7 +75,12 @@ function normalizeProfile(profile: any) {
   };
 }
 
-export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfile?: any; onSaved?: () => void }) {
+/** Details given at registration — shown but not editable in the profile form. */
+export type RegistrationLock = { name?: string; gender?: "MALE" | "FEMALE"; religion?: string; familyStatus?: "MC" | "UC" | "EC" };
+
+export function MatrimonyProfileForm({
+  defaultProfile, onSaved, locked,
+}: { defaultProfile?: any; onSaved?: () => void; locked?: RegistrationLock }) {
   const [step, setStep] = useState(0);
   const [photos, setPhotos] = useState<string[]>(defaultProfile?.photos || []);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -124,11 +129,11 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
     const sig = JSON.stringify(defaultProfile);
     if (sig === lastProfileSig.current) return;
     lastProfileSig.current = sig;
-    reset(normalizeProfile(defaultProfile));
+    reset({ ...normalizeProfile(defaultProfile), ...Object.fromEntries(Object.entries(locked ?? {}).filter(([, v]) => v)) });
     if (defaultProfile.photos && Array.isArray(defaultProfile.photos)) {
       setPhotos(defaultProfile.photos);
     }
-  }, [defaultProfile, reset]);
+  }, [defaultProfile, reset]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const age = watch("age");
   const dateOfBirth = watch("dateOfBirth");
@@ -342,7 +347,13 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label">Name *</label>
-                <input {...register("name")} className="input-field" placeholder="Full name" />
+                <input
+                  {...register("name")}
+                  readOnly={!!locked?.name}
+                  className={`input-field ${locked?.name ? "bg-slate-100 dark:bg-neutral-200 cursor-not-allowed" : ""}`}
+                  placeholder="Full name"
+                />
+                {locked?.name && <p className="mt-1 text-[10px] text-slate-400">From your registration — can&apos;t be changed</p>}
                 {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>}
               </div>
               <div>
@@ -369,10 +380,16 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label">Gender *</label>
-                <select {...register("gender")} className="input-field">
+                <select
+                  {...register("gender")}
+                  aria-disabled={!!locked?.gender}
+                  tabIndex={locked?.gender ? -1 : undefined}
+                  className={`input-field ${locked?.gender ? "pointer-events-none bg-slate-100 dark:bg-neutral-200" : ""}`}
+                >
                   <option value="MALE">Male</option>
                   <option value="FEMALE">Female</option>
                 </select>
+                {locked?.gender && <p className="mt-1 text-[10px] text-slate-400">From your registration — can&apos;t be changed</p>}
                 {errors.gender && <p className="text-xs text-red-600 mt-1">{errors.gender.message}</p>}
               </div>
               <div>
@@ -443,11 +460,17 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label">Religion *</label>
-                <select {...register("religion")} className="input-field">
+                <select
+                  {...register("religion")}
+                  aria-disabled={!!locked?.religion}
+                  tabIndex={locked?.religion ? -1 : undefined}
+                  className={`input-field ${locked?.religion ? "pointer-events-none bg-slate-100 dark:bg-neutral-200" : ""}`}
+                >
                   {RELIGIONS.map((r) => (
                     <option key={r.value} value={r.value}>{r.label}</option>
                   ))}
                 </select>
+                {locked?.religion && <p className="mt-1 text-[10px] text-slate-400">From your registration — can&apos;t be changed</p>}
                 {errors.religion && <p className="text-xs text-red-600 mt-1">{errors.religion.message}</p>}
               </div>
               <div>
@@ -470,19 +493,8 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Sub Caste *</label>
-                <Controller
-                  name="subCaste"
-                  control={control}
-                  render={({ field }) => (
-                    <SearchDropdown
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                      options={SUBCASTE_LIST}
-                      placeholder="Type or search sub caste…"
-                    />
-                  )}
-                />
+                <label className="label">Sub Caste</label>
+                <input {...register("subCaste")} className="input-field" placeholder="Type your sub caste (optional)" maxLength={80} />
                 {errors.subCaste && <p className="text-xs text-red-600 mt-1">{errors.subCaste.message}</p>}
               </div>
               <div>
@@ -706,12 +718,14 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                       { val: "EC", label: "Elite Class",  active: "border-blue-500 bg-blue-400 text-blue-950",   idle: "border-blue-200 text-blue-700 hover:bg-blue-50" },
                     ].map((opt) => {
                       const selected = field.value === opt.val;
+                      const fixed = !!locked?.familyStatus && !selected;
                       return (
                         <button
                           key={opt.val}
                           type="button"
-                          onClick={() => field.onChange(opt.val)}
-                          className={`flex flex-col items-center justify-center rounded-xl border-2 px-2 py-3 text-center transition ${selected ? opt.active : opt.idle}`}
+                          disabled={fixed}
+                          onClick={() => !locked?.familyStatus && field.onChange(opt.val)}
+                          className={`flex flex-col items-center justify-center rounded-xl border-2 px-2 py-3 text-center transition ${selected ? opt.active : opt.idle} ${fixed ? "cursor-not-allowed opacity-40" : ""}`}
                         >
                           <span className="text-sm font-bold leading-tight">{opt.label}</span>
                           <span className="mt-0.5 text-[10px] font-semibold opacity-80">({opt.val})</span>
@@ -721,6 +735,7 @@ export function MatrimonyProfileForm({ defaultProfile, onSaved }: { defaultProfi
                   </div>
                 )}
               />
+              {locked?.familyStatus && <p className="mt-1 text-[10px] text-slate-400">From your registration — can&apos;t be changed</p>}
               {errors.familyStatus && <p className="text-xs text-red-600 mt-1">{errors.familyStatus.message}</p>}
             </div>
           </div>
