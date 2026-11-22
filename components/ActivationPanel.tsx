@@ -3,7 +3,8 @@
 /**
  * Dashboard panel for go-live activation and the regular share (lib/activation.ts):
  *  - profile submitted but not live → the 3 steps (join Lura NCS, follow, share)
- *  - live and a share is due        → "share our post" reminder, which can be skipped
+ *  - live and a share is due        → "share our post" reminder; it can be skipped a
+ *                                     limited number of times, then sharing is compulsory
  */
 import { useCallback, useEffect, useState } from "react";
 import QRCode from "qrcode";
@@ -22,7 +23,9 @@ type Activation = {
   promo: Promo | null;
   ncsSiteUrl: string;
   socialLinks: { name: string; url: string }[];
-  days: { activation: number; ncs: number; allDone: number; shareReminder: number; shareFreeze: number };
+  days: { activation: number; ncs: number; allDone: number; shareReminder: number; shareFreeze: number; maxSkips: number };
+  skipsLeft: number;
+  freezeAt: string | null;
   profileId: string | null;
   shareProof: ShareProof | null;
 };
@@ -270,7 +273,6 @@ export function ActivationPanel() {
   const [error, setError] = useState("");
   const [ncsId, setNcsId] = useState("");
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
-  const [skipped, setSkipped] = useState(false);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/activation");
@@ -278,10 +280,6 @@ export function ActivationPanel() {
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  // "Skip for now" hides the share reminder for the rest of the day (this browser only)
-  useEffect(() => {
-    try { setSkipped(localStorage.getItem("lura-share-skip") === new Date().toDateString()); } catch { /* ignore */ }
-  }, []);
 
   const submit = async (task: string, extra: Record<string, unknown> = {}) => {
     setBusy(task);
@@ -399,7 +397,8 @@ export function ActivationPanel() {
   }
 
   // ── Live: regular share reminder (can be skipped) ──
-  if (data.live && data.shareDue && !skipped) {
+  if (data.live && data.shareDue) {
+    const canSkip = data.skipsLeft > 0;
     return (
       <div className="rounded-2xl border-2 border-green-200 bg-white p-5">
         <div className="mb-3 flex items-start gap-3">
@@ -407,20 +406,33 @@ export function ActivationPanel() {
           <div className="min-w-0 flex-1">
             <p className="font-bold text-slate-900">Please share our post</p>
             <p className="text-sm text-slate-600">
-              Help other families find Lura — share this on WhatsApp. If no share is made for {data.days.shareFreeze} days,
-              your profile is paused automatically.
+              {canSkip ? (
+                <>
+                  Help other families find Lura — post this as your WhatsApp status. You can skip {data.skipsLeft} more
+                  time{data.skipsLeft !== 1 ? "s" : ""}; after that, sharing is required to keep your profile live.
+                </>
+              ) : (
+                <strong className="text-red-700">
+                  Sharing is now required — post this as your WhatsApp status to keep your profile live.
+                </strong>
+              )}
+              {data.freezeAt && (
+                <span className="mt-1 block text-xs text-slate-500">
+                  Without a share, your profile is paused on {fmtDate(data.freezeAt)}.
+                </span>
+              )}
             </p>
           </div>
-          <button
-            onClick={() => {
-              setSkipped(true);
-              try { localStorage.setItem("lura-share-skip", new Date().toDateString()); } catch { /* ignore */ }
-            }}
-            className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-100"
-            title="Skip for now"
-          >
-            <X size={13} /> Skip
-          </button>
+{canSkip && (
+            <button
+              onClick={() => submit("skip")}
+              disabled={busy !== null}
+              className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-100 disabled:opacity-50"
+              title={`Skip for now — ${data.skipsLeft} skip${data.skipsLeft !== 1 ? "s" : ""} left`}
+            >
+              <X size={13} /> Skip ({data.skipsLeft} left)
+            </button>
+          )}
         </div>
         {error && <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>}
         <PromoShare promo={data.promo} profileId={data.profileId} proof={data.shareProof} onUploaded={() => load()} />

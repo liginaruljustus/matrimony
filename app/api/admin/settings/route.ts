@@ -77,7 +77,8 @@ export async function GET() {
       promoItems:            settings.promoItems            ?? [],
       promoRotateDays:       settings.promoRotateDays       ?? 5,
       shareReminderDays:     settings.shareReminderDays     ?? 10,
-      shareFreezeDays:       settings.shareFreezeDays       ?? 60,
+      shareFreezeDays:       settings.shareFreezeDays       ?? 30,
+      shareMaxSkips:         settings.shareMaxSkips         ?? 2,
       brideFreezeDays:       settings.brideFreezeDays       ?? 60,
       pdfDownloadEnabled:    settings.pdfDownloadEnabled    ?? true,
       pdfCompanyName:        settings.pdfCompanyName        ?? DEFAULTS.pdfCompanyName,
@@ -150,7 +151,8 @@ export async function PUT(request: Request) {
     if ("activationAllDoneDays" in body) allowed.activationAllDoneDays = days(body.activationAllDoneDays, 0, 0);
     if ("promoRotateDays"       in body) allowed.promoRotateDays       = days(body.promoRotateDays, 5);
     if ("shareReminderDays"     in body) allowed.shareReminderDays     = days(body.shareReminderDays, 10);
-    if ("shareFreezeDays"       in body) allowed.shareFreezeDays       = days(body.shareFreezeDays, 60);
+    if ("shareFreezeDays"       in body) allowed.shareFreezeDays       = days(body.shareFreezeDays, 30);
+    if ("shareMaxSkips"         in body) allowed.shareMaxSkips         = Math.max(0, Math.min(10, Math.round(Number(body.shareMaxSkips)) || 0));
     if ("ncsSiteUrl"            in body) allowed.ncsSiteUrl            = String(body.ncsSiteUrl ?? "").trim().slice(0, 200);
     const cleanUrl = (u: unknown) => {
       const v = String(u ?? "").trim().slice(0, 500);

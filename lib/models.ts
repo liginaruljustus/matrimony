@@ -46,6 +46,9 @@ const userSchema = new Schema(
     // the date the share clock counts from (a share, going live, or unfreezing).
     lastSharedAt:   { type: Date },
     shareClockFrom: { type: Date },
+    // Skips of the share reminder in the current period (reset by a confirmed share)
+    shareSkipCount:    { type: Number, default: 0 },
+    shareSnoozedUntil: { type: Date },
   },
   { timestamps: true },
 );
@@ -338,7 +341,8 @@ const settingsSchema = new Schema(
     promoItems:            [{ category: String, title: String, mediaUrl: String, shareText: String, _id: false }],
     promoRotateDays:       { type: Number, default: 5 },
     shareReminderDays:     { type: Number, default: 10 },
-    shareFreezeDays:       { type: Number, default: 60 },
+    shareFreezeDays:       { type: Number, default: 30 },
+    shareMaxSkips:         { type: Number, default: 2 },
     brideFreezeDays:    { type: Number, default: 60 },
     lastAutoFreezeRunAt: { type: Date },
     // PDF document settings

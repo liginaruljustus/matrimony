@@ -12,14 +12,14 @@ import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ProfileModel, UserModel } from "@/lib/models";
 import {
-  getActivationSettings, computeLiveAt, currentPromo, isLive, shareDue, tasksDone,
+  getActivationSettings, computeLiveAt, currentPromo, isLive, shareDue, tasksDone, freezeDate,
 } from "@/lib/activation";
 import { latestShareProof } from "@/lib/shareProof";
 
 async function load(userId: string) {
   const [profile, user, settings, proof] = await Promise.all([
     ProfileModel.findOne({ userId }).select("profileStatus isLocked lockedAt approvalDate liveAt activation").lean() as Promise<any>,
-    UserModel.findById(userId).select("profileId shareClockFrom lastSharedAt").lean() as Promise<any>,
+    UserModel.findById(userId).select("profileId shareClockFrom lastSharedAt shareSkipCount shareSnoozedUntil").lean() as Promise<any>,
     getActivationSettings(),
     latestShareProof(userId),
   ]);
@@ -39,7 +39,10 @@ function view({ profile, user, settings, proof }: Awaited<ReturnType<typeof load
     ncsUserId: profile?.activation?.ncsUserId ?? null,
     followed: profile?.activation?.followed ?? [],
     lastSharedAt: user?.lastSharedAt ?? null,
-    shareDue: live && shareDue(user?.shareClockFrom ?? profile?.liveAt ?? profile?.approvalDate, settings, now),
+    shareDue: live && shareDue(user?.shareClockFrom ?? profile?.liveAt ?? profile?.approvalDate, settings, now, user?.shareSnoozedUntil),
+    // Skips left before sharing becomes compulsory, and when the profile would freeze
+    skipsLeft: Math.max(0, settings.shareMaxSkips - (user?.shareSkipCount ?? 0)),
+    freezeAt: freezeDate(user?.shareClockFrom ?? profile?.liveAt ?? profile?.approvalDate, settings),
     profileId: user?.profileId ?? null,
     shareProof: proof
       ? { status: proof.status, rejectReason: proof.rejectReason ?? null, createdAt: proof.createdAt, clicks: proof.clicks ?? 0 }
@@ -53,6 +56,7 @@ function view({ profile, user, settings, proof }: Awaited<ReturnType<typeof load
       allDone: settings.activationAllDoneDays,
       shareReminder: settings.shareReminderDays,
       shareFreeze: settings.shareFreezeDays,
+      maxSkips: settings.shareMaxSkips,
     },
   };
 }
@@ -70,8 +74,8 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => ({}));
   const task = String(body?.task ?? "");
-  if (!["ncs", "follow"].includes(task)) {
-    return Response.json({ error: "task must be ncs or follow (shares are confirmed via /api/share-proof)" }, { status: 400 });
+  if (!["ncs", "follow", "skip"].includes(task)) {
+    return Response.json({ error: "task must be ncs, follow or skip (shares are confirmed via /api/share-proof)" }, { status: 400 });
   }
 
   await connectToDatabase();
@@ -81,6 +85,23 @@ export async function POST(req: Request) {
 
   const now = new Date();
   const set: Record<string, unknown> = {};
+
+  // Skip the share reminder — allowed shareMaxSkips times per period; it comes
+  // back after another shareReminderDays. After that, sharing is compulsory.
+  if (task === "skip") {
+    const skips = state.user?.shareSkipCount ?? 0;
+    if (skips >= settings.shareMaxSkips) {
+      return Response.json(
+        { error: "You can't skip this time. Please share our post as your WhatsApp status to keep your profile live." },
+        { status: 400 },
+      );
+    }
+    await UserModel.updateOne(
+      { _id: session.user.id },
+      { $set: { shareSkipCount: skips + 1, shareSnoozedUntil: new Date(now.getTime() + settings.shareReminderDays * 24 * 3600 * 1000) } },
+    );
+    return Response.json({ ok: true, ...view(await load(session.user.id)) });
+  }
 
   if (task === "ncs") {
     const ncsUserId = String(body?.ncsUserId ?? "").trim().toUpperCase();

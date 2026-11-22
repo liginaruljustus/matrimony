@@ -25,7 +25,10 @@ export async function confirmShareProof(proofId: string, how: "AUTO_CONFIRMED" |
   ).lean() as any;
   if (!proof) return false;
 
-  await UserModel.updateOne({ _id: proof.userId }, { $set: { lastSharedAt: now, shareClockFrom: now } });
+  await UserModel.updateOne(
+    { _id: proof.userId },
+    { $set: { lastSharedAt: now, shareClockFrom: now, shareSkipCount: 0 }, $unset: { shareSnoozedUntil: "" } },
+  );
 
   // Go-live step 3 — and bring the live date forward if the profile is still waiting
   const profile = await ProfileModel.findOne({ userId: proof.userId })

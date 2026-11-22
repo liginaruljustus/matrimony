@@ -10,8 +10,9 @@
  *    All three done → live after `activationAllDoneDays` (0 = straight away).
  *  - Until the profile is live the member can't browse or send proposals.
  *  - Once live, a reminder asks them to share the current poster every
- *    `shareReminderDays` (10); they may skip it, but with no share for
- *    `shareFreezeDays` (60) the profile is auto-frozen (see lib/autoFreeze.ts).
+ *    `shareReminderDays` (10). They may skip it `shareMaxSkips` times (2); the
+ *    next reminder can't be skipped — they must share it (WhatsApp status). With no
+ *    share for `shareFreezeDays` (30) the profile is auto-frozen (lib/autoFreeze.ts).
  *
  * Profiles that went live before this rule existed have no `liveAt` and stay live.
  */
@@ -33,6 +34,7 @@ export type ActivationSettings = {
   promoRotateDays: number;
   shareReminderDays: number;
   shareFreezeDays: number;
+  shareMaxSkips: number;
 };
 
 export const ACTIVATION_DEFAULTS: ActivationSettings = {
@@ -45,7 +47,8 @@ export const ACTIVATION_DEFAULTS: ActivationSettings = {
   promoItems: [],
   promoRotateDays: 5,
   shareReminderDays: 10,
-  shareFreezeDays: 60,
+  shareFreezeDays: 30,
+  shareMaxSkips: 2,
 };
 
 export async function getActivationSettings(): Promise<ActivationSettings> {
@@ -117,8 +120,23 @@ export function currentPromo(s: ActivationSettings, now = new Date()): (PromoIte
   return { ...items[index], index, nextChangeAt: new Date((slot + 1) * period) };
 }
 
-/** Is a share due now (live members, every shareReminderDays)? */
-export function shareDue(shareClockFrom: Date | string | null | undefined, s: ActivationSettings, now = new Date()) {
+/**
+ * Is a share due now (live members, every shareReminderDays)? A skip postpones
+ * the reminder by another shareReminderDays (`snoozedUntil`).
+ */
+export function shareDue(
+  shareClockFrom: Date | string | null | undefined,
+  s: ActivationSettings,
+  now = new Date(),
+  snoozedUntil?: Date | string | null,
+) {
+  if (snoozedUntil && new Date(snoozedUntil) > now) return false;
   if (!shareClockFrom) return true;
   return now.getTime() - new Date(shareClockFrom).getTime() >= s.shareReminderDays * DAY_MS;
+}
+
+/** When the profile auto-freezes if no share is made. */
+export function freezeDate(shareClockFrom: Date | string | null | undefined, s: ActivationSettings) {
+  if (!shareClockFrom) return null;
+  return new Date(new Date(shareClockFrom).getTime() + s.shareFreezeDays * DAY_MS);
 }

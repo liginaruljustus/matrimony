@@ -56,6 +56,7 @@ type Settings = {
   promoRotateDays: number;
   shareReminderDays: number;
   shareFreezeDays: number;
+  shareMaxSkips: number;
   // PDF document settings
   pdfDownloadEnabled: boolean;
   pdfCompanyName: string;
@@ -394,7 +395,8 @@ export default function AdminSettingsPage() {
         promoItems: [],
         promoRotateDays: 5,
         shareReminderDays: 10,
-        shareFreezeDays: 60,
+        shareFreezeDays: 30,
+        shareMaxSkips: 2,
         pdfDownloadEnabled: true,
         pdfCompanyName: "Lura Matrimony",
         pdfFooterText: "Confidential — For Family Use Only",
@@ -713,7 +715,7 @@ export default function AdminSettingsPage() {
               />
               <NumberInput
                 label="Ask to share again every"
-                description="Default: 10 days (members may skip)"
+                description="Default: 10 days"
                 value={settings.shareReminderDays}
                 suffix="days"
                 min={1}
@@ -721,11 +723,19 @@ export default function AdminSettingsPage() {
               />
               <NumberInput
                 label="Auto-freeze after no share for"
-                description="Default: 60 days"
+                description="Default: 30 days"
                 value={settings.shareFreezeDays}
                 suffix="days"
                 min={1}
                 onChange={(v) => set("shareFreezeDays", v)}
+              />
+              <NumberInput
+                label="Skips allowed per period"
+                description="Default: 2 — the next reminder must be shared"
+                value={settings.shareMaxSkips}
+                suffix="times"
+                min={0}
+                onChange={(v) => set("shareMaxSkips", v)}
               />
             </div>
             <TextInput
