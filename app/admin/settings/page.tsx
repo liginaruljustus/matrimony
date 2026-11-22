@@ -564,61 +564,19 @@ export default function AdminSettingsPage() {
           </div>
         </SectionCard>
 
-        {/* ── Payment Collection Details ─────────────────────────────────── */}
+        {/* ── Online payments (Razorpay) ─────────────────────────────────── */}
         <SectionCard>
-          <SectionTitle icon={Smartphone} title="Payment Collection Details" />
-          <p className="text-xs text-slate-500 mb-4 -mt-2">
-            Shown to users on the payment page when submitting transactions.
+          <SectionTitle icon={Smartphone} title="Online Payments (Razorpay)" />
+          <p className="text-sm text-slate-600">
+            Members pay the Initial and Final Payment online through Razorpay (UPI, Google Pay, PhonePe, cards,
+            net banking, wallets). A successful payment is confirmed by Razorpay and approved automatically — no
+            transaction ID or admin review is needed. Money is settled to the bank account linked in your Razorpay
+            dashboard.
           </p>
-          <div className="space-y-4">
-            <TextInput
-              label="UPI ID"
-              value={settings.upiId}
-              placeholder="example@upi"
-              onChange={(v) => set("upiId", v)}
-            />
-            <TextInput
-              label="Admin Phone / GPay Number"
-              value={settings.adminPhone}
-              placeholder="e.g. 9876543210"
-              onChange={(v) => set("adminPhone", v)}
-            />
-            <p className="-mt-3 text-xs text-slate-500">
-              Shown (read-only) to users as the mobile number to send their payment to.
-            </p>
-            <TextInput
-              label="PayTm Number"
-              value={settings.paytmNumber}
-              placeholder="Leave empty to use the number above"
-              onChange={(v) => set("paytmNumber", v)}
-            />
-            <div className="border-t border-slate-100 pt-4 grid grid-cols-2 gap-4">
-              <TextInput
-                label="Bank Name"
-                value={settings.bankName}
-                placeholder="State Bank of India"
-                onChange={(v) => set("bankName", v)}
-              />
-              <TextInput
-                label="Account Holder"
-                value={settings.bankAccountHolder}
-                placeholder="Full name"
-                onChange={(v) => set("bankAccountHolder", v)}
-              />
-              <TextInput
-                label="Account Number"
-                value={settings.bankAccountNo}
-                placeholder="••••••••••"
-                onChange={(v) => set("bankAccountNo", v)}
-              />
-              <TextInput
-                label="IFSC Code"
-                value={settings.bankIfsc}
-                placeholder="SBIN0000000"
-                onChange={(v) => set("bankIfsc", v)}
-              />
-            </div>
-          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            The Razorpay keys are set in the hosting environment (RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET,
+            RAZORPAY_WEBHOOK_SECRET), not here. The fees above decide how much each member pays.
+          </p>
         </SectionCard>
 
         {/* ── System Configuration ───────────────────────────────────────── */}

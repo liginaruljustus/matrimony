@@ -57,10 +57,10 @@ export async function POST() {
   return NextResponse.json(
     {
       message:
-        "This endpoint has been removed. Use /api/payment/first for the first payment " +
-        "or /api/payment/second for the contact-details payment.",
-      firstPayment:  "/api/payment/first",
-      secondPayment: "/api/payment/second",
+        "This endpoint has been removed. Payments are made online: POST /api/payment/razorpay/order " +
+        "(tier FIRST or SECOND), then /api/payment/razorpay/verify.",
+      order:  "/api/payment/razorpay/order",
+      verify: "/api/payment/razorpay/verify",
     },
     { status: 410 }, // 410 Gone
   );

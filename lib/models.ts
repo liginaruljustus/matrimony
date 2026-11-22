@@ -243,9 +243,14 @@ const paymentSchema = new Schema(
     paymentDate:    { type: Date },
     approvalStatus: {
       type: String,
-      enum: ["PENDING_ADMIN_REVIEW", "APPROVED", "REJECTED"],
+      // AWAITING_PAYMENT = an online (Razorpay) order not paid yet
+      enum: ["AWAITING_PAYMENT", "PENDING_ADMIN_REVIEW", "APPROVED", "REJECTED"],
       default: "PENDING_ADMIN_REVIEW",
     },
+    // Online payment (Razorpay)
+    razorpayOrderId:   { type: String, index: true, sparse: true },
+    razorpayPaymentId: { type: String },
+    favoriteIds:       [{ type: Schema.Types.ObjectId, ref: "Favorite" }],
     approvedBy:      { type: Schema.Types.ObjectId, ref: "User" },
     approvedAt:      { type: Date },
     rejectionReason: { type: String },

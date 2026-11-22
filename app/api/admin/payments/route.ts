@@ -27,6 +27,8 @@ export async function GET(req: Request) {
     if (tab === "pending")  query.approvalStatus = "PENDING_ADMIN_REVIEW";
     if (tab === "approved") query.approvalStatus = "APPROVED";
     if (tab === "rejected") query.approvalStatus = "REJECTED";
+    // Unpaid online checkouts (abandoned Razorpay orders) are not payments yet
+    if (!query.approvalStatus) query.approvalStatus = { $ne: "AWAITING_PAYMENT" };
 
     const [payments, total, totalPending, revenueAgg] = await Promise.all([
       PaymentModel.find(query)

@@ -334,7 +334,9 @@ function PaymentsContent() {
                         {payment.paymentMethod && (
                           <span className="flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold text-neutral-600 capitalize">
                             {METHOD_ICON[payment.paymentMethod]}
-                            {payment.paymentMethod === "gpay" ? "Google Pay" : payment.paymentMethod === "upi" ? "UPI" : payment.paymentMethod === "paytm" ? "PayTm" : "Bank"}
+                            {payment.paymentMethod.startsWith("razorpay")
+                              ? `Razorpay${payment.paymentMethod.includes("-") ? ` · ${payment.paymentMethod.split("-")[1]}` : ""}`
+                              : payment.paymentMethod === "gpay" ? "Google Pay" : payment.paymentMethod === "upi" ? "UPI" : payment.paymentMethod === "paytm" ? "PayTm" : "Bank"}
                           </span>
                         )}
                       </div>
@@ -343,7 +345,7 @@ function PaymentsContent() {
                       <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
                         <span className="text-[#d4af37] font-bold text-base">{fmt(payment.amount)}</span>
                         <div>
-                          <span className="text-xs text-neutral-400">Txn ID: </span>
+                          <span className="text-xs text-neutral-400">{payment.paymentMethod?.startsWith("razorpay") ? "Razorpay ID: " : "Txn ID: "}</span>
                           <span className="font-mono text-xs text-neutral-700">{payment.transactionId}</span>
                         </div>
                         <div>
@@ -356,7 +358,8 @@ function PaymentsContent() {
                         </div>
                         {payment.payerPhone && (
                           <div>
-                            <span className="text-xs text-neutral-400">Paid to: </span>
+                            {/* Razorpay: the member's phone; old manual payments: the admin's number */}
+                            <span className="text-xs text-neutral-400">{payment.paymentMethod?.startsWith("razorpay") ? "Payer phone: " : "Paid to: "}</span>
                             <span className="font-mono text-xs text-neutral-700">{payment.payerPhone}</span>
                           </div>
                         )}

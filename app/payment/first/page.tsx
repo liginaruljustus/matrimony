@@ -1,27 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { UpiQrCode } from "@/components/UpiQrCode";
-import {
-  CreditCard, CheckCircle, Copy, AlertCircle,
-  ArrowLeft, Smartphone, Wallet, Building2, QrCode, Lock,
-} from "lucide-react";
+import { RazorpayPayButton } from "@/components/RazorpayPayButton";
+import { CheckCircle, AlertCircle, ArrowLeft, Lock } from "lucide-react";
 import { ProfileIdBadge } from "@/components/ProfileIdBadge";
-
-type Method = "gpay" | "upi" | "paytm" | "bank";
-
-type PaymentDetails = {
-  upiId: string;
-  adminPhone: string;
-  paytmNumber: string;
-  bankName: string;
-  bankAccountNo: string;
-  bankIfsc: string;
-  bankAccountHolder: string;
-};
 
 type LockedFav = {
   id: string;
@@ -32,16 +17,6 @@ type LockedFav = {
   paymentLockExpiresAt: string | null;
 };
 
-const DETAIL_DEFAULTS: PaymentDetails = {
-  upiId: "luramatrimony@upi",
-  adminPhone: "",
-  paytmNumber: "",
-  bankName: "State Bank of India",
-  bankAccountNo: "",
-  bankIfsc: "",
-  bankAccountHolder: "Lura Matrimony Services",
-};
-
 const DEFAULT_PAYMENT_AMT: Record<string, number> = { MC: 500, UC: 2500, EC: 5000 };
 
 function PaymentContent() {
@@ -49,16 +24,8 @@ function PaymentContent() {
   const { status } = useSession();
 
 
-  const [method, setMethod]         = useState<Method>("gpay");
-  const [txnId, setTxnId]           = useState("");
-  const [payDate, setPayDate]       = useState(() => new Date().toISOString().slice(0, 10));
-  const [paidAmount, setPaidAmount] = useState("");
-  const amountTouchedRef            = useRef(false);
-  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted]   = useState(false);
   const [error, setError]           = useState("");
-  const [copied, setCopied]         = useState("");
-  const [details, setDetails]       = useState<PaymentDetails>(DETAIL_DEFAULTS);
   const [paymentAmt, setPaymentAmt] = useState<Record<string, number>>(DEFAULT_PAYMENT_AMT);
   const [lockedFavs, setLockedFavs] = useState<LockedFav[]>([]);
   const [loadingFavs, setLoadingFavs] = useState(true);
@@ -67,18 +34,7 @@ function PaymentContent() {
     fetch("/api/settings/payment")
       .then((r) => r.ok ? r.json() : null)
       .then((d) => {
-        if (d) {
-          setDetails({
-            upiId:            d.upiId            ?? DETAIL_DEFAULTS.upiId,
-            adminPhone:       d.adminPhone        ?? DETAIL_DEFAULTS.adminPhone,
-            paytmNumber:      d.paytmNumber       ?? DETAIL_DEFAULTS.paytmNumber,
-            bankName:         d.bankName         ?? DETAIL_DEFAULTS.bankName,
-            bankAccountNo:    d.bankAccountNo    ?? DETAIL_DEFAULTS.bankAccountNo,
-            bankIfsc:         d.bankIfsc         ?? DETAIL_DEFAULTS.bankIfsc,
-            bankAccountHolder:d.bankAccountHolder?? DETAIL_DEFAULTS.bankAccountHolder,
-          });
-          setPaymentAmt(d.firstPaymentAmounts ?? DEFAULT_PAYMENT_AMT);
-        }
+        if (d) setPaymentAmt(d.firstPaymentAmounts ?? DEFAULT_PAYMENT_AMT);
       })
       .catch(() => {}); // keep defaults on error
   }, []);
@@ -143,54 +99,6 @@ function PaymentContent() {
   };
   const totalAmount = lockedFavs.reduce((acc, f) => acc + f.amount, 0);
 
-  // Pre-fill the "amount paid" field with the due total once it's known, and
-  // keep it in sync while the groom hasn't touched it — totalAmount starts at
-  // a client-side default and is replaced once /api/settings/payment loads,
-  // so a one-time prefill can otherwise leave a stale, wrong amount showing.
-  useEffect(() => {
-    if (totalAmount > 0 && !amountTouchedRef.current) setPaidAmount(String(totalAmount));
-  }, [totalAmount]);
-
-  const copy = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(key);
-    setTimeout(() => setCopied(""), 2000);
-  };
-
-  // Number the payment goes to — fixed by admin, not user-editable.
-  const payerPhone = method === "paytm" ? (details.paytmNumber || details.adminPhone) : details.adminPhone;
-
-  const handleSubmit = async () => {
-    if (!payerPhone.trim())      { setError("Payment phone number not configured — contact admin"); return; }
-    if (!payDate)                { setError("Please select the payment date"); return; }
-    if (!paidAmount || Number(paidAmount) <= 0) { setError("Please enter the amount you paid"); return; }
-    if (!txnId.trim())           { setError("Please enter your transaction reference ID"); return; }
-    setSubmitting(true);
-    setError("");
-    try {
-      const res = await fetch("/api/payment/first", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          favoriteIds,
-          transactionId: txnId.trim(),
-          paymentMethod: method,
-          totalAmount,
-          payerPhone:     payerPhone.trim(),
-          paymentDate:    payDate,
-          reportedAmount: Number(paidAmount),
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Submission failed"); return; }
-      setSubmitted(true);
-    } catch {
-      setError("Network error — please try again");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   if (status === "loading" || loadingFavs) return <Loader />;
 
   if (submitted) {
@@ -201,26 +109,25 @@ function PaymentContent() {
             <CheckCircle size={40} className="text-green-600" />
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-neutral-800">Payment Submitted!</h1>
+        <h1 className="text-2xl font-bold text-neutral-800">Payment Successful!</h1>
         <p className="mt-3 text-sm text-neutral-500">
-          Your payment is under admin review. You&apos;ll gain access to the additional details of
-          selected brides once approved.
+          Thank you — your payment is confirmed and your proposal has been sent to the selected brides.
         </p>
         <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 p-4 text-left text-sm text-amber-800">
           <p className="font-semibold">What happens next?</p>
           <ul className="mt-2 list-disc list-inside space-y-1 text-xs">
-            <li>Admin verifies your transaction ID</li>
-            <li>Brides&apos; additional details are unlocked in your Inbox</li>
+            <li>Each bride sees your proposal and can accept it</li>
+            <li>You are notified as soon as a bride accepts</li>
             <li>The brides are added to your Inbox permanently — no expiry</li>
             <li>Their additional details are shown after the waiting period</li>
           </ul>
         </div>
         <div className="mt-6 flex flex-col gap-3">
-          <Link href="/inbox" className="rounded-lg bg-[#7a1f2b] py-3 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors text-center">
-            Go to Inbox
+          <Link href="/favorites" className="rounded-lg bg-[#7a1f2b] py-3 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors text-center">
+            View in Favourites
           </Link>
-          <Link href="/favorites" className="rounded-lg border border-neutral-200 dark:border-neutral-200 py-3 text-sm font-semibold text-neutral-700 dark:text-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors text-center">
-            Back to Favourites
+          <Link href="/profiles" className="rounded-lg border border-neutral-200 dark:border-neutral-200 py-3 text-sm font-semibold text-neutral-700 dark:text-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors text-center">
+            Browse More Brides
           </Link>
         </div>
       </div>
@@ -293,7 +200,7 @@ function PaymentContent() {
                 <button
                   type="button"
                   onClick={() => removeFromPayment(f.id)}
-                  disabled={removingId !== null || submitting}
+                  disabled={removingId !== null}
                   className="mt-1 text-[11px] font-semibold text-neutral-500 underline hover:text-red-600 disabled:opacity-50"
                 >
                   {removingId === f.id ? "Removing…" : "Remove"}
@@ -315,129 +222,6 @@ function PaymentContent() {
         </p>
       </div>
 
-      {/* Payment method tabs */}
-      <div className="mt-6">
-        <p className="mb-3 text-sm font-semibold text-neutral-700">Choose Payment Method</p>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {(["gpay", "upi", "paytm", "bank"] as Method[]).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMethod(m)}
-              className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 text-xs font-semibold transition-all ${
-                method === m
-                  ? "border-[#7a1f2b] bg-[#7a1f2b] text-white"
-                  : "border-neutral-200 dark:border-neutral-200 text-neutral-600 dark:text-neutral-700 hover:border-[#7a1f2b]/40"
-              }`}
-            >
-              {m === "gpay"  && <Smartphone size={18} />}
-              {m === "upi"   && <QrCode size={18} />}
-              {m === "paytm" && <Wallet size={18} />}
-              {m === "bank"  && <Building2 size={18} />}
-              {m === "gpay" ? "Google Pay" : m === "upi" ? "UPI / PhonePe" : m === "paytm" ? "PayTm" : "Bank Transfer"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Payment details */}
-      <div className="mt-5 rounded-xl border border-neutral-200 dark:border-neutral-200 bg-white dark:bg-neutral-100 p-5">
-        {(method === "gpay" || method === "upi") && (
-          <div className="space-y-3">
-            <InfoRow label="UPI ID" value={details.upiId} onCopy={() => copy(details.upiId, "upi")} copied={copied === "upi"} />
-            <UpiQrCode upiId={details.upiId} amount={totalAmount} payeeName={details.bankAccountHolder} note={"Lura Initial Payment"} />
-            <p className="text-xs text-neutral-400">
-              Scan the QR code, or open Google Pay / PhonePe / any UPI app and send ₹{totalAmount.toLocaleString("en-IN")} to the UPI ID above,
-              then enter the transaction ID below.
-            </p>
-          </div>
-        )}
-        {method === "paytm" && (
-          <div className="space-y-3">
-            <InfoRow label="PayTm Number" value={payerPhone || "—"} onCopy={payerPhone ? () => copy(payerPhone, "paytm") : undefined} copied={copied === "paytm"} />
-            <p className="text-xs text-neutral-400">
-              Open PayTm, send ₹{totalAmount.toLocaleString("en-IN")} to the mobile number above, then enter the transaction ID below.
-            </p>
-          </div>
-        )}
-        {method === "bank" && (
-          <div className="space-y-3">
-            <InfoRow label="Account Holder" value={details.bankAccountHolder} />
-            <InfoRow label="Bank"           value={details.bankName} />
-            {details.bankAccountNo && (
-              <InfoRow label="Account No." value={details.bankAccountNo} onCopy={() => copy(details.bankAccountNo, "acc")} copied={copied === "acc"} />
-            )}
-            {details.bankIfsc && (
-              <InfoRow label="IFSC" value={details.bankIfsc} onCopy={() => copy(details.bankIfsc, "ifsc")} copied={copied === "ifsc"} />
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Payer phone / GPay number — fixed to the admin-configured number, not user-editable */}
-      <div className="mt-5">
-        <label className="mb-1.5 block text-sm font-semibold text-neutral-700 dark:text-neutral-800">
-          Phone / GPay Number
-        </label>
-        <input
-          type="tel"
-          value={payerPhone}
-          disabled
-          placeholder="Set by admin in Settings"
-          className="w-full cursor-not-allowed rounded-xl border border-neutral-300 bg-neutral-100 dark:bg-neutral-200 px-4 py-3 text-sm text-neutral-500"
-        />
-        <p className="mt-1 text-xs text-neutral-400">
-          {payerPhone ? "You can send your payment to this mobile number." : "Admin hasn't set a phone number yet."}
-        </p>
-      </div>
-
-      {/* Payment date + amount paid */}
-      <div className="mt-5 grid grid-cols-2 gap-3">
-        <div>
-          <label className="mb-1.5 block text-sm font-semibold text-neutral-700 dark:text-neutral-800">
-            Payment Date *
-          </label>
-          <input
-            type="date"
-            value={payDate}
-            max={new Date().toISOString().slice(0, 10)}
-            onChange={(e) => setPayDate(e.target.value)}
-            className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/20"
-          />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-semibold text-neutral-700 dark:text-neutral-800">
-            Amount Paid (₹) *
-          </label>
-          <input
-            type="number"
-            min={1}
-            value={paidAmount}
-            onChange={(e) => { amountTouchedRef.current = true; setPaidAmount(e.target.value); }}
-            className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/20"
-          />
-        </div>
-      </div>
-
-      {/* Transaction ID input */}
-      <div className="mt-5">
-        <label className="mb-1.5 block text-sm font-semibold text-neutral-700 dark:text-neutral-800">
-          Transaction Reference ID *
-        </label>
-        <input
-          value={txnId}
-          onChange={(e) => setTxnId(e.target.value)}
-          placeholder={
-            method === "bank"
-              ? "e.g. UTR1234567890"
-              : "e.g. UPI transaction ID from your app"
-          }
-          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm focus:border-[#7a1f2b] focus:outline-none focus:ring-2 focus:ring-[#7a1f2b]/20"
-        />
-        <p className="mt-1 text-xs text-neutral-400">
-          Copy the transaction ID / UTR number from your payment app after sending.
-        </p>
-      </div>
-
       {error && (
         <div className="mt-4 flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
           <AlertCircle size={15} />
@@ -445,43 +229,16 @@ function PaymentContent() {
         </div>
       )}
 
-      <button
-        onClick={handleSubmit}
-        disabled={submitting || !txnId.trim() || !payerPhone.trim() || !payDate || !paidAmount}
-        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#7a1f2b] py-3.5 text-sm font-bold text-white hover:bg-[#6b1823] transition-colors disabled:opacity-50"
-      >
-        <CreditCard size={16} />
-        {submitting ? "Submitting…" : "Submit Payment for Approval"}
-      </button>
-
-      <p className="mt-4 text-center text-xs text-neutral-400">
-        Your payment verification will be completed within 7 days.
-      </p>
-      </>
-      )}
-    </div>
-  );
-}
-
-function InfoRow({
-  label, value, onCopy, copied,
-}: {
-  label: string; value: string; onCopy?: () => void; copied?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">{label}</p>
-        <p className="text-sm font-bold text-neutral-800">{value}</p>
+      <div className="mt-6">
+        <RazorpayPayButton
+          orderBody={{ tier: "FIRST", favoriteIds }}
+          amount={totalAmount}
+          label={`Pay ₹${totalAmount.toLocaleString("en-IN")} Securely`}
+          disabled={favoriteIds.length === 0}
+          onPaid={() => setSubmitted(true)}
+        />
       </div>
-      {onCopy && (
-        <button
-          onClick={onCopy}
-          className="flex items-center gap-1 rounded-lg border border-neutral-200 dark:border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-200 transition-colors"
-        >
-          {copied ? <CheckCircle size={12} className="text-green-600" /> : <Copy size={12} />}
-          {copied ? "Copied!" : "Copy"}
-        </button>
+      </>
       )}
     </div>
   );
