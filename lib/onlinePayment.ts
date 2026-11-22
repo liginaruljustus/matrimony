@@ -13,7 +13,7 @@ import { UserModel, ProfileModel, FavoriteModel, PaymentModel } from "@/lib/mode
 import { getPaymentAmounts } from "@/lib/paymentSettings";
 import { runApprovalSideEffects } from "@/lib/paymentApproval";
 import { notifyAdmins } from "@/lib/adminNotify";
-import { capturePayment, createOrder, fetchPayment, razorpayKeyId } from "@/lib/razorpay";
+import { capturePayment, createOrder, fetchOrder, fetchPayment, razorpayKeyId } from "@/lib/razorpay";
 
 type Fail = { ok: false; status: number; error: string };
 type Prepared = {
@@ -127,7 +127,11 @@ export async function completeOnlinePayment(orderId: string, razorpayPaymentId: 
 
   let rp = await fetchPayment(razorpayPaymentId);
   if (rp.order_id !== orderId) throw new Error("Payment does not belong to this order");
-  if (rp.amount !== Math.round(payment.amount * 100) || rp.currency !== "INR") throw new Error("Paid amount does not match");
+  // The order carries our fee exactly; the payment may be higher when Razorpay's
+  // convenience fee is passed on to the member (Dashboard → fee bearer: customer).
+  const order = await fetchOrder(orderId);
+  const due = Math.round(payment.amount * 100);
+  if (order.amount !== due || rp.currency !== "INR" || rp.amount < due) throw new Error("Paid amount does not match");
   if (rp.status === "authorized") rp = await capturePayment(rp.id, rp.amount);
   if (rp.status !== "captured") throw new Error(`Payment not completed (${rp.status})`);
 

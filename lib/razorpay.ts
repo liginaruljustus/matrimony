@@ -44,6 +44,10 @@ export function createOrder(rupees: number, receipt: string, notes: Record<strin
   });
 }
 
+export function fetchOrder(orderId: string) {
+  return call<RazorpayOrder>(`/orders/${encodeURIComponent(orderId)}`);
+}
+
 export function fetchPayment(paymentId: string) {
   return call<RazorpayPayment>(`/payments/${encodeURIComponent(paymentId)}`);
 }
